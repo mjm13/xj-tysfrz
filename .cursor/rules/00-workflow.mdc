@@ -1,0 +1,108 @@
+---
+description: DDD + OpenSpec + Superpowers 的主流程规则与门禁
+alwaysApply: true
+---
+
+# Change 分类
+
+每个 change 先判定类型，再决定文档深度。**禁止**把纯技术基建写成新的限界上下文。
+
+| 类型 | 定义 | 示例 | 领域文档（`docs/domain`） | 主要文档 |
+| --- | --- | --- | --- | --- |
+| **业务 change** | 引入或变更业务能力、规则、术语、上下文边界 | 指标填报、审批流、权限模型 | 必须更新 `docs/domain/developing/*`（context-map / ubiquitous-language / domain-model） | OpenSpec + domain |
+| **技术 change** | 工程骨架、横切能力、工具链；无新业务规则 | `springboot-backend-skeleton`（Spring Boot 工程、日志、Actuator、统一响应） | **跳过**新建 context；若对接已有上下文（如 `identity-access` 后端落地），仅**更新**该条目描述，不新建 `logging` / `api-foundation` 等 context | OpenSpec `design.md` + ADR |
+| **混合 change** | 既有基建又有业务规则 | 后端鉴权 + RBAC 策略 | 仅建模业务部分；基建写入 ADR / design | 两者兼有 |
+
+**技术 change 识别信号**（满足多数即可归类为技术 change）：
+- 需求描述为「项目骨架 / 脚手架 / 初始化 / 升级依赖 / CI 模板」
+- OpenSpec capability 以 `project-structure`、`logging`、`health-monitoring` 等横切能力为主
+- 不产生新的业务术语或聚合根
+- 主要交付物是可运行工程结构与通用中间件配置
+
+# 需求分级（入口闸门，先分级再决定走多重的流程）
+
+**禁止一刀切**：不是所有需求都进 OpenSpec 全管道。先按复杂度分档，再选流程。
+
+| 档位 | 适用 | 流程 | 持久化 |
+| --- | --- | --- | --- |
+| 🟢 轻量 | 配置/文案/样式变更、简单 CRUD、独立前端页面 | **Plan Mode**：AI 出方案 → 人审 → 执行；不进 OpenSpec | 方案落 `docs/plans/`（值得留则留） |
+| 🟡 中等 | 单一上下文内常规功能、弱不变量 | **Plan Mode + 可选 Superpowers**（含可测逻辑时）；需沉淀领域知识则补 `docs/domain/developing/*` | 计划落 `docs/plans/`；必要时 ADR |
+| 🔴 核心 | 资金链路、权限模型、复杂业务规则、跨上下文、多聚合 | **完整 OpenSpec + Superpowers**（`openspec-superpowers-apply`） | OpenSpec specs + `docs/domain` |
+
+**分级原则**：
+- 拿不准时**先降一档**，发现复杂度超预期再升档（升档成本远低于过度设计成本）
+- 改配置走 🟢，别写 40 分钟 Spec
+- 只有 🔴 才值得 OpenSpec 的持久化与同步成本；本项目无硬性审计需求，OpenSpec 仅服务核心业务的知识沉淀
+
+# 知识沉淀（与流程档位正交）
+
+**沉淀什么，与走多重的流程无关。** 即使是 🟢 改配置，只要命中下面三问，也必须沉淀（成本通常一行）。
+
+**沉淀三问（任一为「是」即沉淀）：**
+1. 是业务规则 / 不变量吗？（如「投标截止后不可撤回」「扣费不退款」）→ `docs/domain`（ubiquitous-language / domain-model）
+2. 是非显而易见的决策及其原因吗？→ `docs/decisions`（ADR）
+3. 是数据库 / 字段的业务语义、状态流转、约束理由吗？→ `docs/domain/.../data-dictionary.md`
+
+**不沉淀：**
+- 与代码重叠的实现细节——**代码即文档**，抄进 docs 必然漂移
+- 一次性琐碎改动
+
+**数据库三层（结构与语义分离）：**
+- 结构真相 = Flyway 迁移脚本（可执行，不抄进 docs）
+- 实时读取 = MySQL MCP（只读）
+- 业务语义 = 数据字典（字段业务含义、状态机、约束理由——DDL 里看不出的代码外知识）
+
+**developing vs established 的写入规则：**
+- 🔴（OpenSpec change 在飞行中）：先写 `developing/`，归档后由 `sync-knowledge` 提升到 `established/`
+- 🟢 / 🟡（无 OpenSpec change，完成即既成事实）：人确认后**直接写 `established/`**
+- `developing/` 仅用于隔离「未归档 OpenSpec change」，不阻塞轻量需求的沉淀
+
+# 主流程（🔴 档完整流水线；🟢🟡 见上表，到对应档位即停）
+
+当用户提出 🔴 核心需求时，执行以下流水线：
+
+1. `explore`：用 `/opsx:explore` 探索问题；**业务 change** 补齐 `docs/domain/developing/*` 条目，**技术 change** 跳过 domain 新建，必要时写 ADR 草案
+2. `propose`：用 `/opsx:propose` 生成 proposal/design/tasks
+3. `apply`：用 **openspec-superpowers-apply** 实现任务（OpenSpec 管 tasks 进度，Superpowers 管 TDD/验证/评审；禁止裸跑 apply）
+4. `verify`：执行测试、验证与代码评审
+5. `sync`：用 `/opsx:sync` 同步 delta specs 到主 specs
+6. `archive`：用 `/opsx:archive` 归档 change
+7. `sync-knowledge`：将有效知识回灌 docs 与 ADR（技术 change 以 ADR 为主，不回灌伪领域条目）
+
+# 文档状态模型
+
+- 需求：`inbox -> in-change(<name>) -> shipped/dropped`
+- 领域条目：`developing -> established`
+- ADR：`proposed -> accepted -> superseded/deprecated`
+
+# 联动门禁
+
+- 每个 change 建议先建立独立 worktree 与分支 `change/<name>`
+- propose 前必须在 proposal 中标注 change 类型（业务 / 技术 / 混合）
+- propose 前统一语言：**业务 / 混合 change** 必须具备 `ubiquitous-language` 条目；**技术 change** 可跳过，除非引入跨团队共识的新术语
+- apply 前 design 必须包含：
+  - **业务 / 混合 change**：领域设计小节 + 分层裁剪决策
+  - **技术 change**：技术方案小节（栈选型、目录结构、横切能力清单）+ 分层裁剪决策；**不要求**虚构领域模型
+- 技术 change 的关键决策写入 `docs/adr/`，不写 `context-map` 新 context
+- 开发中的领域内容只能写入 `docs/domain/developing/*`；仅在 `sync -> archive -> sync-knowledge` 后可提升到 `docs/domain/established/*`
+- 收尾仅两条路径：
+  - 完成：`sync -> archive -> sync-knowledge`
+  - 放弃：`abandon-change`
+- 未归档 change 不得写入 `docs/domain/established/*`
+
+# 真相源与冲突裁决（测试 > Spec）
+
+Spec/design 是自然语言意图，没有裁判机制；测试可执行、有 pass/fail。两者冲突时：
+
+- **实现期以测试为准**：任务完成与否由验证/测试裁决，不由 Spec 自洽与否裁决
+- **测试暴露 Spec 错误时不得静默跳过**：暂停 → 先改 `design.md`/spec → 再继续实现
+- **Spec 只锁 What，不锁 How**：边界、不变量、验收标准（AC）该写死；技术选型、实现路径、代码结构交给模型，给信息而非指令
+- 每条验收标准（AC）应能对应到测试；🔴 档 AC 无对应测试不得勾选任务
+
+# Approval Gates（必须暂停并请求用户确认）
+
+- 破坏性数据库变更（删表/删列/改类型/数据回填）
+- 新增关键外部依赖（Feign、三方 API、核心包）
+- 删除或下线已上线能力
+- 权限、密钥、安全策略相关变更
+- 跨限界上下文的大规模架构调整

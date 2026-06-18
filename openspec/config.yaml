@@ -1,0 +1,49 @@
+schema: spec-driven
+
+context: |
+  Project layout: monorepo with backend/, frontend/, docs/, openspec/
+
+  Backend stack:
+  - Java, Spring Boot
+  - MyBatis-Plus
+  - MySQL
+  - Flyway for schema migrations
+  - springdoc-openapi for API contract
+
+  Frontend stack:
+  - Vue 3
+  - TypeScript
+  - Element Plus
+
+  Methodology:
+  - DDD for requirement discussion and documentation
+  - Pragmatic implementation: choose simple 3-layer architecture for simple CRUD needs,
+    choose full DDD layering for complex domain logic
+  - Avoid over-design
+
+  Domain docs source:
+  - docs/domain/established/context-map.md
+  - docs/domain/established/ubiquitous-language.md
+  - docs/domain/established/domain-model.md
+  - docs/domain/developing/context-map.md
+  - docs/domain/developing/ubiquitous-language.md
+  - docs/domain/developing/domain-model.md
+
+  Requirement entry:
+  - docs/requirements/inbox/
+
+  Workflow:
+  - explore -> propose -> apply -> verify -> sync -> archive -> sync-knowledge
+
+rules:
+  design:
+    - Must include a "领域设计" section
+    - Must state architecture choice for this change: 简化三层 or 完整DDD分层
+    - Must explain why the chosen layering is appropriate
+    - Must list domain model impact and link related docs/domain/developing entries
+  proposal:
+    - Prefer established terms from docs/domain/established/ubiquitous-language.md
+    - Name capabilities using kebab-case
+  tasks:
+    - Keep tasks atomic and verifiable
+    - Include Flyway migration tasks when schema changes are involved

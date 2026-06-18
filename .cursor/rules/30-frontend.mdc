@@ -1,0 +1,17 @@
+---
+description: 前端实现约定（Vue3 + Element Plus + OpenAPI 对齐）
+globs:
+  - "frontend/**"
+---
+
+# 前端约定
+
+- 技术基线：Vue 3 + TypeScript + Element Plus
+- API 模块按 capability 组织
+- 优先依据后端 OpenAPI 对齐接口路径、参数与返回类型
+- `.env` 管理 API Base URL
+
+# 与后端联动
+
+- 命名尽量与 capability 保持一致（kebab-case）
+- 出现契约冲突时，先更新 OpenSpec specs 再落地代码

@@ -1,0 +1,29 @@
+{
+  "name": "xj-zbpt-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "vue-tsc -b",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "element-plus": "^2.9.7",
+    "pinia": "^3.0.1",
+    "vue": "^3.5.34",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.3",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "@vue/tsconfig": "^0.9.1",
+    "sass": "^1.86.3",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.12",
+    "vitest": "^3.0.9",
+    "vue-tsc": "^3.2.8"
+  }
+}

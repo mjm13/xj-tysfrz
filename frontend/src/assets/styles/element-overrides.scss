@@ -1,0 +1,22 @@
+:root {
+  --el-color-primary: var(--blue-600);
+  --el-color-primary-light-3: var(--blue-400);
+  --el-color-primary-light-5: #93c5fd;
+  --el-color-primary-light-7: #bfdbfe;
+  --el-color-primary-light-8: #dbeafe;
+  --el-color-primary-light-9: var(--blue-50);
+  --el-color-primary-dark-2: var(--ink-800);
+  --el-border-radius-base: 7px;
+  --el-font-size-base: 13px;
+}
+
+.el-button--primary {
+  --el-button-bg-color: var(--blue-600);
+  --el-button-border-color: var(--blue-600);
+  --el-button-hover-bg-color: var(--ink-800);
+  --el-button-hover-border-color: var(--ink-800);
+}
+
+.el-input__wrapper {
+  border-radius: 8px;
+}

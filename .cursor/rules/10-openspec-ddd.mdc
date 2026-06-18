@@ -1,0 +1,16 @@
+---
+description: OpenSpec 产物中的 DDD 约束
+globs:
+  - "openspec/**"
+---
+
+# 规则
+
+- `design.md` 必须包含「领域设计」小节，至少说明：
+  - 本次采用简化三层或完整 DDD 分层
+  - 选择理由
+  - 涉及的领域模型变更点
+  - 关联 `docs/domain/developing` 条目
+- `spec.md` 中 Requirement 术语优先使用 `docs/domain/established/ubiquitous-language.md`，新增术语写入 `docs/domain/developing/ubiquitous-language.md`
+- capability 命名应尽量与限界上下文一致（kebab-case）
+- 若变更涉及下线能力，使用 `REMOVED Requirements` 并触发人工确认

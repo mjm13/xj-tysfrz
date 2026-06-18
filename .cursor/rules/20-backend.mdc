@@ -1,0 +1,27 @@
+---
+description: 后端实现与测试约定（DDD 裁剪 + Flyway + OpenAPI）
+globs:
+  - "backend/**/*.java"
+---
+
+# 实现分层
+
+- 简单需求：`Controller -> Service -> Mapper`
+- 复杂需求：`interfaces -> application -> domain -> infrastructure`
+- Controller 仅编排，不承载核心业务
+- Service 承担业务规则
+- Mapper 作为数据库边界
+
+# 数据库与契约
+
+- 任何结构变更必须附带 Flyway 脚本
+- Flyway 路径：`src/main/resources/db/migration/`
+- REST API 应维护 OpenAPI 可见性（springdoc-openapi）
+
+# 深度链路测试（Controller）
+
+- 最大扫描深度 3 层
+- Mapper 默认 `@MockBean`
+- 第 3 层外部依赖（Feign/RestTemplate）必须 `@MockBean`
+- 纯计算逻辑使用真实实例
+- 避免对 JDK/纯工具方法过度 Mock
