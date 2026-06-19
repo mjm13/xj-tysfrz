@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:zbpt_test;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+app:
+  info:
+    platform-name: 高校综合身份数据平台
+    release: 0.2.0-test
+    maintenance: false

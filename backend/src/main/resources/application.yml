@@ -7,6 +7,12 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
 
+app:
+  info:
+    platform-name: 高校综合身份数据平台
+    release: @project.version@
+    maintenance: false
+
 management:
   endpoints:
     web:
@@ -15,6 +21,11 @@ management:
   endpoint:
     health:
       show-details: when_authorized
+  info:
+    build:
+      enabled: true
+    git:
+      mode: full
 
 springdoc:
   swagger-ui:

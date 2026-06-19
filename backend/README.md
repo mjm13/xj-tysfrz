@@ -63,6 +63,7 @@ dev profile 下 CORS 允许 `http://localhost:5173`，可通过 `CORS_ALLOWED_OR
 | 用途 | 地址 |
 | --- | --- |
 | 健康检查 | `GET /actuator/health` |
+| 平台版本 | `GET /api/system/info` |
 | 示例接口 | `GET /api/ping` |
 | OpenAPI JSON | `GET /v3/api-docs` |
 | Swagger UI | `GET /swagger-ui.html` |
@@ -74,6 +75,7 @@ dev profile 下 CORS 允许 `http://localhost:5173`，可通过 `CORS_ALLOWED_OR
 | 单元测试 | `mvn test` | BUILD SUCCESS |
 | 健康 | `GET /actuator/health` | `"status":"UP"` |
 | Ping | `GET /api/ping` | `code:0`, `data:"pong"` |
+| 版本 | `GET /api/system/info` | 含 `release`、`flywayVersion`、`gitCommit` |
 | CORS | curl 带 `Origin: http://localhost:5173` | 响应含 `Access-Control-Allow-Origin` |
 | Swagger | 浏览器打开 `/swagger-ui.html` | 标题为「高校综合身份数据平台 API」 |
 | 前后端 | 首页 API 徽章 | 显示「API 已连通 · pong」 |
@@ -88,4 +90,8 @@ Flyway 脚本路径：`src/main/resources/db/migration/`，命名 `V<version>__<
 mvn test
 ```
 
-切片测试（`@WebMvcTest`）不连数据库；如需集成测试可使用 H2（test scope 已引入）。
+切片测试（`@WebMvcTest`）不连数据库；集成测试使用 H2 + `@ActiveProfiles("test")`（见 `SystemInfoControllerTest`）。
+
+## Docker Compose
+
+见 `docs/operations/upgrade-guide.md` 与 `docker/docker-compose.yml`。
