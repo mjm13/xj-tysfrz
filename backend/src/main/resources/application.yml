@@ -1,6 +1,6 @@
 spring:
   application:
-    name: xj-zbpt-backend
+    name: xj-tysfrz-backend
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 

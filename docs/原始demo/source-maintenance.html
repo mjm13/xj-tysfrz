@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人员基础身份 · 高校综合身份数据平台</title>
+<style>
+  :root {
+    --color-primary: #2563EB;
+    --color-primary-secondary: #478EF7;
+    --color-success: #00B42A;
+    --color-warning: #FF7D00;
+    --color-error: #F53F3F;
+    --color-info: #165DFF;
+    --text-primary: #1D2129;
+    --text-secondary: #4E5969;
+    --text-disabled: #86909C;
+    --bg-page: #FAFAFB;
+    --bg-card: #FFFFFF;
+    --bg-secondary: #F2F3F5;
+    --border: #E5E6EB;
+    --chart-1: #387EF5;
+    --chart-2: #0FB17B;
+    --chart-3: #F6980D;
+    --chart-4: #A251F6;
+    --shadow-1: 0 1px 2px 0 rgba(0,0,0,.03), 0 1px 6px -1px rgba(0,0,0,.02);
+    --shadow-2: 0 4px 12px 0 rgba(0,0,0,.05), 0 2px 4px 0 rgba(0,0,0,.03);
+    --shadow-3: 0 8px 24px 0 rgba(0,0,0,.08), 0 4px 8px 0 rgba(0,0,0,.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg-page); }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 22px;
+  }
+  a { text-decoration: none; color: inherit; }
+  button, input, select { font: inherit; color: inherit; outline: none; }
+
+  /* ===== 顶部导航 ===== */
+  .topbar {
+    height: 64px;
+    background: var(--bg-card);
+    box-shadow: var(--shadow-1);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo-wrap { display: flex; align-items: center; gap: 12px; margin-right: 32px; }
+  .logo-mark {
+    width: 32px; height: 32px; border-radius: 6px; background: var(--color-primary);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-mark svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; }
+  .logo-text { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+  .topbar nav { display: flex; gap: 32px; flex: 1; height: 100%; align-items: center; }
+  .topbar nav a {
+    color: var(--text-secondary); font-size: 14px;
+    height: 100%; display: flex; align-items: center;
+    position: relative; transition: color 200ms;
+  }
+  .topbar nav a:hover { color: var(--color-primary); }
+  .topbar nav a.active { color: var(--color-primary); font-weight: 500; }
+  .topbar nav a.active::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0;
+    height: 2px; background: var(--color-primary);
+  }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .time-display { font-size: 12px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", monospace; }
+  .user-info {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border);
+  }
+  .user-avatar {
+    width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary);
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500;
+  }
+  .user-name { font-size: 14px; color: var(--text-secondary); }
+
+  /* ===== 主体布局 ===== */
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* 左侧导航 */
+  .sidebar {
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .sidebar-section {
+    padding: 8px 16px;
+    font-size: 12px;
+    color: var(--text-disabled);
+    letter-spacing: 1px;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    margin: 2px 8px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 200ms;
+  }
+  .sidebar-item svg {
+    width: 16px; height: 16px;
+    stroke: currentColor; fill: none; stroke-width: 1.8;
+    flex-shrink: 0;
+  }
+  .sidebar-item:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+  .sidebar-item.active {
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+  .sidebar-item.disabled {
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+  .sidebar-item .badge {
+    margin-left: auto;
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: var(--bg-secondary);
+    color: var(--text-disabled);
+    font-weight: 400;
+  }
+
+  /* 主区域 */
+  .main {
+    padding: 16px 24px 32px;
+    min-width: 0; /* 防止表格撑爆 */
+  }
+  .breadcrumb {
+    font-size: 14px;
+    color: var(--text-disabled);
+    margin-bottom: 12px;
+  }
+  .breadcrumb a { color: var(--text-disabled); }
+  .breadcrumb a:hover { color: var(--color-primary); }
+  .breadcrumb .sep { margin: 0 8px; }
+  .breadcrumb .last { color: var(--text-primary); }
+
+  .page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 28px;
+    margin-bottom: 4px;
+  }
+  .page-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .page-stats {
+    display: flex;
+    gap: 24px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .page-stats strong {
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-left: 4px;
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+
+  /* ===== 视图切换 ===== */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ===== 数据卡片容器 ===== */
+  .panel {
+    background: var(--bg-card);
+    border-radius: 8px;
+    box-shadow: var(--shadow-1);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  /* ===== 筛选条 ===== */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .filter-input {
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-card);
+    font-size: 14px;
+    color: var(--text-primary);
+    transition: all 200ms;
+    min-width: 200px;
+  }
+  .filter-input:focus {
+    border-color: var(--color-info);
+    box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1);
+  }
+  .filter-input.search { padding-left: 36px; }
+  .search-wrap { position: relative; }
+  .search-icon {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-disabled);
+  }
+  .filter-select {
+    height: 40px;
+    padding: 0 32px 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-card) url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2386909C' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") right 12px center no-repeat;
+    font-size: 14px;
+    cursor: pointer;
+    appearance: none;
+    min-width: 140px;
+  }
+  .filter-spacer { flex: 1; }
+
+  /* 按钮 */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 200ms;
+  }
+  .btn-primary {
+    background: var(--color-primary);
+    color: white;
+  }
+  .btn-primary:hover { background: #1d4fc7; }
+  .btn-secondary {
+    background: var(--bg-card);
+    color: var(--color-info);
+    border: 1px solid var(--color-info);
+  }
+  .btn-secondary:hover { background: rgba(22, 93, 255, 0.04); }
+  .btn-text {
+    background: transparent;
+    color: var(--color-info);
+    padding: 0 8px;
+    height: 32px;
+  }
+  .btn-text:hover { color: var(--color-primary); }
+  .btn-sm {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  /* ===== 表格 ===== */
+  .table-wrap {
+    background: var(--bg-card);
+    border-radius: 8px;
+    box-shadow: var(--shadow-1);
+    overflow: hidden;
+  }
+  .table-scroll {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  thead {
+    background: var(--bg-secondary);
+  }
+  thead th {
+    height: 48px;
+    padding: 0 16px;
+    text-align: left;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    font-size: 14px;
+  }
+  tbody td {
+    height: 48px;
+    padding: 0 16px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody tr { transition: background 200ms; }
+  tbody tr:hover { background: var(--bg-secondary); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono { font-family: "DIN Alternate", "Roboto", inherit; color: var(--text-secondary); }
+
+  /* 标签 */
+  .tag {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 20px;
+    font-weight: 400;
+  }
+  .tag-blue { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); }
+  .tag-green { background: rgba(0, 180, 42, 0.08); color: var(--color-success); }
+  .tag-orange { background: rgba(255, 125, 0, 0.08); color: var(--color-warning); }
+  .tag-purple { background: rgba(162, 81, 246, 0.08); color: var(--chart-4); }
+  .tag-gray { background: var(--bg-secondary); color: var(--text-secondary); }
+
+  /* 分页 */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .page-controls { display: flex; gap: 8px; align-items: center; }
+  .page-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 200ms;
+  }
+  .page-btn:hover:not(.disabled) {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+  .page-btn.active {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+  }
+  .page-btn.disabled {
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+
+  /* ===== 抽屉（详情） ===== */
+  .drawer-mask {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 200;
+    display: none;
+    opacity: 0;
+    transition: opacity 300ms;
+  }
+  .drawer-mask.show { display: block; opacity: 1; }
+  .drawer {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 720px;
+    max-width: 90vw;
+    background: var(--bg-card);
+    z-index: 201;
+    transform: translateX(100%);
+    transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-3);
+  }
+  .drawer.show { transform: translateX(0); }
+  .drawer-head {
+    height: 64px;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .drawer-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .drawer-close {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 20px;
+    transition: all 200ms;
+  }
+  .drawer-close:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+  .drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+  .drawer-foot {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    background: var(--bg-page);
+  }
+
+  /* 详情字段网格 */
+  .detail-section {
+    margin-bottom: 24px;
+  }
+  .detail-section:last-child { margin-bottom: 0; }
+  .detail-section-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    padding-left: 12px;
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .detail-section-title::before {
+    content: '';
+    position: absolute; left: 0; top: 4px;
+    width: 3px; height: 14px;
+    background: var(--color-primary);
+    border-radius: 2px;
+  }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 24px;
+  }
+  .detail-item {
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .detail-item.full { grid-column: 1 / -1; }
+  .detail-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+  .detail-value {
+    font-size: 14px;
+    color: var(--text-primary);
+    word-break: break-all;
+  }
+  .detail-value.empty { color: var(--text-disabled); font-style: italic; }
+  .detail-value.mono { font-family: "DIN Alternate", "Roboto", inherit; }
+
+  /* ===== 变更时间轴 ===== */
+  .timeline {
+    position: relative;
+    padding-left: 24px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 8px; bottom: 8px;
+    width: 1px;
+    background: var(--border);
+  }
+  .timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+  }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-dot {
+    position: absolute;
+    left: -22px; top: 6px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid var(--color-primary);
+  }
+  .timeline-item.create .timeline-dot { background: var(--color-success); border-color: var(--color-success); }
+  .timeline-item.update .timeline-dot { background: var(--color-primary); border-color: var(--color-primary); }
+  .timeline-item.conflict .timeline-dot { background: var(--color-warning); border-color: var(--color-warning); }
+  .timeline-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .timeline-ver {
+    font-size: 12px;
+    font-family: "DIN Alternate", "Roboto", inherit;
+    padding: 1px 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    color: var(--text-secondary);
+  }
+  .timeline-time {
+    font-size: 12px;
+    color: var(--text-disabled);
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+  .timeline-action {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .timeline-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+  .timeline-changes {
+    background: var(--bg-page);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .change-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 12px;
+    padding: 4px 0;
+  }
+  .change-field { color: var(--text-secondary); font-size: 12px; }
+  .change-diff { font-size: 13px; }
+  .change-diff .from {
+    color: var(--text-disabled);
+    text-decoration: line-through;
+    margin-right: 8px;
+  }
+  .change-diff .arrow {
+    color: var(--text-disabled);
+    margin: 0 4px;
+  }
+  .change-diff .to {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  /* ===== 数据采集 / 提示框 ===== */
+  .info-box {
+    background: rgba(22, 93, 255, 0.04);
+    border: 1px solid rgba(22, 93, 255, 0.16);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .info-box-icon {
+    width: 20px; height: 20px;
+    color: var(--color-info);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .info-box-icon svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 2; }
+  .info-box-content {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 22px;
+  }
+  .info-box-content strong { color: var(--text-primary); font-weight: 500; }
+  .info-box-content a {
+    color: var(--color-info);
+    margin-left: 8px;
+    cursor: pointer;
+  }
+  .info-box-content a:hover { text-decoration: underline; }
+
+  /* 采集任务卡 */
+  .collect-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .collect-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 200ms;
+  }
+  .collect-card:hover {
+    box-shadow: var(--shadow-2);
+    border-color: var(--color-primary);
+  }
+  .collect-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .collect-card-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  .collect-card-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  .collect-stat {
+    flex: 1;
+  }
+  .collect-stat-num {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--color-primary);
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+  .collect-stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .collect-card-meta {
+    font-size: 12px;
+    color: var(--text-disabled);
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ===== 顶导下拉菜单 ===== */
+  .nav-dropdown {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .nav-dropdown-trigger {
+    color: var(--text-secondary);
+    font-size: 14px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: color 200ms;
+  }
+  .nav-dropdown-trigger::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    margin-left: 4px;
+    margin-bottom: 3px;
+    transition: transform 200ms;
+    opacity: 0.6;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger {
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 16px;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger {
+    color: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger::after {
+    transform: rotate(-135deg);
+    margin-bottom: -3px;
+    opacity: 1;
+  }
+  .nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-2);
+    min-width: 220px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 200ms;
+    z-index: 200;
+  }
+  .nav-dropdown:hover .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+  .nav-dropdown-menu a {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    height: auto !important;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 150ms;
+  }
+  .nav-dropdown-menu a::after { display: none !important; }
+  .nav-dropdown-menu a:hover {
+    background: rgba(37, 99, 235, 0.06);
+    color: var(--color-primary);
+  }
+  .nav-dropdown-menu a svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+  .nav-dropdown-menu a:hover svg { opacity: 1; }
+  .nav-dropdown-menu .menu-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .nav-dropdown-menu .menu-label {
+    font-size: 14px;
+    line-height: 18px;
+  }
+  .nav-dropdown-menu .menu-desc {
+    font-size: 11px;
+    color: var(--text-disabled);
+    margin-top: 2px;
+    line-height: 14px;
+  }
+  .nav-dropdown-menu a:hover .menu-desc { color: var(--color-primary-secondary); }
+  .nav-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 0;
+    right: 0;
+    height: 8px;
+  }
+
+  /* ===== 来源 / 同步卡片（沿用 M3 source-card 规范） ===== */
+  .source-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+  .source-card { background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; transition: all 200ms; position: relative; }
+  .source-card:hover { box-shadow: var(--shadow-2); border-color: var(--color-primary); }
+  .source-card.syncing { border-color: var(--color-info); }
+  .source-card-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
+  .source-card-titlewrap { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .source-card-icon { width: 36px; height: 36px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0; }
+  .source-card-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .source-card-name { font-size: 15px; font-weight: 500; color: var(--text-primary); }
+  .source-card-sub { font-size: 11.5px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", monospace; margin-top: 2px; }
+  .source-rows { display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; color: var(--text-secondary); }
+  .source-rows .row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border); }
+  .source-rows .row:last-child { border-bottom: none; }
+  .source-rows strong { color: var(--text-primary); font-weight: 500; font-size: 13px; }
+  .source-rows .mono-v { font-family: "DIN Alternate", "Roboto", monospace; font-size: 12px; }
+  .source-card-foot { display: flex; align-items: center; justify-content: space-between;
+    margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .source-card-foot .sync-time { font-size: 11.5px; color: var(--text-disabled); }
+
+  /* 状态点 */
+  .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .dot.ok { background: var(--color-success); }
+  .dot.run { background: var(--color-info); animation: dotpulse 1.2s infinite; }
+  .dot.warn { background: var(--color-warning); }
+  @keyframes dotpulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+  /* 进度条（同步进度） */
+  .progress { height: 6px; border-radius: 3px; background: var(--bg-secondary); overflow: hidden; margin-top: 8px; }
+  .progress > i { display: block; height: 100%; border-radius: 3px; background: var(--color-info); transition: width 400ms; }
+
+  /* 唯一性约束提示条 */
+  .constraint-note { display: flex; align-items: center; gap: 8px; font-size: 12px;
+    color: var(--color-success); background: rgba(0,180,42,.06); border: 1px solid rgba(0,180,42,.18);
+    border-radius: 6px; padding: 8px 12px; margin-bottom: 16px; }
+  .constraint-note svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+
+  /* 汇总统计条 */
+  .sync-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .sync-summary-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 16px; position: relative; overflow: hidden; }
+  .sync-summary-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--color-primary); }
+  .sync-summary-num { font-size: 24px; font-weight: 700; color: var(--text-primary); line-height: 30px; font-family: "DIN Alternate", "Roboto", inherit; }
+  .sync-summary-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* 源头维护：字段映射表 */
+  .field-map-table td, .field-map-table th { font-size: 13px; }
+  .field-map-table .src-field { font-family: "DIN Alternate", "Roboto", monospace; color: var(--text-secondary); }
+  .map-arrow { color: var(--text-disabled); }
+
+  /* 弹窗（编辑源头配置） */
+  .modal-mask { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 300;
+    opacity: 0; visibility: hidden; transition: all 200ms; }
+  .modal-mask.show { opacity: 1; visibility: visible; }
+  .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-48%);
+    width: 560px; max-width: calc(100vw - 48px); max-height: calc(100vh - 80px); overflow-y: auto;
+    background: var(--bg-card); border-radius: 12px; box-shadow: var(--shadow-3); z-index: 301;
+    opacity: 0; visibility: hidden; transition: all 200ms; }
+  .modal.show { opacity: 1; visibility: visible; transform: translate(-50%,-50%); }
+  .modal-head { display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px; border-bottom: 1px solid var(--border); }
+  .modal-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+  .modal-close { width: 28px; height: 28px; border: none; background: transparent;
+    font-size: 22px; color: var(--text-disabled); cursor: pointer; border-radius: 6px; line-height: 1; }
+  .modal-close:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .modal-body { padding: 20px 24px; }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px; border-top: 1px solid var(--border); }
+  .form-row { margin-bottom: 16px; }
+  .form-row:last-child { margin-bottom: 0; }
+  .form-label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+  .form-label .req { color: var(--color-error); margin-left: 2px; }
+  .form-control { width: 100%; height: 40px; padding: 0 12px; border: 1px solid var(--border);
+    border-radius: 6px; background: var(--bg-card); font-size: 14px; color: var(--text-primary); transition: all 200ms; }
+  .form-control:focus { border-color: var(--color-info); box-shadow: 0 0 0 2px rgba(22,93,255,.1); }
+  select.form-control { appearance: none; cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2386909C' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+  .form-hint { font-size: 11.5px; color: var(--text-disabled); margin-top: 4px; }
+  .form-readonly { height: 40px; display: flex; align-items: center; padding: 0 12px;
+    background: var(--bg-secondary); border-radius: 6px; font-size: 14px; color: var(--text-secondary); }
+
+</style>
+<style>
+  .sidebar-parent { display:flex; align-items:center; gap:12px; padding:10px 16px; margin:2px 8px; font-size:14px; color:var(--text-secondary); cursor:pointer; border-radius:6px; transition:all 200ms; }
+  .sidebar-parent:hover { background:var(--bg-secondary); color:var(--text-primary); }
+  .sidebar-parent svg.icon { width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:1.8; flex-shrink:0; }
+  .sidebar-parent .caret { margin-left:auto; width:14px; height:14px; position:relative; }
+  .sidebar-parent .caret::before { content:''; position:absolute; left:4px; top:3px; width:6px; height:6px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(-45deg); transition:transform 200ms; }
+  .sidebar-parent.open .caret::before { transform:rotate(45deg); }
+  .sidebar-children { overflow:hidden; max-height:400px; transition:max-height 250ms ease-out; }
+  .sidebar-children.collapsed { max-height:0; }
+  .sidebar-child { display:flex; align-items:center; gap:8px; padding:8px 16px 8px 44px; margin:2px 8px; font-size:13.5px; color:var(--text-secondary); border-radius:6px; cursor:pointer; transition:all 200ms; position:relative; text-decoration:none; }
+  .sidebar-child::before { content:''; position:absolute; left:26px; top:50%; width:6px; height:1px; background:var(--border); }
+  .sidebar-child:hover { background:var(--bg-secondary); color:var(--text-primary); }
+  .sidebar-parent.lvl3 { padding-left:28px; }
+  .sidebar-children.lvl4 .sidebar-child { padding-left:56px; }
+  .sidebar-children.lvl4 .sidebar-child::before { left:38px; }
+  .sidebar-children > .sidebar-child { padding-left:40px; }
+  .sidebar-children > .sidebar-child::before { left:24px; }
+</style>
+</head>
+<body>
+
+<!-- ===== 顶部导航 ===== -->
+<header class="topbar">
+  <div class="logo-wrap">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>
+    </div>
+    <div class="logo-text">身份数据平台</div>
+  </div>
+  <nav>
+    <a href="页面主页.html">主页</a>
+    <div class="nav-dropdown active">
+      <a href="m1-basic-identity.html" class="nav-dropdown-trigger" style="text-decoration:none;color:inherit">身份管理</a>
+      <div class="nav-dropdown-menu">
+        <a href="m1-basic-identity.html">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员基础身份</div>
+            <div class="menu-desc">人员进档 · 一人一ID · 多源头采集</div>
+          </div>
+        </a>
+        <a href="m2-classification.html">
+          <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员分类身份</div>
+            <div class="menu-desc">树形分类 · 标准属性 · 实例挂载</div>
+          </div>
+        </a>
+        <a href="m3-position.html">
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员岗位身份</div>
+            <div class="menu-desc">广义岗位 · 一人多身份</div>
+          </div>
+        </a>
+        <a href="m7-custom-tags.html">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员自定义标签管理</div>
+            <div class="menu-desc">自定义群组 · 灵活标注 · 便捷查询</div>
+          </div>
+        </a>
+        <a href="m4-org.html">
+          <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">组织机构体系</div>
+            <div class="menu-desc">院系树 · 强绑定身份</div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <a href="m5-identity-permission.html">身份权限管理</a>
+    <a href="m6-data-query.html">数据查询</a>
+  </nav>
+  <div class="topbar-right">
+    <span class="time-display" id="time-display"></span>
+    <div class="user-info">
+      <div class="user-avatar">管</div>
+      <span class="user-name">管理员 · 数据治理岗</span>
+    </div>
+  </div>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">系统服务</div>
+    <div class="sidebar-parent open" id="parent-dq" onclick="toggleParent('dq')">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h12"/><circle cx="18" cy="18" r="3"/></svg>
+      <span>数据查询</span><span class="caret"></span>
+    </div>
+    <div class="sidebar-children" id="children-dq">
+      <div class="sidebar-parent open lvl3" id="parent-preset" onclick="event.stopPropagation();toggleParent('preset')">
+        <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+        <span>预制数据表</span><span class="caret"></span>
+      </div>
+      <div class="sidebar-children lvl4" id="children-preset">
+        <a href="m6-data-query.html" class="sidebar-child"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="1.8" style="flex-shrink:0"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg><span>人员身份数据查询</span></a>
+        <a href="m6-data-query.html" class="sidebar-child"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="1.8" style="flex-shrink:0"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>人员主题数据查询</span></a>
+      </div>
+      <a href="m6-data-query.html" class="sidebar-child"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="1.8" style="flex-shrink:0"><path d="M4 6h16M4 12h16M4 18h12"/><circle cx="18" cy="18" r="3"/></svg><span>SQL 查询</span></a>
+    </div>
+    <a href="etl-monitor.html"><div class="sidebar-item"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7M21 3v5h-5"/></svg><span>ETL 任务执行监控</span></div></a>
+    <div class="sidebar-item active"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg><span>源头维护</span></div>
+    <div class="sidebar-item" style="opacity:0.5;cursor:not-allowed"><svg viewBox="0 0 24 24"><path d="M21 16v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><path d="M3 16v2a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4v-2"/></svg><span>数据字典</span><span class="badge">规划中</span></div>
+    <div class="sidebar-item" style="opacity:0.5;cursor:not-allowed"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6m11-11h-6M7 12H1"/></svg><span>系统配置</span><span class="badge">规划中</span></div>
+  </aside>
+  <main class="main">
+    <div class="breadcrumb"><a href="页面主页.html">平台总览</a><span class="sep">/</span><span>系统服务</span><span class="sep">/</span><span class="last">源头维护</span></div>
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">源头维护</h1>
+        <p class="page-desc">各来源人员大类对应权威来源系统的源头对接配置 · 接口/字段映射/唯一性主键</p>
+      </div>
+    </div>
+        <div class="info-box-content">
+          <strong>源头维护</strong>：维护各来源人员大类对应权威来源系统的源头对接配置——接口地址、同步策略、字段映射与唯一性主键。<strong>每个大类仅可绑定一个来源系统</strong>，新增或更换来源需提交审批。源头采集的人员明细数据以源头为准，平台侧不直接修改。
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div style="font-size:16px;font-weight:500;color:var(--text-primary);padding-left:12px;position:relative">
+          <span style="position:absolute;left:0;top:4px;width:4px;height:16px;background:var(--color-primary);border-radius:2px"></span>
+          来源人员大类 · 源头对接配置
+        </div>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm" onclick="openSourceModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/></svg>
+          新增来源大类
+        </button>
+      </div>
+
+      <div class="table-wrap" style="margin-bottom:16px">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:160px">来源人员大类</th>
+                <th style="width:90px">大类编码</th>
+                <th>权威来源系统</th>
+                <th style="width:120px">对接方式</th>
+                <th style="width:140px">唯一性主键</th>
+                <th style="width:110px">同步策略</th>
+                <th style="width:90px">状态</th>
+                <th style="width:120px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="source-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 选中大类的字段映射 -->
+      <div class="panel" id="field-map-panel" style="display:none">
+        <div class="panel-title" id="field-map-title">字段映射 <span class="sub">源头字段 → 标准主档字段</span></div>
+        <div class="table-wrap">
+          <table class="field-map-table">
+            <thead>
+              <tr>
+                <th style="width:200px">源头字段</th>
+                <th style="width:60px"></th>
+                <th>标准主档字段</th>
+                <th style="width:120px">是否主键</th>
+                <th style="width:100px">必填</th>
+              </tr>
+            </thead>
+            <tbody id="field-map-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============ 视图：变更记录 ============ -->
+    <section class="view" id="view-changes">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+  </main>
+</div>
+<div class="modal-mask" id="modal-mask" onclick="closeSourceModal()"></div>
+<div class="modal" id="source-modal">
+  <div class="modal-head">
+    <div class="modal-title" id="source-modal-title">编辑源头对接配置</div>
+    <button class="modal-close" onclick="closeSourceModal()">×</button>
+  </div>
+  <div class="modal-body">
+    <div class="constraint-note" style="margin-bottom:16px">
+      <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+      唯一性约束：每个来源人员大类只能绑定一个权威来源系统。
+    </div>
+    <div class="form-row">
+      <label class="form-label">来源人员大类 <span class="req">*</span></label>
+      <div class="form-readonly" id="f-cat-readonly"></div>
+      <input type="hidden" id="f-cat">
+    </div>
+    <div class="form-row">
+      <label class="form-label">权威来源系统 <span class="req">*</span></label>
+      <select class="form-control" id="f-system">
+        <option>人事管理系统 (HR)</option>
+        <option>教务管理系统</option>
+        <option>研究生管理系统</option>
+        <option>协同人员管理服务平台</option>
+        <option>校友管理系统</option>
+        <option>访客系统</option>
+      </select>
+      <div class="form-hint">该大类下全部自然人主档均以此系统为权威来源。</div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">对接方式 <span class="req">*</span></label>
+      <select class="form-control" id="f-protocol">
+        <option>REST API（T+1 增量）</option>
+        <option>数据库视图（实时读取）</option>
+        <option>Kafka 消息（准实时）</option>
+        <option>文件导入（Excel/CSV）</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">接口地址 / 数据源</label>
+      <input class="form-control" id="f-endpoint" placeholder="https://hr.sysu.edu.cn/api/v1/persons">
+    </div>
+    <div class="form-row">
+      <label class="form-label">同步策略 <span class="req">*</span></label>
+      <select class="form-control" id="f-sync">
+        <option>T+1 凌晨全量</option>
+        <option>T+1 凌晨增量</option>
+        <option>准实时（30 分钟）</option>
+        <option>实时</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">唯一性主键 <span class="req">*</span></label>
+      <select class="form-control" id="f-pk">
+        <option>身份证件号</option>
+        <option>身份证件号 + 证件类型</option>
+        <option>学号 / 工号</option>
+        <option>源系统人员ID</option>
+      </select>
+      <div class="form-hint">用于自然人去重归集，生成全局唯一 ID (NP 开头)。</div>
+    </div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-secondary btn-sm" onclick="closeSourceModal()">取消</button>
+    <button class="btn btn-primary btn-sm" onclick="saveSourceModal()">保存配置</button>
+  </div>
+</div>
+<script>
+  function tick(){const d=new Date(),p=n=>String(n).padStart(2,'0');const el=document.getElementById('time-display');if(el)el.textContent=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;}
+  setInterval(tick,1000);tick();
+  function toast(msg){let t=document.getElementById('app-toast');if(!t){t=document.createElement('div');t.id='app-toast';t.className='toast';document.body.appendChild(t);}t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2600);}
+  function toggleParent(key){const p=document.getElementById('parent-'+key),c=document.getElementById('children-'+key);if(!p||!c)return;p.classList.toggle('open');c.classList.toggle('collapsed');}
+  window.toggleParent=toggleParent;
+
+  const SOURCE_CATEGORIES = [
+    {
+      cat: '学生', code: 'CAT-STU', system: '教务系统 / 研究生系统', protocol: 'REST API',
+      endpoint: 'https://edu.sysu.edu.cn/api/v1/students', pk: '学号',
+      sync: 'T+1 凌晨增量', total: 67428, today: 12, last: '2026-05-12 02:30', status: 'ok',
+      iconBg: 'rgba(15,177,123,.1)', iconColor: '#0FB17B',
+      icon: '<svg viewBox="0 0 24 24"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg>',
+      mapping: [
+        { src: 'xh', std: '学号/工号', pk: true, req: true },
+        { src: 'xm', std: '姓名', pk: false, req: true },
+        { src: 'sfzjh', std: '身份证件号', pk: true, req: true },
+        { src: 'xbm', std: '性别', pk: false, req: true },
+        { src: 'mzm', std: '民族', pk: false, req: false },
+      ]
+    },
+    {
+      cat: '教职工', code: 'CAT-STAFF', system: '人事管理系统 (HR)', protocol: 'REST API',
+      endpoint: 'https://hr.sysu.edu.cn/api/v1/employees', pk: '身份证件号',
+      sync: 'T+1 凌晨全量', total: 8956, today: 3, last: '2026-05-12 02:15', status: 'ok',
+      iconBg: 'rgba(56,126,245,.1)', iconColor: '#387EF5',
+      icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>',
+      mapping: [
+        { src: 'gh', std: '学号/工号', pk: true, req: true },
+        { src: 'name', std: '姓名', pk: false, req: true },
+        { src: 'id_card', std: '身份证件号', pk: true, req: true },
+        { src: 'sex', std: '性别', pk: false, req: true },
+        { src: 'nation', std: '民族', pk: false, req: false },
+      ]
+    },
+    {
+      cat: '外协及服务人员', code: 'CAT-SRV', system: '协同人员管理服务平台', protocol: '数据库视图',
+      endpoint: 'jdbc:co-mgmt/view_service_persons', pk: '源系统人员ID',
+      sync: '准实时（30 分钟）', total: 12384, today: 5, last: '2026-05-12 12:00', status: 'ok',
+      iconBg: 'rgba(246,152,13,.1)', iconColor: '#F6980D',
+      icon: '<svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6 3 3 6-6a4 4 0 0 0 5.4-5.4l-2 2-2-2 2-2z"/></svg>',
+      mapping: [
+        { src: 'person_id', std: '源系统人员ID', pk: true, req: true },
+        { src: 'real_name', std: '姓名', pk: false, req: true },
+        { src: 'cert_no', std: '身份证件号', pk: true, req: true },
+        { src: 'gender', std: '性别', pk: false, req: false },
+      ]
+    },
+    {
+      cat: '外部人员', code: 'CAT-EXT', system: '访客系统', protocol: 'Kafka 消息',
+      endpoint: 'kafka://visitor.sysu/topic.persons', pk: '身份证件号 + 证件类型',
+      sync: '准实时（30 分钟）', total: 5515, today: 2, last: '2026-05-12 11:48', status: 'warn',
+      iconBg: 'rgba(162,81,246,.1)', iconColor: '#A251F6',
+      icon: '<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-3 3-2-2"/></svg>',
+      mapping: [
+        { src: 'cert_no', std: '身份证件号', pk: true, req: true },
+        { src: 'cert_type', std: '证件类型', pk: true, req: true },
+        { src: 'visitor_name', std: '姓名', pk: false, req: true },
+        { src: 'country', std: '国籍', pk: false, req: false },
+      ]
+    },
+    {
+      cat: '校友', code: 'CAT-ALU', system: '校友管理系统', protocol: 'REST API',
+      endpoint: 'https://alumni.sysu.edu.cn/api/persons', pk: '身份证件号',
+      sync: 'T+1 凌晨增量', total: 38200, today: 1, last: '2026-05-12 03:00', status: 'ok',
+      iconBg: 'rgba(22,93,255,.1)', iconColor: '#165DFF',
+      icon: '<svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4 2 7L12 17l-6.5 3 2-7L2 9h7z"/></svg>',
+      mapping: [
+        { src: 'idcard', std: '身份证件号', pk: true, req: true },
+        { src: 'alumni_name', std: '姓名', pk: false, req: true },
+        { src: 'grad_year', std: '毕业年份', pk: false, req: false },
+      ]
+    },
+  ];
+
+  let selectedCatCode = null;
+  function renderSourceTable() {
+    document.getElementById('source-tbody').innerHTML = SOURCE_CATEGORIES.map(c => `
+      <tr style="cursor:pointer" onclick="showFieldMap('${c.code}')">
+        <td><strong>${c.cat}</strong></td>
+        <td class="mono">${c.code}</td>
+        <td>${c.system}</td>
+        <td>${c.protocol}</td>
+        <td style="font-size:12.5px">${c.pk}</td>
+        <td style="font-size:12.5px">${c.sync}</td>
+        <td>${c.status === 'ok' ? '<span class="tag tag-green">已对接</span>' : '<span class="tag tag-orange">待核查</span>'}</td>
+        <td>
+          <button class="btn btn-text btn-sm" onclick="event.stopPropagation();openSourceModal('${c.code}')">编辑</button>
+          <button class="btn btn-text btn-sm" onclick="event.stopPropagation();showFieldMap('${c.code}')">字段映射</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+  function showFieldMap(code) {
+    const c = SOURCE_CATEGORIES.find(x => x.code === code);
+    if (!c) return;
+    selectedCatCode = code;
+    document.getElementById('field-map-panel').style.display = 'block';
+    document.getElementById('field-map-title').innerHTML = `字段映射 · ${c.cat} <span class="sub">${c.system} 源头字段 → 标准主档字段</span>`;
+    document.getElementById('field-map-body').innerHTML = c.mapping.map(m => `
+      <tr>
+        <td class="src-field">${m.src}</td>
+        <td class="map-arrow">→</td>
+        <td><strong>${m.std}</strong></td>
+        <td>${m.pk ? '<span class="tag tag-blue">主键</span>' : '<span style="color:var(--text-disabled)">—</span>'}</td>
+        <td>${m.req ? '<span class="tag tag-green">必填</span>' : '<span class="tag tag-gray">选填</span>'}</td>
+      </tr>
+    `).join('');
+    document.getElementById('field-map-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ===== 源头配置弹窗 =====
+  function openSourceModal(code) {
+    const isNew = !code;
+    const c = isNew ? null : SOURCE_CATEGORIES.find(x => x.code === code);
+    document.getElementById('source-modal-title').textContent = isNew ? '新增来源人员大类' : '编辑源头对接配置 · ' + c.cat;
+    document.getElementById('f-cat-readonly').textContent = isNew ? '（请在下方填写新大类名称）' : c.cat;
+    document.getElementById('f-cat').value = isNew ? '' : c.code;
+    if (!isNew) {
+      const setSel = (id, val) => { const el = document.getElementById(id); [...el.options].forEach(o => { if (o.value === val || o.text === val || o.text.startsWith(val)) el.value = o.value; }); };
+      document.getElementById('f-endpoint').value = c.endpoint;
+      setSel('f-pk', c.pk);
+    } else {
+      document.getElementById('f-cat-readonly').innerHTML = '<input class="form-control" id="f-cat-new" placeholder="如：进修人员" style="height:auto;background:transparent;border:none;padding:0">';
+      document.getElementById('f-endpoint').value = '';
+    }
+    document.getElementById('modal-mask').classList.add('show');
+    document.getElementById('source-modal').classList.add('show');
+  }
+  function closeSourceModal() {
+    document.getElementById('modal-mask').classList.remove('show');
+    document.getElementById('source-modal').classList.remove('show');
+  }
+  function saveSourceModal() {
+    closeSourceModal();
+    // demo：仅提示，不持久化
+    renderSourceTable();
+  }
+
+  renderSourceTable();
+</script>
+</body>
+</html>

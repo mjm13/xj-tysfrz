@@ -1,0 +1,2578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据查询 · 高校综合身份数据平台</title>
+<style>
+  :root {
+    --color-primary: #2563EB;
+    --color-primary-secondary: #478EF7;
+    --color-success: #00B42A;
+    --color-warning: #FF7D00;
+    --color-error: #F53F3F;
+    --color-info: #165DFF;
+    --text-primary: #1D2129;
+    --text-secondary: #4E5969;
+    --text-disabled: #86909C;
+    --bg-page: #FAFAFB;
+    --bg-card: #FFFFFF;
+    --bg-secondary: #F2F3F5;
+    --bg-code: #1E1E2E;
+    --border: #E5E6EB;
+    --chart-1: #387EF5;
+    --chart-2: #0FB17B;
+    --chart-3: #F6980D;
+    --chart-4: #A251F6;
+    --shadow-1: 0 1px 2px 0 rgba(0,0,0,.03), 0 1px 6px -1px rgba(0,0,0,.02);
+    --shadow-2: 0 4px 12px 0 rgba(0,0,0,.05), 0 2px 4px 0 rgba(0,0,0,.03);
+    --shadow-3: 0 8px 24px 0 rgba(0,0,0,.08), 0 4px 8px 0 rgba(0,0,0,.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg-page); }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+    color: var(--text-primary); font-size: 14px; line-height: 22px;
+  }
+  a { text-decoration: none; color: inherit; }
+  button, input, select, textarea { font: inherit; color: inherit; outline: none; }
+
+  /* ===== 顶部导航 ===== */
+  .topbar { height: 64px; background: var(--bg-card); box-shadow: var(--shadow-1); display: flex; align-items: center; padding: 0 24px; position: sticky; top: 0; z-index: 100; }
+  .logo-wrap { display: flex; align-items: center; gap: 12px; margin-right: 32px; }
+  .logo-mark { width: 32px; height: 32px; border-radius: 6px; background: var(--color-primary); display: flex; align-items: center; justify-content: center; }
+  .logo-mark svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; }
+  .logo-text { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+  .topbar nav { display: flex; gap: 32px; flex: 1; height: 100%; align-items: center; }
+  .topbar nav a { color: var(--text-secondary); font-size: 14px; height: 100%; display: flex; align-items: center; position: relative; transition: color 200ms; }
+  .topbar nav a:hover { color: var(--color-primary); }
+  .topbar nav a.active { color: var(--color-primary); font-weight: 500; }
+  .topbar nav a.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--color-primary); }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .time-display { font-size: 12px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", monospace; }
+  .user-info { display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border); }
+  .user-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; }
+  .user-name { font-size: 14px; color: var(--text-secondary); }
+
+  /* ===== 主体布局 ===== */
+  .layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 64px); }
+
+  /* 左侧导航 */
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 16px 0; }
+  .sidebar-section { padding: 8px 16px; font-size: 12px; color: var(--text-disabled); letter-spacing: 1px; }
+  .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; margin: 2px 8px; font-size: 14px; color: var(--text-secondary); cursor: pointer; border-radius: 6px; transition: all 200ms; }
+  .sidebar-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; }
+  .sidebar-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .sidebar-item.active { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); font-weight: 500; }
+  .sidebar-item .badge { margin-left: auto; font-size: 11px; padding: 1px 6px; border-radius: 3px; background: var(--bg-secondary); color: var(--text-disabled); font-weight: 400; }
+
+  /* 一级 - 可展开父菜单 */
+  .sidebar-parent {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px; margin: 2px 8px;
+    font-size: 14px; color: var(--text-secondary);
+    border-radius: 6px; cursor: pointer;
+    user-select: none; transition: all 200ms;
+  }
+  .sidebar-parent:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .sidebar-parent.has-active { color: var(--text-primary); font-weight: 500; }
+  .sidebar-parent svg.icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; }
+  .sidebar-parent .caret {
+    margin-left: auto;
+    width: 14px; height: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform 200ms;
+    color: var(--text-disabled);
+  }
+  .sidebar-parent .caret::before {
+    content: ''; width: 6px; height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(-45deg);
+  }
+  .sidebar-parent.open .caret { transform: rotate(90deg); }
+
+  /* 二级菜单容器 */
+  .sidebar-children {
+    overflow: hidden;
+    max-height: 400px;
+    transition: max-height 250ms ease-out;
+  }
+  .sidebar-children.collapsed { max-height: 0; }
+  /* 二级 数据查询 下的三级（预制数据表 / SQL 查询）缩进 */
+  .sidebar-parent.lvl3 { padding-left: 28px; }
+  .sidebar-children.lvl4 .sidebar-child { padding-left: 56px; }
+  .sidebar-children.lvl4 .sidebar-child::before { left: 38px; }
+  .sidebar-children > .sidebar-child { padding-left: 40px; }
+  .sidebar-children > .sidebar-child::before { left: 24px; }
+  .sidebar-child {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px 8px 44px;
+    margin: 2px 8px;
+    font-size: 13.5px; color: var(--text-secondary);
+    border-radius: 6px; cursor: pointer; transition: all 200ms;
+    position: relative;
+  }
+  .sidebar-child::before {
+    content: ''; position: absolute; left: 26px; top: 50%;
+    width: 6px; height: 1px; background: var(--border);
+  }
+  .sidebar-child:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .sidebar-child.active { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); font-weight: 500; }
+  .sidebar-child.active::before { background: var(--color-primary); }
+  .sidebar-child .badge { margin-left: auto; font-size: 11px; padding: 1px 6px; border-radius: 3px; background: var(--bg-secondary); color: var(--text-disabled); font-weight: 400; }
+
+  /* 主区域 */
+  .main { padding: 16px 24px 32px; min-width: 0; }
+  .breadcrumb { font-size: 14px; color: var(--text-disabled); margin-bottom: 12px; }
+  .breadcrumb a { color: var(--text-disabled); }
+  .breadcrumb a:hover { color: var(--color-primary); }
+  .breadcrumb .sep { margin: 0 8px; }
+  .breadcrumb .last { color: var(--text-primary); }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .page-title { font-size: 20px; font-weight: 600; color: var(--text-primary); line-height: 28px; margin-bottom: 4px; }
+  .page-desc { font-size: 14px; color: var(--text-secondary); }
+
+  /* ===== 视图切换 ===== */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ===== 面板 ===== */
+  .panel { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); padding: 16px; margin-bottom: 16px; }
+
+  /* ===== 筛选条 ===== */
+  .filter-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-input { height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); font-size: 14px; color: var(--text-primary); transition: all 200ms; min-width: 200px; }
+  .filter-input:focus { border-color: var(--color-info); box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1); }
+  .filter-input.search { padding-left: 36px; min-width: 240px; }
+  .search-wrap { position: relative; }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-disabled); pointer-events: none; }
+  .filter-select { height: 40px; padding: 0 32px 0 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card) url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2386909C' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") right 12px center no-repeat; font-size: 14px; cursor: pointer; appearance: none; min-width: 140px; }
+  .filter-spacer { flex: 1; }
+
+  /* 按钮 */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 40px; padding: 0 16px; border-radius: 6px; font-size: 14px; font-weight: 500; border: none; cursor: pointer; transition: all 200ms; }
+  .btn-primary { background: var(--color-primary); color: white; }
+  .btn-primary:hover { background: #1d4fc7; }
+  .btn-secondary { background: var(--bg-card); color: var(--color-info); border: 1px solid var(--color-info); }
+  .btn-secondary:hover { background: rgba(22, 93, 255, 0.04); }
+  .btn-text { background: transparent; color: var(--color-info); padding: 0 8px; height: 32px; }
+  .btn-text:hover { color: var(--color-primary); }
+  .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+
+  /* ===== 表格 ===== */
+  .table-wrap { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead { background: var(--bg-secondary); }
+  thead th { height: 48px; padding: 0 16px; text-align: left; font-weight: 500; color: var(--text-secondary); white-space: nowrap; font-size: 14px; }
+  tbody td { height: 48px; padding: 0 16px; color: var(--text-primary); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { transition: background 200ms; }
+  tbody tr:hover { background: var(--bg-secondary); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono { font-family: "DIN Alternate", "Roboto", inherit; color: var(--text-secondary); }
+
+  /* 标签 */
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 12px; line-height: 20px; font-weight: 400; }
+  .tag-blue { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); }
+  .tag-green { background: rgba(0, 180, 42, 0.08); color: var(--color-success); }
+  .tag-orange { background: rgba(255, 125, 0, 0.08); color: var(--color-warning); }
+  .tag-purple { background: rgba(162, 81, 246, 0.08); color: var(--chart-4); }
+  .tag-gray { background: var(--bg-secondary); color: var(--text-secondary); }
+
+  /* 分页 */
+  .pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px; background: var(--bg-card); border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+  .page-controls { display: flex; gap: 8px; align-items: center; }
+  .page-btn { min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-secondary); cursor: pointer; font-size: 14px; transition: all 200ms; }
+  .page-btn:hover:not(.disabled) { border-color: var(--color-primary); color: var(--color-primary); }
+  .page-btn.active { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+  .page-btn.disabled { color: var(--text-disabled); cursor: not-allowed; }
+
+  /* ===== 预制数据表选择卡片 ===== */
+  .table-group { margin-bottom: 20px; }
+  .table-group-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px; padding-left: 2px;
+  }
+  .table-group-title {
+    font-size: 14px; font-weight: 500; color: var(--text-primary);
+    padding-left: 10px; position: relative;
+  }
+  .table-group-title::before {
+    content: ''; position: absolute; left: 0; top: 4px;
+    width: 3px; height: 14px; background: var(--color-primary); border-radius: 2px;
+  }
+  .table-group-sub {
+    font-size: 12px; color: var(--text-disabled);
+  }
+  .table-group-tag {
+    font-size: 11px; padding: 1px 6px; border-radius: 3px;
+    background: rgba(37, 99, 235, 0.08); color: var(--color-primary);
+    font-weight: 500;
+  }
+  .table-group-tag.theme {
+    background: rgba(162, 81, 246, 0.08); color: var(--chart-4, #A251F6);
+  }
+  .table-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 0; }
+  .table-selector.theme-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .table-card.theme {
+    background: linear-gradient(135deg, rgba(162, 81, 246, 0.03), rgba(255,255,255,0));
+  }
+  .table-card.theme .table-card-icon { background: rgba(162, 81, 246, 0.08); }
+  .table-card.theme .table-card-icon svg { stroke: var(--chart-4, #A251F6); }
+  .table-card.theme .table-card-count { color: var(--chart-4, #A251F6); }
+  .table-card.theme.selected { border-color: var(--chart-4, #A251F6); box-shadow: 0 0 0 1px var(--chart-4, #A251F6); }
+
+  /* ============ 主题数据查询 - 主从页 ============ */
+  .theme-intro {
+    background: linear-gradient(135deg, rgba(162, 81, 246, 0.04), rgba(255,255,255,0));
+    border: 1px solid rgba(162, 81, 246, 0.16);
+    border-radius: 8px; padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .theme-intro-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: rgba(162, 81, 246, 0.1); color: #A251F6;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .theme-intro-icon svg { width: 18px; height: 18px; }
+  .theme-intro-content {
+    flex: 1; font-size: 13px; color: var(--text-secondary); line-height: 20px;
+  }
+  .theme-intro-content strong { color: var(--text-primary); font-weight: 500; }
+
+  .master-detail {
+    display: grid; grid-template-columns: 360px 1fr; gap: 16px;
+    min-height: 720px;
+  }
+
+  /* 左侧人员列表 */
+  .md-master {
+    background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1);
+    display: flex; flex-direction: column; overflow: hidden;
+    height: 720px;
+  }
+  .md-master-head {
+    padding: 12px 14px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .md-filter-row {
+    display: flex; gap: 6px; margin-bottom: 8px;
+  }
+  .md-filter-row .filter-select {
+    height: 32px; font-size: 13px; min-width: 0;
+  }
+  .md-result-info {
+    font-size: 12px; color: var(--text-secondary);
+    display: flex; justify-content: space-between;
+  }
+  .md-result-info strong { color: var(--color-primary); font-family: "DIN Alternate", "Roboto", inherit; font-weight: 600; }
+
+  .md-master-list {
+    flex: 1; overflow-y: auto; padding: 6px 8px 12px;
+  }
+  .md-person-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; margin: 2px 0;
+    border-radius: 6px; cursor: pointer; transition: all 150ms;
+    position: relative;
+  }
+  .md-person-item:hover { background: var(--bg-page); }
+  .md-person-item.selected {
+    background: rgba(162, 81, 246, 0.06);
+  }
+  .md-person-item.selected::before {
+    content: ''; position: absolute; left: 0; top: 6px; bottom: 6px;
+    width: 3px; background: #A251F6; border-radius: 2px;
+  }
+  .md-person-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(37, 99, 235, 0.08); color: var(--color-primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 500; flex-shrink: 0;
+  }
+  .md-person-info { flex: 1; min-width: 0; }
+  .md-person-name { font-size: 13.5px; font-weight: 500; color: var(--text-primary); }
+  .md-person-meta {
+    font-size: 11px; color: var(--text-disabled); margin-top: 2px;
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+  .md-person-tags {
+    display: flex; gap: 3px; flex-wrap: wrap; margin-top: 4px;
+  }
+  .md-person-tags .tag {
+    font-size: 10px; padding: 0 5px; line-height: 16px;
+  }
+
+  /* 右侧详情 */
+  .md-detail {
+    background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1);
+    display: flex; flex-direction: column;
+    height: 720px; overflow: hidden;
+  }
+  .md-detail-head {
+    padding: 18px 24px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .md-detail-head.empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    flex: 1; padding: 32px; border: none;
+    color: var(--text-disabled);
+  }
+  .md-detail-name {
+    font-size: 18px; font-weight: 600; color: var(--text-primary);
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .md-detail-uid {
+    font-family: "DIN Alternate", "Roboto", inherit;
+    font-size: 13px; color: var(--text-disabled); font-weight: 400;
+    padding: 2px 8px; background: var(--bg-secondary); border-radius: 4px;
+  }
+  .md-detail-summary {
+    font-size: 13px; color: var(--text-secondary); margin-top: 6px;
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .md-detail-summary span strong {
+    color: var(--text-primary); font-weight: 500; margin-left: 4px;
+  }
+
+  .md-identity-tabs {
+    display: flex; padding: 0 24px;
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
+    background: var(--bg-page);
+  }
+  .md-identity-tab {
+    padding: 12px 16px; font-size: 13.5px;
+    color: var(--text-secondary); cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 150ms;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .md-identity-tab:hover { color: var(--text-primary); }
+  .md-identity-tab.active {
+    color: #A251F6; font-weight: 500;
+    border-bottom-color: #A251F6;
+  }
+  .md-identity-tab .tab-icon {
+    width: 14px; height: 14px; flex-shrink: 0;
+  }
+  .md-identity-tab .tab-icon svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .md-identity-tab.active .tab-icon { color: #A251F6; }
+
+  .md-detail-body {
+    flex: 1; overflow-y: auto; padding: 20px 24px;
+  }
+
+  /* 字段分区 */
+  .field-section {
+    margin-bottom: 20px;
+  }
+  .field-section-title {
+    font-size: 13px; font-weight: 500; color: var(--text-primary);
+    padding: 6px 0 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .field-section-title::before {
+    content: ''; width: 3px; height: 13px;
+    background: #A251F6; border-radius: 2px;
+  }
+  .field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px 24px;
+  }
+  .field-item {
+    display: flex; align-items: baseline; gap: 12px;
+    min-height: 26px;
+  }
+  .field-label {
+    font-size: 12.5px; color: var(--text-disabled);
+    flex-shrink: 0; min-width: 110px;
+  }
+  .field-value {
+    font-size: 13.5px; color: var(--text-primary);
+    flex: 1; word-break: break-all;
+  }
+  .field-value.mono {
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+  .field-value.empty {
+    color: var(--text-disabled); font-style: italic;
+  }
+  .field-value .tag {
+    font-size: 11.5px; padding: 1px 8px; line-height: 18px;
+  }
+
+  /* 字段配置弹窗 */
+  .fc-tabs {
+    display: flex; gap: 4px; padding: 4px;
+    background: var(--bg-page); border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  .fc-tab {
+    flex: 1; text-align: center;
+    padding: 10px; border-radius: 6px;
+    font-size: 13px; cursor: pointer; transition: all 150ms;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  .fc-tab:hover { background: rgba(255,255,255,0.5); }
+  .fc-tab.active {
+    background: var(--bg-card);
+    color: var(--color-primary); font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .fc-tab-meta {
+    font-size: 11px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", inherit;
+    font-weight: 400;
+  }
+  .fc-tab.active .fc-tab-meta { color: var(--color-primary); }
+
+  .fc-section { margin-bottom: 20px; }
+  .fc-section-title {
+    font-size: 13px; font-weight: 500; color: var(--text-primary);
+    margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+  }
+  .fc-section-title::before {
+    content: ''; width: 3px; height: 13px;
+    background: var(--color-primary); border-radius: 2px;
+  }
+  .fc-section-tools {
+    margin-left: auto; display: flex; gap: 8px;
+  }
+  .fc-section-tools a {
+    font-size: 11.5px; color: var(--color-info);
+    cursor: pointer;
+  }
+  .fc-fields {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 6px 16px;
+    padding: 10px 12px;
+    background: var(--bg-page); border-radius: 6px;
+  }
+  .fc-field {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12.5px; cursor: pointer; user-select: none;
+    padding: 3px 0;
+    color: var(--text-primary);
+  }
+  .fc-field input { accent-color: var(--color-primary); margin: 0; }
+  .fc-field.default-on { color: var(--text-primary); }
+
+  /* 弹窗抽屉 */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    display: none; align-items: stretch; justify-content: flex-end;
+    z-index: 1000; opacity: 0; transition: opacity 200ms;
+  }
+  .modal-mask.show { display: flex; opacity: 1; }
+  .modal-drawer {
+    width: 680px; max-width: 100%;
+    background: var(--bg-card); display: flex; flex-direction: column;
+    box-shadow: -8px 0 24px rgba(0,0,0,0.1);
+    transform: translateX(100%); transition: transform 300ms cubic-bezier(.2,.8,.2,1);
+  }
+  .modal-mask.show .modal-drawer { transform: translateX(0); }
+  .modal-head {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .modal-close {
+    width: 32px; height: 32px; border: none; background: transparent;
+    border-radius: 6px; cursor: pointer; font-size: 22px; color: var(--text-disabled);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .modal-body { flex: 1; overflow-y: auto; padding: 24px; }
+  .modal-foot {
+    padding: 16px 24px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 12px;
+  }
+  .table-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; cursor: pointer; transition: all 200ms; }
+  .table-card:hover { border-color: var(--color-primary); box-shadow: var(--shadow-2); }
+  .table-card.selected { border-color: var(--color-primary); background: rgba(37, 99, 235, 0.03); box-shadow: 0 0 0 1px var(--color-primary); }
+  .table-card-icon { width: 36px; height: 36px; border-radius: 6px; background: rgba(37, 99, 235, 0.08); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .table-card-icon svg { width: 18px; height: 18px; stroke: var(--color-primary); fill: none; stroke-width: 1.8; }
+  .table-card-title { font-size: 14px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; }
+  .table-card-desc { font-size: 12px; color: var(--text-disabled); }
+  .table-card-count { margin-top: 8px; font-size: 12px; color: var(--color-primary); }
+  .table-card-count strong { font-size: 18px; font-weight: 600; font-family: "DIN Alternate", "Roboto", inherit; }
+
+  /* ===== SQL 编辑器 ===== */
+  /* ============ SQL查询 - 左清单+右编辑器 ============ */
+  .sql-master-detail {
+    display: grid; grid-template-columns: 320px 1fr;
+    gap: 16px; min-height: 720px;
+  }
+  .sql-table-list {
+    background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1);
+    display: flex; flex-direction: column; overflow: hidden;
+    height: 720px;
+  }
+  .sql-tl-head {
+    padding: 12px 14px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .sql-tl-summary {
+    margin-top: 8px;
+    font-size: 12px; color: var(--text-secondary);
+    display: flex; justify-content: space-between;
+  }
+  .sql-tl-summary strong { color: var(--color-primary); font-family: "DIN Alternate", "Roboto", inherit; font-weight: 600; }
+  .sql-tl-body {
+    flex: 1; overflow-y: auto; padding: 4px 0 12px;
+  }
+  .sql-tl-group {
+    margin-bottom: 4px;
+  }
+  .sql-tl-group-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px;
+    font-size: 12px; color: var(--text-secondary);
+    font-weight: 500; cursor: pointer; user-select: none;
+    transition: background 150ms;
+  }
+  .sql-tl-group-head:hover { background: var(--bg-page); }
+  .sql-tl-group-head .caret {
+    width: 12px; height: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform 200ms;
+    color: var(--text-disabled);
+  }
+  .sql-tl-group-head .caret::before {
+    content: ''; width: 5px; height: 5px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+  }
+  .sql-tl-group.collapsed .caret { transform: rotate(-90deg); }
+  .sql-tl-group-name { flex: 1; }
+  .sql-tl-group-count {
+    font-size: 10.5px; color: var(--text-disabled);
+    font-family: "DIN Alternate", "Roboto", inherit;
+    background: var(--bg-secondary); padding: 0 6px; border-radius: 8px;
+    line-height: 16px;
+  }
+  .sql-tl-items {
+    overflow: hidden;
+    max-height: 2000px;
+    transition: max-height 250ms ease-out;
+  }
+  .sql-tl-group.collapsed .sql-tl-items { max-height: 0; }
+  .sql-tl-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 14px 7px 30px;
+    margin: 1px 6px;
+    font-size: 13px; color: var(--text-secondary);
+    border-radius: 4px; cursor: pointer; transition: all 120ms;
+    position: relative;
+  }
+  .sql-tl-item::before {
+    content: ''; position: absolute; left: 18px; top: 50%;
+    width: 6px; height: 1px; background: var(--border);
+  }
+  .sql-tl-item:hover { background: var(--bg-page); color: var(--text-primary); }
+  .sql-tl-item.selected {
+    background: rgba(37, 99, 235, 0.08); color: var(--color-primary);
+    font-weight: 500;
+  }
+  .sql-tl-item.selected::before { background: var(--color-primary); }
+  .sql-tl-item .icon {
+    width: 12px; height: 12px; flex-shrink: 0;
+    color: var(--text-disabled);
+  }
+  .sql-tl-item.selected .icon { color: var(--color-primary); }
+  .sql-tl-item .icon svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+  .sql-main { display: flex; flex-direction: column; }
+
+  .sql-section { margin-bottom: 16px; }
+  .sql-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #282840; border-radius: 8px 8px 0 0; border: 1px solid #3A3A5A; border-bottom: none; }
+  .sql-toolbar-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .sql-toolbar-dot.red { background: #FF5F57; }
+  .sql-toolbar-dot.yellow { background: #FFBD2E; }
+  .sql-toolbar-dot.green { background: #28CA41; }
+  .sql-toolbar-label { margin-left: 12px; font-size: 12px; color: #8B8BA0; font-family: "DIN Alternate", "Roboto", monospace; }
+  .sql-toolbar-spacer { flex: 1; }
+  .sql-editor-wrap { position: relative; border: 1px solid #3A3A5A; border-top: none; border-radius: 0 0 8px 8px; overflow: hidden; }
+  .sql-editor {
+    width: 100%; min-height: 200px; padding: 16px;
+    background: var(--bg-code); color: #CDD6F4;
+    font-family: "Cascadia Code", "Fira Code", "JetBrains Mono", "Consolas", "Source Code Pro", monospace;
+    font-size: 14px; line-height: 24px; border: none; resize: vertical;
+    tab-size: 2;
+  }
+  .sql-editor::placeholder { color: #6C6C8A; }
+  .sql-editor:focus { outline: none; }
+
+  .sql-actions { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .sql-status { font-size: 13px; color: var(--text-secondary); }
+  .sql-status.success { color: var(--color-success); }
+  .sql-status.error { color: var(--color-error); }
+  .sql-sample { margin-top: 8px; }
+  .sql-sample-tip { font-size: 12px; color: var(--text-disabled); margin-bottom: 6px; }
+  .sql-sample-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .sql-sample-chip { font-size: 12px; padding: 4px 10px; border-radius: 4px; background: var(--bg-secondary); color: var(--color-info); cursor: pointer; border: 1px solid transparent; transition: all 200ms; font-family: monospace; }
+  .sql-sample-chip:hover { border-color: var(--color-info); background: rgba(22, 93, 255, 0.04); }
+
+  /* ===== 结果信息条 ===== */
+  .result-info { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 8px 16px; background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); }
+  .result-count { font-size: 14px; color: var(--text-secondary); }
+  .result-count strong { color: var(--text-primary); font-weight: 600; }
+  .result-meta { font-size: 12px; color: var(--text-disabled); }
+
+  /* 空状态 */
+  .empty-state { text-align: center; padding: 64px 24px; color: var(--text-disabled); }
+  .empty-state svg { width: 64px; height: 64px; stroke: var(--border); fill: none; stroke-width: 1.5; margin-bottom: 16px; }
+  .empty-state-title { font-size: 16px; color: var(--text-secondary); margin-bottom: 8px; }
+  .empty-state-desc { font-size: 14px; }
+
+  /* ===== 响应式 ===== */
+  @media (max-width: 1100px) {
+    .table-selector { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .table-selector { grid-template-columns: 1fr; }
+    .filter-bar { flex-direction: column; align-items: stretch; }
+    .filter-input, .filter-select { min-width: 0; width: 100%; }
+  }
+
+  /* ===== 顶导下拉菜单 ===== */
+  .nav-dropdown {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .nav-dropdown-trigger {
+    color: var(--text-secondary);
+    font-size: 14px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: color 200ms;
+  }
+  .nav-dropdown-trigger::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    margin-left: 4px;
+    margin-bottom: 3px;
+    transition: transform 200ms;
+    opacity: 0.6;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger {
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 16px;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger {
+    color: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger::after {
+    transform: rotate(-135deg);
+    margin-bottom: -3px;
+    opacity: 1;
+  }
+  .nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-2);
+    min-width: 220px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 200ms;
+    z-index: 200;
+  }
+  .nav-dropdown:hover .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+  .nav-dropdown-menu a {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    height: auto !important;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 150ms;
+  }
+  .nav-dropdown-menu a::after { display: none !important; }
+  .nav-dropdown-menu a:hover {
+    background: rgba(37, 99, 235, 0.06);
+    color: var(--color-primary);
+  }
+  .nav-dropdown-menu a svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+  .nav-dropdown-menu a:hover svg { opacity: 1; }
+  .nav-dropdown-menu .menu-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .nav-dropdown-menu .menu-label {
+    font-size: 14px;
+    line-height: 18px;
+  }
+  .nav-dropdown-menu .menu-desc {
+    font-size: 11px;
+    color: var(--text-disabled);
+    margin-top: 2px;
+    line-height: 14px;
+  }
+  .nav-dropdown-menu a:hover .menu-desc { color: var(--color-primary-secondary); }
+  .nav-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 0;
+    right: 0;
+    height: 8px;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ===== 顶部导航 ===== -->
+<header class="topbar">
+  <div class="logo-wrap">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>
+    </div>
+    <div class="logo-text">身份数据平台</div>
+  </div>
+  <nav>
+    <a href="页面主页.html">主页</a>
+    <div class="nav-dropdown">
+      <a href="m1-basic-identity.html" class="nav-dropdown-trigger" style="text-decoration:none;color:inherit">身份管理</a>
+      <div class="nav-dropdown-menu">
+        <a href="m1-basic-identity.html">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员基础身份</div>
+            <div class="menu-desc">人员进档 · 一人一ID · 多源头采集</div>
+          </div>
+        </a>
+        <a href="m2-classification.html">
+          <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员分类身份</div>
+            <div class="menu-desc">树形分类 · 标准属性 · 实例挂载</div>
+          </div>
+        </a>
+        <a href="m3-position.html">
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员岗位身份</div>
+            <div class="menu-desc">广义岗位 · 一人多身份</div>
+          </div>
+        </a>
+        <a href="m7-custom-tags.html">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员自定义标签管理</div>
+            <div class="menu-desc">自定义群组 · 灵活标注 · 便捷查询</div>
+          </div>
+        </a>
+        <a href="m4-org.html">
+          <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">组织机构体系</div>
+            <div class="menu-desc">院系树 · 强绑定身份</div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <a href="m5-identity-permission.html">身份权限管理</a>
+    <a href="m6-data-query.html" class="active">数据查询</a>
+  </nav>
+  <div class="topbar-right">
+    <span class="time-display" id="time-display"></span>
+    <div class="user-info">
+      <div class="user-avatar">管</div>
+      <span class="user-name">管理员 · 数据治理岗</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ===== 左侧导航 ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-section">系统服务</div>
+
+    <!-- 二级：数据查询（含预制数据表 / SQL 查询） -->
+    <div class="sidebar-parent open" id="parent-dq" onclick="toggleParent('dq')">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h12"/><circle cx="18" cy="18" r="3"/></svg>
+      <span>数据查询</span>
+      <span class="caret"></span>
+    </div>
+    <div class="sidebar-children" id="children-dq">
+      <!-- 三级：预制数据表（可展开） -->
+      <div class="sidebar-parent open lvl3" id="parent-preset" onclick="event.stopPropagation();toggleParent('preset')">
+        <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+        <span>预制数据表</span>
+        <span class="caret"></span>
+      </div>
+      <div class="sidebar-children lvl4" id="children-preset">
+        <div class="sidebar-child active" data-view="identity-tables">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="1.8" style="flex-shrink:0">
+            <circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>
+          </svg>
+          <span>人员身份数据查询</span>
+          <span class="badge">4 张</span>
+        </div>
+        <div class="sidebar-child" data-view="theme-tables">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="1.8" style="flex-shrink:0">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+          </svg>
+          <span>人员主题数据查询</span>
+          <span class="badge">1 张</span>
+        </div>
+      </div>
+      <!-- 三级：SQL 查询 -->
+      <div class="sidebar-child" data-view="sql">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="1.8" style="flex-shrink:0"><path d="M4 6h16M4 12h16M4 18h12"/><circle cx="18" cy="18" r="3"/></svg>
+        <span>SQL 查询</span>
+      </div>
+    </div>
+
+    <!-- 二级：ETL 任务执行监控 -->
+    <a href="etl-monitor.html" style="display:block;text-decoration:none"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7M21 3v5h-5"/></svg>
+      <span>ETL 任务执行监控</span>
+    </div></a>
+
+    <!-- 二级：源头维护 -->
+    <a href="source-maintenance.html" style="display:block;text-decoration:none"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
+      <span>源头维护</span>
+    </div></a>
+
+    <!-- 二级：规划中 -->
+    <div class="sidebar-item" style="opacity:0.5;cursor:not-allowed">
+      <svg viewBox="0 0 24 24"><path d="M21 16v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><path d="M3 16v2a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4v-2"/></svg>
+      <span>数据字典</span>
+      <span class="badge">规划中</span>
+    </div>
+    <div class="sidebar-item" style="opacity:0.5;cursor:not-allowed">
+      <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      <span>API 服务</span>
+      <span class="badge">规划中</span>
+    </div>
+    <div class="sidebar-item" style="opacity:0.5;cursor:not-allowed">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6m11-11h-6M7 12H1"/></svg>
+      <span>系统配置</span>
+      <span class="badge">规划中</span>
+    </div>
+  </aside>
+
+  <!-- ===== 主区域 ===== -->
+  <main class="main">
+
+    <!-- 面包屑 -->
+    <div class="breadcrumb">
+      <a href="页面主页.html">平台总览</a>
+      <span class="sep">/</span>
+      <span class="last" id="crumb-last">系统服务 · 数据查询</span>
+    </div>
+
+    <!-- 页面标题 -->
+    <div class="page-head">
+      <div>
+        <h1 class="page-title" id="view-title">数据查询</h1>
+        <p class="page-desc" id="view-desc">预制数据表筛选 · SQL 灵活查询 · 多维数据检索</p>
+      </div>
+    </div>
+
+    <!-- ========== 视图一：预制数据表 ========== -->
+    <!-- ========== 视图一：人员身份数据查询 ========== -->
+    <div class="view active" id="view-identity-tables">
+      <div class="table-group">
+        <div class="table-group-head">
+          <span class="table-group-title">身份数据查询</span>
+          <span class="table-group-tag">基础表</span>
+          <span class="table-group-sub">人员、分类、岗位、权限对应 4 张基础表</span>
+        </div>
+        <div class="table-selector">
+          <div class="table-card selected" data-table="identity" data-group="identity">
+            <div class="table-card-icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+            </div>
+            <div class="table-card-title">人员基础信息</div>
+            <div class="table-card-desc">自然人主档 · 唯一ID · 多源头</div>
+            <div class="table-card-count"><strong>94,283</strong> 条记录</div>
+          </div>
+          <div class="table-card" data-table="class" data-group="identity">
+            <div class="table-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M3 3h7v7H3V3zM14 3h7v7h-7V3zM3 14h7v7H3v-7zM14 14h7v7h-7v-7z"/></svg>
+            </div>
+            <div class="table-card-title">分类身份信息</div>
+            <div class="table-card-desc">分类挂载 · 一人多类型 · 时段身份</div>
+            <div class="table-card-count"><strong>112,408</strong> 条记录</div>
+          </div>
+          <div class="table-card" data-table="position" data-group="identity">
+            <div class="table-card-icon">
+              <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+            </div>
+            <div class="table-card-title">岗位身份信息</div>
+            <div class="table-card-desc">任职类型 · 部门关联 · 一人多岗</div>
+            <div class="table-card-count"><strong>15,264</strong> 条记录</div>
+          </div>
+          <div class="table-card" data-table="permission" data-group="identity">
+            <div class="table-card-icon">
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div class="table-card-title">人员权限对应信息</div>
+            <div class="table-card-desc">人 × 权限明细 · 实际授权状态</div>
+            <div class="table-card-count"><strong>638,521</strong> 条记录</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 筛选条+表格 (身份组) -->
+      <div class="panel">
+        <div class="filter-bar" id="filter-bar-identity"></div>
+        <div class="filter-bar" style="margin-bottom:0; padding-top:0;">
+          <div class="search-wrap">
+            <span class="search-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+            </span>
+            <input class="filter-input search" type="text" id="identity-search" placeholder="输入关键词快速检索...">
+          </div>
+          <div class="filter-spacer"></div>
+          <button class="btn btn-secondary btn-sm" onclick="resetGroup('identity')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+            重置
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="updateGroupTable('identity')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+            查询
+          </button>
+          <button class="btn btn-secondary btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            导出
+          </button>
+        </div>
+      </div>
+
+      <div class="result-info">
+        <span class="result-count">共 <strong id="result-total-identity">—</strong> 条</span>
+        <span class="result-meta">耗时 &lt; 120ms</span>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead id="thead-identity"></thead>
+            <tbody id="tbody-identity"></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span>共 <strong id="page-total-identity">1</strong> 页</span>
+          <div class="page-controls"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 视图二：人员主题数据查询 - 主从页 ========== -->
+    <div class="view" id="view-theme-tables">
+
+      <!-- 顶部说明条 -->
+      <div class="theme-intro">
+        <div class="theme-intro-icon">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="theme-intro-content">
+          <strong>人员综合基础信息</strong>：一个人可能同时拥有多种身份分类（教职工/本科生/研究生/校友等），每种身份下有专属的完整字段。左侧选择人员，右侧切换 Tab 查看不同身份的字段全貌。展示字段可通过<strong>字段配置</strong>自定义。
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('field-config-modal').classList.add('show')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c0 .39.23.74.59.91"/></svg>
+          字段配置
+        </button>
+      </div>
+
+      <!-- 主从布局 -->
+      <div class="master-detail">
+
+        <!-- 左侧人员列表 -->
+        <div class="md-master">
+          <div class="md-master-head">
+            <div class="search-wrap" style="margin-bottom:8px">
+              <span class="search-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+              </span>
+              <input class="filter-input search" id="md-person-search" placeholder="搜索姓名/学工号..." style="width:100%">
+            </div>
+            <div class="md-filter-row">
+              <select class="filter-select" id="md-filter-identity" style="min-width:0;flex:1">
+                <option value="">全部身份分类</option>
+                <option value="staff">教职工</option>
+                <option value="undergrad">本科生</option>
+                <option value="grad">研究生</option>
+              </select>
+            </div>
+            <div class="md-result-info">
+              <span>共 <strong id="md-person-total">—</strong> 人</span>
+              <span style="color:var(--text-disabled)" id="md-person-meta">— 多身份</span>
+            </div>
+          </div>
+          <div class="md-master-list" id="md-person-list"></div>
+        </div>
+
+        <!-- 右侧详情区 -->
+        <div class="md-detail">
+          <!-- 详情头 -->
+          <div class="md-detail-head" id="md-detail-head"></div>
+          <!-- 身份 Tab -->
+          <div class="md-identity-tabs" id="md-identity-tabs"></div>
+          <!-- 字段区 -->
+          <div class="md-detail-body" id="md-detail-body"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========== 字段配置弹窗 ========== -->
+    <div class="modal-mask" id="field-config-modal" onclick="if(event.target===this) this.classList.remove('show')">
+      <div class="modal-drawer" style="width:760px">
+        <div class="modal-head">
+          <div>
+            <div style="font-size:18px;font-weight:600;color:var(--text-primary)">字段配置</div>
+            <div style="font-size:12.5px;color:var(--text-secondary);margin-top:2px">按身份类型勾选要展示的字段。每个身份独立配置。</div>
+          </div>
+          <button class="modal-close" onclick="document.getElementById('field-config-modal').classList.remove('show')">×</button>
+        </div>
+        <div class="modal-body">
+
+          <!-- 身份选择 tab -->
+          <div class="fc-tabs" id="fc-tabs">
+            <div class="fc-tab active" data-fc-tab="staff">教职工 <span class="fc-tab-meta" id="fc-count-staff">10 / 60</span></div>
+            <div class="fc-tab" data-fc-tab="undergrad">本科生 <span class="fc-tab-meta" id="fc-count-undergrad">6 / 7</span></div>
+            <div class="fc-tab" data-fc-tab="grad">研究生 <span class="fc-tab-meta" id="fc-count-grad">6 / 8</span></div>
+          </div>
+
+          <!-- 字段勾选区 -->
+          <div class="fc-body" id="fc-body"></div>
+        </div>
+        <div class="modal-foot">
+          <button class="btn btn-secondary" onclick="resetFieldConfig()">恢复默认</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('field-config-modal').classList.remove('show')">取消</button>
+          <button class="btn btn-primary" onclick="saveFieldConfig()">保存配置</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 视图三：SQL 查询 - 左表清单 + 右编辑器 ========== -->
+    <div class="view" id="view-sql">
+
+      <!-- 说明面板 -->
+      <div class="panel" style="margin-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-secondary);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-info)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          支持标准 SQL 查询语法。左侧选择数据表自动生成查询模板，或自由编写 SQL。查询结果仅限当前用户权限范围。
+        </div>
+      </div>
+
+      <!-- 主从布局 -->
+      <div class="sql-master-detail">
+
+        <!-- 左侧：表清单（按主题分组） -->
+        <div class="sql-table-list">
+          <div class="sql-tl-head">
+            <div class="search-wrap" style="margin-bottom:8px">
+              <span class="search-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+              </span>
+              <input class="filter-input search" id="sql-table-search" placeholder="搜索表名..." style="width:100%">
+            </div>
+            <select class="filter-select" id="sql-subject-select" style="width:100%;min-width:0;height:32px;font-size:13px">
+              <option value="staff">教职工 (47 张表)</option>
+              <option value="undergrad" disabled>本科生（规划中）</option>
+              <option value="grad" disabled>研究生（规划中）</option>
+            </select>
+            <div class="sql-tl-summary">
+              <span>共 <strong id="sql-tl-total">47</strong> 张表</span>
+              <span style="color:var(--text-disabled)" id="sql-tl-meta">14 个分组</span>
+            </div>
+          </div>
+          <div class="sql-tl-body" id="sql-tl-body"></div>
+        </div>
+
+        <!-- 右侧：SQL 编辑器 + 结果 -->
+        <div class="sql-main">
+          <div class="sql-section">
+            <div class="sql-toolbar">
+              <span class="sql-toolbar-dot red"></span>
+              <span class="sql-toolbar-dot yellow"></span>
+              <span class="sql-toolbar-dot green"></span>
+              <span class="sql-toolbar-label">SQL Editor</span>
+              <span class="sql-toolbar-spacer"></span>
+              <span id="sql-current-table" style="font-size:11.5px;color:#8B8BA0;font-family:'DIN Alternate',monospace"></span>
+              <select class="filter-select" id="sql-history-select" style="min-width:120px; height:28px; font-size:12px; padding: 0 28px 0 8px; background-color:#282840; color:#8B8BA0; border-color:#3A3A5A;">
+                <option value="">查询历史</option>
+              </select>
+            </div>
+            <div class="sql-editor-wrap">
+              <textarea class="sql-editor" id="sql-editor" placeholder="-- 在此输入 SQL 查询语句&#10;-- 或从左侧表清单选择，自动生成 SELECT 模板&#10;" spellcheck="false"></textarea>
+            </div>
+
+            <!-- 示例查询快捷填入 -->
+            <div class="sql-sample">
+              <div class="sql-sample-tip">常用示例：</div>
+              <div class="sql-sample-list" id="sql-samples">
+                <span class="sql-sample-chip" data-sql="SELECT * FROM staff_basic WHERE source = '人事系统' LIMIT 100;">教职工基本信息</span>
+                <span class="sql-sample-chip" data-sql="SELECT name, dept, COUNT(*) AS cnt FROM staff_award GROUP BY dept ORDER BY cnt DESC;">按部门统计奖励数</span>
+                <span class="sql-sample-chip" data-sql="SELECT * FROM staff_research_project WHERE year = 2025 LIMIT 100;">2025 年度科研项目</span>
+                <span class="sql-sample-chip" data-sql="SELECT s.name, s.dept, p.title FROM staff_basic s JOIN staff_paper p ON s.job_no = p.job_no LIMIT 100;">教职工论文关联</span>
+              </div>
+            </div>
+
+            <div class="sql-actions">
+              <button class="btn btn-primary" id="btn-sql-run">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="6 4 20 12 6 20"/></svg>
+                执行查询
+              </button>
+              <button class="btn btn-secondary btn-sm" id="btn-sql-format">格式化</button>
+              <button class="btn btn-secondary btn-sm" id="btn-sql-clear">清空</button>
+              <span class="filter-spacer"></span>
+              <span class="sql-status" id="sql-status"></span>
+            </div>
+          </div>
+
+          <!-- 结果信息 -->
+          <div class="result-info" id="result-info-sql" style="display:none;">
+            <span class="result-count">共 <strong id="result-total-sql">0</strong> 条</span>
+            <span class="result-meta" id="result-meta-sql"></span>
+          </div>
+
+          <!-- SQL 结果表格 -->
+          <div class="table-wrap" id="sql-result-wrap" style="display:none;">
+            <div class="table-scroll">
+              <table>
+                <thead id="thead-sql"></thead>
+                <tbody id="tbody-sql"></tbody>
+              </table>
+            </div>
+            <div class="pagination">
+              <span id="sql-page-info">共 0 页</span>
+              <div class="page-controls" id="pagination-sql"></div>
+            </div>
+          </div>
+
+          <!-- SQL 空状态 -->
+          <div class="empty-state" id="sql-empty">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h12"/><circle cx="18" cy="18" r="3"/></svg>
+            <div class="empty-state-title">从左侧选择表或输入 SQL 语句</div>
+            <div class="empty-state-desc">点击左侧表名自动填入 SELECT 模板，或自由编写 SQL</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+/* ===== 工具函数 ===== */
+function $(sel) { return document.querySelector(sel); }
+function $$(sel) { return document.querySelectorAll(sel); }
+
+/* ===== 时钟更新 ===== */
+function updateTime() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  $('#time-display').textContent =
+    `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ` +
+    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+}
+updateTime();
+setInterval(updateTime, 1000);
+
+/* ===== 视图切换 ===== */
+const VIEW_META = {
+  'identity-tables': {
+    title: '人员身份数据查询',
+    desc: '基础身份信息表 · 4 张表（人员/分类/岗位/权限对应）',
+    crumb: '系统服务 · 数据查询 · 人员身份数据查询'
+  },
+  'theme-tables': {
+    title: '人员主题数据查询',
+    desc: '业务主题宽表 · 按分类身份汇聚 · 每阶段最后一次数据',
+    crumb: '系统服务 · 数据查询 · 人员主题数据查询'
+  },
+  'sql': {
+    title: 'SQL 查询',
+    desc: '标准 SQL 语法 · 灵活数据检索 · 权限范围约束',
+    crumb: '系统服务 · SQL 查询'
+  }
+};
+
+function switchView(view) {
+  // 清除所有 active
+  $$('.sidebar-item[data-view]').forEach(el => el.classList.remove('active'));
+  $$('.sidebar-child[data-view]').forEach(el => el.classList.remove('active'));
+  // 找到当前激活的项并加 active
+  const elItem = document.querySelector(`.sidebar-item[data-view="${view}"]`);
+  const elChild = document.querySelector(`.sidebar-child[data-view="${view}"]`);
+  (elItem || elChild)?.classList.add('active');
+
+  // 父菜单"预制数据表"的高亮：子级激活时父项加 has-active
+  const parent = $('#parent-preset');
+  if (parent) {
+    if (elChild) parent.classList.add('has-active');
+    else parent.classList.remove('has-active');
+  }
+
+  // 视图切换
+  $$('.view').forEach(el => el.classList.remove('active'));
+  $(`#view-${view}`)?.classList.add('active');
+
+  // 标题更新
+  const meta = VIEW_META[view] || VIEW_META['identity-tables'];
+  $('#view-title').textContent = meta.title;
+  $('#view-desc').textContent = meta.desc;
+  $('#crumb-last').textContent = meta.crumb;
+}
+
+// 一级菜单（含 SQL 查询）和二级菜单（含身份/主题表）都绑定
+$$('.sidebar-item[data-view]').forEach(item => {
+  item.addEventListener('click', () => switchView(item.dataset.view));
+});
+$$('.sidebar-child[data-view]').forEach(item => {
+  item.addEventListener('click', () => switchView(item.dataset.view));
+});
+
+/* ============================================
+   预制数据表模块
+   ============================================ */
+
+/* 预制数据表配置 */
+const TABLE_CONFIG = {
+  // ====== 子模块1：身份数据查询 - 4 张基础表 ======
+
+  // 表1：人员基础信息（不要 状态/是否有效身份）
+  identity: {
+    name: '人员基础信息',
+    filters: [
+      { id: 'source', label: '数据源', options: ['全部','人事系统','教务系统','研究生系统','一卡通系统','图书馆系统','科研系统','后勤系统','访客系统'] },
+      { id: 'nationality', label: '国籍', options: ['全部','中国','美国','英国','日本','韩国','法国','德国','其他'] },
+      { id: 'cert_type', label: '证件类型', options: ['全部','居民身份证','护照','港澳通行证','台胞证','其他'] },
+      { id: 'gender', label: '性别', options: ['全部','男','女'] }
+    ],
+    columns: ['人员唯一标识','姓名','数据源','国籍','证件类型','性别','出生日期','最近更新时间'],
+    mockData: function() {
+      const names = ['张明远','李思涵','王建国','陈雨桐','刘浩然','赵小雅','周达康','吴静怡','郑海波','钱思远','孙丽华','杨俊杰','朱晓峰','马文博','胡佳琪','林志强','何欣悦','郭瑞阳','高峰','罗雪'];
+      const sources = ['人事系统','教务系统','研究生系统','一卡通系统'];
+      const nationalities = ['中国','中国','中国','中国','中国','中国','中国','中国','美国','韩国'];
+      const certTypes = ['居民身份证','居民身份证','居民身份证','护照','港澳通行证'];
+      const genders = ['男','女'];
+      const data = [];
+      for (let i = 0; i < 20; i++) {
+        data.push({
+          uid: 'NP' + String(100000 + i).padStart(8, '0'),
+          name: names[i],
+          source: sources[i % sources.length],
+          nationality: nationalities[i % nationalities.length],
+          certType: certTypes[i % certTypes.length],
+          gender: genders[i % genders.length],
+          birth: '19' + (80 + (i * 3) % 20) + '-' + String(1 + (i * 7) % 12).padStart(2,'0') + '-' + String(1 + (i * 11) % 28).padStart(2,'0'),
+          updated: '2026-0' + (3 + (i * 5) % 3) + '-' + String(1 + (i * 13) % 28).padStart(2,'0') + ' ' + String(8 + (i * 3) % 12).padStart(2,'0') + ':' + String((i * 17) % 60).padStart(2,'0')
+        });
+      }
+      return data;
+    }
+  },
+
+  // 表2：分类身份信息（含 状态 + 是否有效身份）
+  class: {
+    name: '分类身份信息',
+    filters: [
+      { id: 'root_type', label: '根类型', options: ['全部','教职工','学生','外协人员','校友','校外人员'] },
+      { id: 'class_source', label: '数据来源', options: ['全部','人事系统','教务系统','研究生系统','一卡通系统','人工维护'] },
+      { id: 'class_effective', label: '是否有效身份', options: ['全部','是','否'] },
+      { id: 'class_status', label: '状态', options: ['全部','在档','已结束','待审核'] }
+    ],
+    columns: ['人员唯一标识','姓名','分类编码','分类名称','起始时间','结束时间','数据来源','是否有效身份','状态'],
+    mockData: function() {
+      const persons = [
+        { uid: 'NP00000001', name: '张明远' },
+        { uid: 'NP00000002', name: '李思涵' },
+        { uid: 'NP00000003', name: '王建国' },
+        { uid: 'NP00000004', name: '陈雨桐' },
+        { uid: 'NP00000005', name: '刘浩然' },
+        { uid: 'NP00000006', name: '赵小雅' },
+        { uid: 'NP00000003', name: '王建国' },
+        { uid: 'NP00000007', name: '周达康' },
+        { uid: 'NP00000008', name: '吴静怡' },
+        { uid: 'NP00000050', name: '吴志强' },
+        { uid: 'NP00000050', name: '吴志强' },
+        { uid: 'NP00000124', name: '刘建华' },
+        { uid: 'NP00000156', name: '黄敏君' },
+        { uid: 'NP00000201', name: '周志远' },
+        { uid: 'NP00000201', name: '周志远' },
+        { uid: 'NP00000312', name: '王慧颖' },
+        { uid: 'NP00000405', name: '林峰' },
+        { uid: 'NP00000088', name: '陈伟杰' },
+        { uid: 'NP00000099', name: 'Sarah Johnson' },
+        { uid: 'NP00000087', name: '孙雅丽' }
+      ];
+      const records = [
+        { code: '01.01.01', cname: '专任教师', root: '教职工', start: '2018-09-01', end: '—', source: '人事系统', effective: '是', status: '在档' },
+        { code: '02.01', cname: '本科生', root: '学生', start: '2020-09-01', end: '2024-06-30', source: '教务系统', effective: '否', status: '已结束' },
+        { code: '01.01.02', cname: '行政管理人员', root: '教职工', start: '2019-03-15', end: '—', source: '人事系统', effective: '是', status: '在档' },
+        { code: '02.01', cname: '本科生', root: '学生', start: '2024-09-01', end: '—', source: '教务系统', effective: '是', status: '在档' },
+        { code: '02.02', cname: '硕士研究生', root: '学生', start: '2023-09-01', end: '—', source: '研究生系统', effective: '是', status: '在档' },
+        { code: '02.01', cname: '本科生', root: '学生', start: '2024-09-01', end: '—', source: '教务系统', effective: '是', status: '在档' },
+        { code: '04', cname: '校友', root: '校友', start: '2010-07-01', end: '—', source: '校友系统', effective: '是', status: '在档' },
+        { code: '02.03', cname: '博士研究生', root: '学生', start: '2022-09-01', end: '—', source: '研究生系统', effective: '是', status: '在档' },
+        { code: '02.01', cname: '本科生', root: '学生', start: '2024-09-01', end: '—', source: '教务系统', effective: '是', status: '在档' },
+        { code: '01.01.01', cname: '专任教师', root: '教职工', start: '2015-09-01', end: '—', source: '人事系统', effective: '是', status: '在档' },
+        { code: '04', cname: '校友', root: '校友', start: '2010-07-01', end: '—', source: '校友系统', effective: '是', status: '在档' },
+        { code: '01.01.03', cname: '教辅人员', root: '教职工', start: '2017-08-01', end: '—', source: '人事系统', effective: '是', status: '在档' },
+        { code: '01.02.01', cname: '合同制教师', root: '教职工', start: '2012-09-01', end: '—', source: '人事系统', effective: '是', status: '在档' },
+        { code: '01.01.01', cname: '专任教师', root: '教职工', start: '2008-09-01', end: '2024-12-31', source: '人事系统', effective: '否', status: '已结束' },
+        { code: '01.01.02', cname: '行政管理人员', root: '教职工', start: '2019-06-01', end: '—', source: '人事系统', effective: '是', status: '在档' },
+        { code: '02.01', cname: '本科生', root: '学生', start: '2024-09-01', end: '2028-06-30', source: '教务系统', effective: '是', status: '在档' },
+        { code: '01.01.02', cname: '行政管理人员', root: '教职工', start: '2014-08-01', end: '—', source: '人事系统', effective: '是', status: '在档' },
+        { code: '01.01.01', cname: '专任教师', root: '教职工', start: '2010-09-01', end: '2025-12-31', source: '人事系统', effective: '否', status: '已结束' },
+        { code: '05', cname: '校外人员', root: '校外人员', start: '2024-09-30', end: '—', source: '一卡通系统', effective: '否', status: '已结束' },
+        { code: '01.01.02', cname: '行政管理人员', root: '教职工', start: '2010-04-01', end: '—', source: '人事系统', effective: '是', status: '在档' }
+      ];
+      return persons.map((p, i) => ({ ...p, ...records[i] }));
+    }
+  },
+
+  // 表3：岗位身份信息（含 状态 + 是否有效身份）
+  position: {
+    name: '岗位身份信息',
+    filters: [
+      { id: 'pos_type', label: '任职类型', options: ['全部','行政职务','党内职务','辅导员','班主任','学术职务'] },
+      { id: 'pos_effective', label: '是否有效身份', options: ['全部','是','否'] },
+      { id: 'pos_status', label: '状态', options: ['全部','在任','已离任','挂职'] }
+    ],
+    columns: ['人员唯一标识','姓名','任职类型','岗位名称','所属部门','任职起始','是否有效身份','状态'],
+    mockData: function() {
+      return [
+        { uid:'NP00000001', name:'张明远', posType:'行政职务', posName:'院长', dept:'计算机科学与技术学院', startDate:'2022-09-01', effective:'是', status:'在任' },
+        { uid:'NP00000001', name:'张明远', posType:'党内职务', posName:'党委委员', dept:'计算机学院党委', startDate:'2023-06-01', effective:'是', status:'在任' },
+        { uid:'NP00000002', name:'李雪琴', posType:'行政职务', posName:'主任', dept:'校办公室', startDate:'2024-01-15', effective:'是', status:'在任' },
+        { uid:'NP00000003', name:'陈志强', posType:'辅导员', posName:'本科生辅导员', dept:'计算机科学与技术学院', startDate:'2023-09-01', effective:'是', status:'在任' },
+        { uid:'NP00000003', name:'陈志强', posType:'班主任', posName:'2023级软件3班', dept:'软件工程系', startDate:'2023-09-01', effective:'是', status:'在任' },
+        { uid:'NP00000050', name:'吴志强', posType:'行政职务', posName:'副院长', dept:'数学学院', startDate:'2021-09-01', effective:'是', status:'在任' },
+        { uid:'NP00000050', name:'吴志强', posType:'党内职务', posName:'党委副书记', dept:'数学学院党委', startDate:'2024-03-15', effective:'是', status:'在任' },
+        { uid:'NP00000087', name:'孙雅丽', posType:'行政职务', posName:'处长', dept:'财务处', startDate:'2020-04-01', effective:'是', status:'在任' },
+        { uid:'NP00000124', name:'刘建华', posType:'辅导员', posName:'研究生辅导员', dept:'研究生院', startDate:'2022-09-01', effective:'是', status:'在任' },
+        { uid:'NP00000156', name:'黄敏君', posType:'党内职务', posName:'党支部书记', dept:'后勤管理处', startDate:'2023-12-01', effective:'是', status:'在任' },
+        { uid:'NP00000201', name:'周志远', posType:'行政职务', posName:'副校长', dept:'校长办公室', startDate:'2019-06-01', effective:'否', status:'已离任' },
+        { uid:'NP00000201', name:'周志远', posType:'党内职务', posName:'党委常委', dept:'校党委', startDate:'2019-06-01', effective:'是', status:'在任' },
+        { uid:'NP00000312', name:'王慧颖', posType:'班主任', posName:'2024级国本1班', dept:'国际本科部', startDate:'2024-09-01', effective:'是', status:'在任' },
+        { uid:'NP00000405', name:'林峰', posType:'行政职务', posName:'副处长', dept:'财务处', startDate:'2023-08-01', effective:'是', status:'挂职' },
+        { uid:'NP00000088', name:'陈伟杰', posType:'学术职务', posName:'实验室主任', dept:'化学学院', startDate:'2015-01-01', effective:'否', status:'已离任' }
+      ];
+    }
+  },
+
+  // 表4：人员权限对应信息（含 对账状态 + 是否有效身份）
+  permission: {
+    name: '人员权限对应信息',
+    filters: [
+      { id: 'perm_code', label: '权限项', options: ['全部','进校权限','校园网','校园卡','图书馆','实验室','教学楼','宿舍楼','财务系统'] },
+      { id: 'perm_recon', label: '对账状态', options: ['全部','合规','越权','僵尸账号','应有未生效'] },
+      { id: 'perm_effective', label: '是否有效身份', options: ['全部','是','否'] }
+    ],
+    columns: ['人员唯一标识','姓名','所属分类','权限编码','权限名称','授权状态','对账状态','是否有效身份','最近活动'],
+    mockData: function() {
+      return [
+        { uid:'NP00000001', name:'张明远', cls:'专任教师', permCode:'gate', permName:'进校权限', granted:'已授权', recon:'合规', effective:'是', last:'2026-05-15 08:10' },
+        { uid:'NP00000001', name:'张明远', cls:'专任教师', permCode:'net', permName:'校园网', granted:'已授权', recon:'合规', effective:'是', last:'2026-05-15 09:22' },
+        { uid:'NP00000001', name:'张明远', cls:'专任教师', permCode:'lab', permName:'实验室', granted:'已授权', recon:'合规', effective:'是', last:'2026-05-14 14:30' },
+        { uid:'NP00000003', name:'陈志强', cls:'专任教师', permCode:'gate', permName:'进校权限', granted:'已授权', recon:'合规', effective:'是', last:'2026-05-15 07:55' },
+        { uid:'NP00000003', name:'陈志强', cls:'专任教师', permCode:'card', permName:'校园卡', granted:'已授权', recon:'合规', effective:'是', last:'2026-05-15 12:15' },
+        { uid:'NP00000004', name:'陈雨桐', cls:'本科生', permCode:'dorm', permName:'宿舍楼', granted:'已授权', recon:'合规', effective:'是', last:'2026-05-15 22:30' },
+        { uid:'NP00012453', name:'林浩然', cls:'安保人员', permCode:'net', permName:'校园网', granted:'已授权', recon:'越权', effective:'是', last:'2026-05-14 08:20' },
+        { uid:'NP00018702', name:'王梅芳', cls:'物业服务人员', permCode:'library', permName:'图书馆', granted:'已授权', recon:'越权', effective:'是', last:'2026-05-13 14:36' },
+        { uid:'NP00000088', name:'陈伟杰', cls:'专任教师(已结束)', permCode:'net', permName:'校园网', granted:'已授权', recon:'僵尸账号', effective:'否', last:'2026-04-12 09:15' },
+        { uid:'NP00000088', name:'陈伟杰', cls:'专任教师(已结束)', permCode:'library', permName:'图书馆', granted:'已授权', recon:'僵尸账号', effective:'否', last:'2026-04-08 16:20' },
+        { uid:'NP00000099', name:'Sarah Johnson', cls:'校外人员(已离校)', permCode:'net', permName:'校园网', granted:'已授权', recon:'僵尸账号', effective:'否', last:'2025-11-22 14:08' },
+        { uid:'NP00000005', name:'刘浩然', cls:'硕士研究生', permCode:'card', permName:'校园卡', granted:'未生效', recon:'应有未生效', effective:'是', last:'—' },
+        { uid:'NP00000050', name:'吴志强', cls:'专任教师', permCode:'gate', permName:'进校权限', granted:'已授权', recon:'合规', effective:'是', last:'2026-05-15 07:45' },
+        { uid:'NP00000312', name:'王慧颖', cls:'专任教师', permCode:'class', permName:'教学楼', granted:'已授权', recon:'合规', effective:'是', last:'2026-05-15 13:30' },
+        { uid:'NP00000087', name:'孙雅丽', cls:'专任教师', permCode:'finance', permName:'财务系统', granted:'已授权', recon:'合规', effective:'是', last:'2026-05-15 10:42' }
+      ];
+    }
+  },
+
+  // ====== 子模块2：主题数据查询 - 1 张主题宽表 ======
+
+  // 表5：人员综合基础信息（按人员分类身份，每阶段最后一次数据）
+  comprehensive: {
+    name: '人员综合基础信息',
+    filters: [
+      { id: 'comp_root', label: '当前根类型', options: ['全部','教职工','学生','外协人员','校友','校外人员'] },
+      { id: 'comp_effective', label: '是否有效身份', options: ['全部','是','否'] },
+      { id: 'comp_stage', label: '身份阶段数', options: ['全部','单一身份','2 段身份','3 段及以上'] },
+      { id: 'comp_status', label: '人员当前状态', options: ['全部','在档','已毕业','已离职','已离校'] }
+    ],
+    columns: ['人员唯一标识','姓名','身份阶段数','当前身份','最近身份起始','历史身份汇总','所属单位','是否有效身份','人员当前状态'],
+    mockData: function() {
+      return [
+        { uid:'NP00000001', name:'张明远', stages:'1', current:'专任教师', curStart:'2018-09-01', history:'—', org:'计算机科学与技术学院', effective:'是', status:'在档' },
+        { uid:'NP00000003', name:'王建国', stages:'2', current:'专任教师', curStart:'2019-03-15', history:'本科生 (2020-2024 已结束)', org:'计算机科学与技术学院', effective:'是', status:'在档' },
+        { uid:'NP00000004', name:'陈雨桐', stages:'1', current:'本科生', curStart:'2024-09-01', history:'—', org:'数学学院', effective:'是', status:'在档' },
+        { uid:'NP00000005', name:'刘浩然', stages:'1', current:'硕士研究生', curStart:'2023-09-01', history:'—', org:'研究生院', effective:'是', status:'在档' },
+        { uid:'NP00000050', name:'吴志强', stages:'2', current:'专任教师', curStart:'2015-09-01', history:'校友 (2010-)', org:'数学学院', effective:'是', status:'在档' },
+        { uid:'NP00000087', name:'孙雅丽', stages:'1', current:'行政管理人员', curStart:'2010-04-01', history:'—', org:'财务处', effective:'是', status:'在档' },
+        { uid:'NP00000124', name:'刘建华', stages:'1', current:'教辅人员', curStart:'2017-08-01', history:'—', org:'研究生院', effective:'是', status:'在档' },
+        { uid:'NP00000156', name:'黄敏君', stages:'1', current:'合同制教师', curStart:'2012-09-01', history:'—', org:'后勤管理处', effective:'是', status:'在档' },
+        { uid:'NP00000201', name:'周志远', stages:'1', current:'专任教师', curStart:'2008-09-01', history:'—', org:'校长办公室', effective:'否', status:'已离职' },
+        { uid:'NP00000312', name:'王慧颖', stages:'1', current:'行政管理人员', curStart:'2019-06-01', history:'—', org:'国际本科部', effective:'是', status:'在档' },
+        { uid:'NP00000405', name:'林峰', stages:'1', current:'专任教师', curStart:'2014-08-01', history:'—', org:'财务处', effective:'是', status:'在档' },
+        { uid:'NP00000088', name:'陈伟杰', stages:'1', current:'专任教师', curStart:'2010-09-01', history:'—', org:'化学学院', effective:'否', status:'已离职' },
+        { uid:'NP00000099', name:'Sarah Johnson', stages:'1', current:'校外人员', curStart:'2024-09-30', history:'—', org:'国际合作办公室', effective:'否', status:'已离校' },
+        { uid:'NP00010234', name:'李晓涵', stages:'1', current:'本科生', curStart:'2021-09-01', history:'—', org:'物理与天文学院', effective:'否', status:'已毕业' },
+        { uid:'NP00000006', name:'赵小雅', stages:'3', current:'专任教师', curStart:'2018-09-01', history:'硕士研究生 (2015-2018) · 本科生 (2011-2015)', org:'生命科学学院', effective:'是', status:'在档' }
+      ];
+    }
+  }
+};
+
+// 身份组状态（主题组已改为主从页，独立管理）
+const GROUP_STATE = {
+  identity: { currentTable: 'identity', currentData: [] }
+};
+
+// 渲染指定组的筛选条
+function renderGroupFilters(group) {
+  const tableKey = GROUP_STATE[group].currentTable;
+  const cfg = TABLE_CONFIG[tableKey];
+  const bar = $(`#filter-bar-${group}`);
+  if (!bar) return;
+  let html = '';
+  cfg.filters.forEach(f => {
+    html += `<select class="filter-select" id="filter-${group}-${f.id}" data-filter-id="${f.id}">`;
+    f.options.forEach(o => {
+      html += `<option value="${o}">${f.label}：${o}</option>`;
+    });
+    html += '</select>';
+  });
+  bar.innerHTML = html;
+}
+
+// 渲染指定组的表格
+function renderGroupTable(group, data, cols) {
+  const thead = $(`#thead-${group}`);
+  const tbody = $(`#tbody-${group}`);
+  thead.innerHTML = '<tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr>';
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="${cols.length}" style="text-align:center;color:var(--text-disabled);padding:32px;">无匹配数据</td></tr>`;
+  } else {
+    tbody.innerHTML = data.map(row => {
+      const tds = cols.map(col => {
+        const key = mapColumnToKey(col);
+        const isMono = (col === '人员唯一标识' || col === '分类编码' || col === '权限编码');
+        const v = row[key];
+        let cellHtml = (v === undefined || v === null || v === '') ? '—' : v;
+        // 是否有效身份用 tag 样式
+        if (col === '是否有效身份') {
+          if (v === '是') cellHtml = '<span class="tag tag-green">是</span>';
+          else if (v === '否') cellHtml = '<span class="tag tag-gray">否</span>';
+        }
+        // 对账状态特殊渲染
+        if (col === '对账状态') {
+          if (v === '合规') cellHtml = '<span class="tag tag-green">合规</span>';
+          else if (v === '越权') cellHtml = '<span class="tag" style="background:rgba(245,63,63,0.1);color:var(--color-error);font-weight:500">⚠ 越权</span>';
+          else if (v === '僵尸账号') cellHtml = '<span class="tag" style="background:rgba(255,125,0,0.1);color:var(--color-warning);font-weight:500">⊙ 僵尸账号</span>';
+          else if (v === '应有未生效') cellHtml = '<span class="tag tag-gray">应有未生效</span>';
+        }
+        // 状态特殊渲染
+        if (col === '状态' || col === '人员当前状态') {
+          if (v === '在档' || v === '在任') cellHtml = `<span class="tag tag-green">${v}</span>`;
+          else if (v === '挂职') cellHtml = `<span class="tag" style="background:rgba(255,125,0,0.1);color:var(--color-warning)">${v}</span>`;
+          else if (v === '已结束' || v === '已离任' || v === '已离职' || v === '已离校' || v === '已毕业') cellHtml = `<span class="tag" style="background:rgba(245,63,63,0.08);color:var(--color-error)">${v}</span>`;
+        }
+        return `<td${isMono ? ' class="mono"' : ''}>${cellHtml}</td>`;
+      }).join('');
+      return `<tr>${tds}</tr>`;
+    }).join('');
+  }
+}
+
+function mapColumnToKey(col) {
+  const map = {
+    '人员唯一标识': 'uid', '姓名': 'name', '是否有效身份': 'effective', '状态': 'status',
+    '数据源': 'source', '国籍': 'nationality', '证件类型': 'certType',
+    '性别': 'gender', '出生日期': 'birth', '最近更新时间': 'updated',
+    '分类编码': 'code', '分类名称': 'cname', '根类型': 'root',
+    '起始时间': 'start', '结束时间': 'end', '数据来源': 'source',
+    '任职类型': 'posType', '岗位名称': 'posName', '所属部门': 'dept', '任职起始': 'startDate',
+    '所属分类': 'cls', '权限编码': 'permCode', '权限名称': 'permName',
+    '授权状态': 'granted', '对账状态': 'recon', '最近活动': 'last',
+    '身份阶段数': 'stages', '当前身份': 'current', '最近身份起始': 'curStart',
+    '历史身份汇总': 'history', '所属单位': 'org', '人员当前状态': 'status'
+  };
+  return map[col] || col;
+}
+
+// 筛选字段 id → 数据 key 的映射
+const FILTER_KEY_MAP = {
+  source: 'source', nationality: 'nationality', cert_type: 'certType', gender: 'gender',
+  root_type: 'root', class_source: 'source', class_effective: 'effective', class_status: 'status',
+  pos_type: 'posType', pos_effective: 'effective', pos_status: 'status',
+  perm_code: 'permName', perm_recon: 'recon', perm_effective: 'effective',
+  comp_root: 'current', comp_effective: 'effective', comp_status: 'status', comp_stage: 'stages'
+};
+
+// 主查询函数
+function updateGroupTable(group) {
+  const state = GROUP_STATE[group];
+  const cfg = TABLE_CONFIG[state.currentTable];
+  const rawData = cfg.mockData();
+  const kw = ($(`#${group}-search`).value || '').trim().toLowerCase();
+  let filtered = rawData;
+  if (kw) {
+    filtered = rawData.filter(row => Object.values(row).some(v => String(v).toLowerCase().includes(kw)));
+  }
+  cfg.filters.forEach(f => {
+    const sel = $(`#filter-${group}-${f.id}`);
+    if (!sel) return;
+    const val = sel.value;
+    if (val === '全部') return;
+    const rowKey = FILTER_KEY_MAP[f.id] || f.id;
+    if (f.id === 'comp_stage') {
+      filtered = filtered.filter(row => {
+        const s = parseInt(row.stages);
+        if (val === '单一身份') return s === 1;
+        if (val === '2 段身份') return s === 2;
+        if (val === '3 段及以上') return s >= 3;
+        return true;
+      });
+    } else if (f.id === 'comp_root') {
+      filtered = filtered.filter(row => {
+        const c = row.current || '';
+        if (val === '教职工') return /教师|行政|教辅|合同制/.test(c);
+        if (val === '学生') return /本科生|研究生|博士/.test(c);
+        if (val === '校友') return c === '校友';
+        if (val === '校外人员') return c === '校外人员';
+        if (val === '外协人员') return /外协|物业|安保|驻场/.test(c);
+        return true;
+      });
+    } else {
+      filtered = filtered.filter(row => row[rowKey] === val);
+    }
+  });
+  state.currentData = filtered;
+  renderGroupTable(group, filtered, cfg.columns);
+  $(`#result-total-${group}`).textContent = filtered.length.toLocaleString();
+  $(`#page-total-${group}`).textContent = Math.ceil(filtered.length / 20) || 1;
+}
+
+// 重置筛选
+function resetGroup(group) {
+  $(`#${group}-search`).value = '';
+  const state = GROUP_STATE[group];
+  const cfg = TABLE_CONFIG[state.currentTable];
+  cfg.filters.forEach(f => {
+    const sel = $(`#filter-${group}-${f.id}`);
+    if (sel) sel.value = '全部';
+  });
+  updateGroupTable(group);
+}
+
+// 表选择卡片点击 - 按组隔离
+$$('.table-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const group = card.dataset.group;
+    if (!group) return;
+    // 同组卡片移除 selected
+    $$(`.table-card[data-group="${group}"]`).forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    GROUP_STATE[group].currentTable = card.dataset.table;
+    renderGroupFilters(group);
+    $(`#${group}-search`).value = '';
+    updateGroupTable(group);
+  });
+});
+
+// 搜索回车 - 身份组
+['identity'].forEach(g => {
+  const s = $(`#${g}-search`);
+  if (s) s.addEventListener('keydown', e => { if (e.key === 'Enter') updateGroupTable(g); });
+  const bar = $(`#filter-bar-${g}`);
+  if (bar) bar.addEventListener('change', () => updateGroupTable(g));
+});
+
+// 侧栏父级菜单展开折叠
+function toggleParent(key) {
+  const p = $('#parent-' + key);
+  const c = $('#children-' + key);
+  if (!p || !c) return;
+  p.classList.toggle('open');
+  c.classList.toggle('collapsed');
+}
+window.toggleParent = toggleParent;
+window.updateGroupTable = updateGroupTable;
+window.resetGroup = resetGroup;
+
+/* 分页 */
+function renderPagination(containerId, total) {
+  const totalPages = Math.ceil(total / 20) || 1;
+  const container = $('#' + containerId);
+  if (!container) return;
+  let html = '';
+  html += `<button class="page-btn disabled">«</button>`;
+  html += `<button class="page-btn disabled">‹</button>`;
+  for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+    html += `<button class="page-btn${i === 1 ? ' active' : ''}">${i}</button>`;
+  }
+  if (totalPages > 5) html += `<span style="margin:0 4px;color:var(--text-disabled);">…</span><button class="page-btn">${totalPages}</button>`;
+  html += `<button class="page-btn">›</button>`;
+  html += `<button class="page-btn">»</button>`;
+  container.innerHTML = html;
+}
+
+/* ============================================
+   SQL 查询模块
+   ============================================ */
+
+// ===== 教职工 47 张表 - 按主题分组 =====
+const SQL_TABLES_STAFF = [
+  { group: '基本信息', tables: [
+    { name: '教职工基本信息', code: 'staff_basic' },
+    { name: '教职工家庭成员信息', code: 'staff_family' },
+  ]},
+  { group: '在校信息', tables: [
+    { name: '教职工担任研究生导师明细情况', code: 'staff_grad_supervisor' },
+    { name: '教职工工人技术等级及职务情况', code: 'staff_worker_tech' },
+    { name: '教职工聘用合同情况', code: 'staff_contract' },
+    { name: '年度教职工返聘情况', code: 'staff_rehire' },
+    { name: '年度教职工部门调动情况', code: 'staff_dept_transfer' },
+    { name: '年度教职工病休情况', code: 'staff_sick_leave' },
+    { name: '年度教职工离校情况', code: 'staff_leave_school' },
+    { name: '年度教职工离退休情况', code: 'staff_retire' },
+    { name: '年度岗位聘任情况', code: 'staff_post_appoint' },
+    { name: '年度教职工出国(境)学习及工作情况', code: 'staff_overseas' },
+    { name: '年度个人高层次人才情况', code: 'staff_high_talent' },
+    { name: '年度教职工国内进修学习情况', code: 'staff_domestic_study' },
+    { name: '年度教职工社会兼职信息', code: 'staff_social_part_time' },
+    { name: '年度教职工社会服务信息', code: 'staff_social_service' },
+    { name: '年度教职工荣誉称号情况', code: 'staff_honor' },
+  ]},
+  { group: '个人经历', tables: [
+    { name: '教职工工作简历信息', code: 'staff_resume' },
+    { name: '教职工学历学位信息', code: 'staff_education' },
+  ]},
+  { group: '奖惩信息', tables: [
+    { name: '教职工奖励信息', code: 'staff_award' },
+    { name: '教职工惩处信息', code: 'staff_punishment' },
+  ]},
+  { group: '资产归属', tables: [
+    { name: '教职工资产归属明细', code: 'staff_asset' },
+    { name: '教职工年度仪器设备使用情况', code: 'staff_equipment' },
+  ]},
+  { group: '财务信息', tables: [
+    { name: '年度工资收支情况', code: 'staff_salary' },
+    { name: '年度个人报销情况', code: 'staff_reimburse' },
+  ]},
+  { group: '科研项目', tables: [
+    { name: '年度科研项目建设明细', code: 'staff_research_project' },
+    { name: '年度科研项目经费到账明细', code: 'staff_research_funding_in' },
+    { name: '年度科研项目经费支出明细', code: 'staff_research_funding_out' },
+    { name: '学期教师科研工作量明细', code: 'staff_research_workload' },
+  ]},
+  { group: '科研成果', tables: [
+    { name: '学术论文发表及收录情况', code: 'staff_paper' },
+    { name: '年度科研专利情况', code: 'staff_patent' },
+    { name: '年度科研著作情况', code: 'staff_book' },
+    { name: '年度科研软件著作情况', code: 'staff_software_copyright' },
+    { name: '年度科研成果获奖情况', code: 'staff_research_award' },
+    { name: '年度科研成果转化情况', code: 'staff_research_transform' },
+  ]},
+  { group: '课程教学', tables: [
+    { name: '年度研究生课程教师授课情况', code: 'staff_grad_teaching' },
+    { name: '年度本科生课程教师授课情况', code: 'staff_undergrad_teaching' },
+    { name: '教师教材编制情况', code: 'staff_textbook' },
+    { name: '学期教师教学工作量明细', code: 'staff_teaching_workload' },
+    { name: '年度教学改革项目建设情况', code: 'staff_teaching_reform' },
+    { name: '年度教学成果获奖情况', code: 'staff_teaching_award' },
+    { name: '年度参与教学竞赛', code: 'staff_teaching_contest' },
+  ]},
+  { group: '实践指导', tables: [
+    { name: '教职工指导本科生学位论文', code: 'staff_guide_undergrad_thesis' },
+    { name: '年度教职工指导本科生发表学术论文情况', code: 'staff_guide_undergrad_paper' },
+    { name: '年度教职工指导本科生获取专利信息', code: 'staff_guide_undergrad_patent' },
+    { name: '年度教职工指导研究生发表学术论文情况', code: 'staff_guide_grad_paper' },
+    { name: '年度教师指导学科竞赛情况', code: 'staff_guide_contest' },
+  ]},
+];
+
+const GROUP_COLORS = {
+  '基本信息': '#387EF5',
+  '在校信息': '#0FB17B',
+  '个人经历': '#F6980D',
+  '奖惩信息': '#F53F3F',
+  '资产归属': '#A251F6',
+  '财务信息': '#00B5C9',
+  '科研项目': '#165DFF',
+  '科研成果': '#5B43BC',
+  '课程教学': '#FF7D00',
+  '实践指导': '#0FB17B',
+};
+
+let selectedSqlTable = null;
+const collapsedGroups = new Set(); // 折叠的分组
+
+function renderSqlTableList() {
+  const kw = (document.getElementById('sql-table-search').value || '').trim().toLowerCase();
+  const wrap = document.getElementById('sql-tl-body');
+
+  let totalShown = 0;
+  const groupsHtml = SQL_TABLES_STAFF.map(grp => {
+    // 按关键字过滤
+    const items = kw
+      ? grp.tables.filter(t => t.name.toLowerCase().includes(kw) || t.code.toLowerCase().includes(kw))
+      : grp.tables;
+    if (items.length === 0) return '';
+    totalShown += items.length;
+    const collapsed = collapsedGroups.has(grp.group) ? 'collapsed' : '';
+    const color = GROUP_COLORS[grp.group] || '#86909C';
+    return `
+      <div class="sql-tl-group ${collapsed}" data-group="${grp.group}">
+        <div class="sql-tl-group-head" onclick="toggleSqlGroup('${grp.group}')">
+          <span class="caret"></span>
+          <span style="width:4px;height:4px;border-radius:50%;background:${color};display:inline-block"></span>
+          <span class="sql-tl-group-name">${grp.group}</span>
+          <span class="sql-tl-group-count">${items.length}</span>
+        </div>
+        <div class="sql-tl-items">
+          ${items.map(t => `
+            <div class="sql-tl-item ${selectedSqlTable === t.code ? 'selected' : ''}" data-code="${t.code}" data-name="${t.name}" title="${t.name} · ${t.code}">
+              <span class="icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+              </span>
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.name}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  wrap.innerHTML = groupsHtml || '<div style="padding:32px;text-align:center;color:var(--text-disabled);font-size:13px">无匹配的表</div>';
+
+  document.getElementById('sql-tl-total').textContent = totalShown;
+  document.getElementById('sql-tl-meta').textContent =
+    SQL_TABLES_STAFF.filter(g => g.tables.some(t => !kw || t.name.toLowerCase().includes(kw) || t.code.toLowerCase().includes(kw))).length + ' 个分组';
+
+  // 绑定点击
+  wrap.querySelectorAll('.sql-tl-item').forEach(el => {
+    el.addEventListener('click', () => {
+      selectedSqlTable = el.dataset.code;
+      // 自动生成 SELECT 模板
+      const code = el.dataset.code;
+      const name = el.dataset.name;
+      const tpl = `-- ${name}\n-- 表：${code}\nSELECT *\nFROM ${code}\nWHERE 1 = 1\nLIMIT 100;`;
+      document.getElementById('sql-editor').value = tpl;
+      document.getElementById('sql-current-table').textContent = code;
+      renderSqlTableList();
+      document.getElementById('sql-editor').focus();
+    });
+  });
+}
+
+function toggleSqlGroup(name) {
+  if (collapsedGroups.has(name)) collapsedGroups.delete(name);
+  else collapsedGroups.add(name);
+  renderSqlTableList();
+}
+window.toggleSqlGroup = toggleSqlGroup;
+
+// 搜索绑定
+document.addEventListener('DOMContentLoaded', () => {
+  // 初始化已经在下面，这里只补绑事件
+});
+
+const sqlEditor = $('#sql-editor');
+
+// 表清单搜索
+const sqlTblSearch = $('#sql-table-search');
+if (sqlTblSearch) sqlTblSearch.addEventListener('input', renderSqlTableList);
+
+/* 示例查询快捷填入 */
+$$('.sql-sample-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    sqlEditor.value = chip.dataset.sql;
+    sqlEditor.focus();
+  });
+});
+
+/* 执行按钮 */
+$('#btn-sql-run').addEventListener('click', () => {
+  const sql = sqlEditor.value.trim();
+  if (!sql) {
+    $('#sql-status').textContent = '请输入 SQL 语句';
+    $('#sql-status').className = 'sql-status error';
+    return;
+  }
+  $('#sql-status').textContent = '执行中…';
+  $('#sql-status').className = 'sql-status';
+  
+  // 模拟查询处理
+  setTimeout(() => {
+    const result = executeMockSQL(sql);
+    if (result.error) {
+      $('#sql-status').textContent = '错误：' + result.error;
+      $('#sql-status').className = 'sql-status error';
+      $('#sql-result-wrap').style.display = 'none';
+      $('#result-info-sql').style.display = 'none';
+      $('#sql-empty').style.display = 'block';
+    } else {
+      const ms = Math.floor(Math.random() * 200 + 30);
+      $('#sql-status').textContent = '查询完成';
+      $('#sql-status').className = 'sql-status success';
+      $('#result-info-sql').style.display = 'flex';
+      $('#result-total-sql').textContent = result.rows.length.toLocaleString();
+      $('#result-meta-sql').textContent = `耗时 ${ms}ms · 返回 ${result.rows.length} 行`;
+      renderSQLResult(result.columns, result.rows);
+      $('#sql-result-wrap').style.display = 'block';
+      $('#sql-empty').style.display = 'none';
+      // 添加到历史
+      addSQLHistory(sql);
+    }
+  }, 400);
+});
+
+function executeMockSQL(sql) {
+  const upper = sql.toUpperCase().trim();
+  
+  // 模拟解析 —— 校验基本语法
+  if (!upper.startsWith('SELECT')) {
+    return { error: '仅支持 SELECT 查询语句' };
+  }
+  if (!upper.includes('FROM')) {
+    return { error: '缺少 FROM 子句' };
+  }
+  
+  // 根据表名返回不同 mock 数据
+  if (upper.includes('PERSON_BASIC') || upper.includes('person_basic')) {
+    const cfg = TABLE_CONFIG.identity;
+    const data = cfg.mockData();
+    const rows = data.map(r => [r.name, r.id, r.source, r.nationality, r.certType, r.gender, r.birth, r.status, r.updated]);
+    return { columns: cfg.columns, rows: rows.slice(0, 10) };
+  }
+  if (upper.includes('ORG_UNIT') || upper.includes('org_unit')) {
+    const cfg = TABLE_CONFIG.org;
+    const data = cfg.mockData();
+    const rows = data.map(r => [r.code, r.name, r.type, r.level, r.parent, r.leader, r.status, r.updated]);
+    return { columns: cfg.columns, rows: rows.slice(0, 8) };
+  }
+  if (upper.includes('CLASS_IDENTITY') || upper.includes('class_identity')) {
+    const cfg = TABLE_CONFIG.class;
+    const data = cfg.mockData();
+    const rows = data.map(r => [r.code, r.name, r.root, r.level, r.parent, r.source, r.unit, String(r.count)]);
+    return { columns: cfg.columns, rows: rows.slice(0, 10) };
+  }
+  if (upper.includes('POSITION') || upper.includes('position')) {
+    const cfg = TABLE_CONFIG.position;
+    const data = cfg.mockData();
+    const rows = data.map(r => [r.name, r.id, r.posType, r.posName, r.dept, r.startDate, r.status]);
+    return { columns: cfg.columns, rows: rows.slice(0, 10) };
+  }
+  
+  // 通用兜底：返回人员基础数据
+  const cfg = TABLE_CONFIG.identity;
+  const data = cfg.mockData();
+  const rows = data.map(r => [r.name, r.id, r.source, r.nationality, r.certType, r.gender, r.birth, r.status, r.updated]);
+  return { columns: cfg.columns, rows: rows.slice(0, 10) };
+}
+
+function renderSQLResult(columns, rows) {
+  $('#thead-sql').innerHTML = '<tr>' + columns.map(c => `<th>${c}</th>`).join('') + '</tr>';
+  if (rows.length === 0) {
+    $('#tbody-sql').innerHTML = `<tr><td colspan="${columns.length}" style="text-align:center;color:var(--text-disabled);padding:32px;">查询结果为空</td></tr>`;
+  } else {
+    $('#tbody-sql').innerHTML = rows.map(row =>
+      `<tr>${row.map(v => `<td>${v}</td>`).join('')}</tr>`
+    ).join('');
+  }
+  $('#sql-page-info').textContent = `共 ${Math.ceil(rows.length / 20) || 1} 页`;
+  $('#pagination-sql').innerHTML = '<button class="page-btn disabled">«</button><button class="page-btn disabled">‹</button><button class="page-btn active">1</button><button class="page-btn disabled">›</button><button class="page-btn disabled">»</button>';
+}
+
+let sqlHistory = [];
+function addSQLHistory(sql) {
+  if (sqlHistory.includes(sql)) return;
+  sqlHistory.unshift(sql);
+  if (sqlHistory.length > 20) sqlHistory.pop();
+  const sel = $('#sql-history-select');
+  sel.innerHTML = '<option value="">查询历史</option>' + sqlHistory.map((s, i) => 
+    `<option value="${i}">${s.length > 40 ? s.substring(0, 37) + '…' : s}</option>`
+  ).join('');
+}
+
+$('#sql-history-select').addEventListener('change', function() {
+  const idx = parseInt(this.value);
+  if (!isNaN(idx) && sqlHistory[idx]) {
+    sqlEditor.value = sqlHistory[idx];
+    this.value = '';
+  }
+});
+
+/* 格式化按钮 */
+$('#btn-sql-format').addEventListener('click', () => {
+  let sql = sqlEditor.value.trim();
+  if (!sql) return;
+  // 简单格式化：关键字大写 + 换行
+  const keywords = ['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'GROUP BY', 'ORDER BY', 'LIMIT', 'JOIN', 'ON', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'AS', 'HAVING', 'UNION'];
+  keywords.forEach(kw => {
+    const regex = new RegExp('\\b' + kw.replace(/ /g, '\\s+') + '\\b', 'gi');
+    sql = sql.replace(regex, match => '\n' + match.toUpperCase());
+  });
+  sql = sql.replace(/^\n+/, '').replace(/\n+/g, '\n').replace(/\n\s*\n/g, '\n');
+  // 缩进
+  sql = sql.split('\n').map((line, i) => {
+    if (i === 0) return line;
+    const trimmed = line.trim();
+    if (/^(SELECT|FROM|WHERE|GROUP BY|ORDER BY|LIMIT|HAVING|JOIN|LEFT JOIN|RIGHT JOIN|INNER JOIN|ON|UNION)\b/i.test(trimmed)) {
+      return trimmed;
+    }
+    return '  ' + trimmed;
+  }).join('\n');
+  sqlEditor.value = sql;
+});
+
+/* 清空按钮 */
+$('#btn-sql-clear').addEventListener('click', () => {
+  sqlEditor.value = '';
+  $('#sql-status').textContent = '';
+  $('#sql-status').className = 'sql-status';
+  $('#sql-result-wrap').style.display = 'none';
+  $('#result-info-sql').style.display = 'none';
+  $('#sql-empty').style.display = 'block';
+  sqlEditor.focus();
+});
+
+/* Ctrl+Enter 执行 */
+sqlEditor.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    $('#btn-sql-run').click();
+  }
+});
+
+/* ============================================
+   主题数据查询 - 主从页模块
+   ============================================ */
+
+// ===== 字段元数据 =====
+// 每个身份类型的字段定义：分区 + 字段列表 + 是否默认显示
+const IDENTITY_FIELDS = {
+  staff: {
+    name: '教职工',
+    icon: 'M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM12 14c-4 0-7 2-7 6h14c0-4-3-6-7-6z',
+    sections: [
+      { title: '基本信息', fields: [
+        { key: 'jobNo', label: '教师工号', defaultOn: true, mono: true },
+        { key: 'name', label: '教师姓名', defaultOn: true },
+        { key: 'enName', label: '英文姓名', defaultOn: false },
+        { key: 'gender', label: '性别', defaultOn: true },
+        { key: 'birth', label: '出生日期', defaultOn: false, mono: true },
+        { key: 'birthPlace', label: '出生地', defaultOn: false },
+        { key: 'origin', label: '籍贯地', defaultOn: false },
+        { key: 'nation', label: '民族', defaultOn: false },
+        { key: 'country', label: '国籍/地区', defaultOn: false },
+        { key: 'certType', label: '身份证件类型', defaultOn: false },
+        { key: 'certNo', label: '身份证件号', defaultOn: false, mono: true },
+        { key: 'marriage', label: '婚姻状况', defaultOn: false },
+        { key: 'hktMacaoCode', label: '港澳台侨外码', defaultOn: false },
+        { key: 'politics', label: '政治面貌', defaultOn: false },
+      ]},
+      { title: '单位与岗位', fields: [
+        { key: 'orgCode', label: '单位代码', defaultOn: false, mono: true },
+        { key: 'orgName', label: '所属单位', defaultOn: true },
+        { key: 'deptCode', label: '科室代码', defaultOn: false, mono: true },
+        { key: 'currentPost', label: '当前职务', defaultOn: true },
+        { key: 'currentTechPost', label: '当前专业技术职务', defaultOn: true },
+        { key: 'currentTechPostDate', label: '专业技术职务取得时间', defaultOn: false, mono: true },
+        { key: 'currentTechPostLevel', label: '当前专业技术职务等级', defaultOn: false },
+        { key: 'currentPostType', label: '现聘用岗位类别', defaultOn: false },
+        { key: 'currentPostDate', label: '现岗位聘用时间', defaultOn: false, mono: true },
+        { key: 'currentPostLevel', label: '现聘用岗位等级', defaultOn: false },
+        { key: 'currentAdminPost', label: '现任行政职务', defaultOn: false },
+      ]},
+      { title: '入职与编制', fields: [
+        { key: 'workStartDate', label: '参加工作年月', defaultOn: false, mono: true },
+        { key: 'joinSchoolDate', label: '来校日期', defaultOn: true, mono: true },
+        { key: 'staffingType', label: '编制类型', defaultOn: false },
+        { key: 'highestSchool', label: '授予最高学历学位学校', defaultOn: false },
+        { key: 'highestEdu', label: '最高学历', defaultOn: false },
+        { key: 'highestDegree', label: '最高学位', defaultOn: true },
+        { key: 'discipline', label: '学科类别', defaultOn: false },
+      ]},
+      { title: '聘用与合同', fields: [
+        { key: 'tenureDate', label: '准聘长聘日期', defaultOn: false, mono: true },
+        { key: 'tenureStatus', label: '准聘长聘状态码', defaultOn: false },
+        { key: 'tenureEndDate', label: '准聘截止日期', defaultOn: false, mono: true },
+        { key: 'transferDate', label: '转系列日期', defaultOn: false, mono: true },
+        { key: 'contractType', label: '合同类型', defaultOn: false },
+        { key: 'contractStart', label: '合同起始日期', defaultOn: false, mono: true },
+        { key: 'contractEnd', label: '合同截止日期', defaultOn: false, mono: true },
+        { key: 'clinicalPostDate', label: '临床教职日期', defaultOn: false, mono: true },
+        { key: 'clinicalPost', label: '临床教职', defaultOn: false },
+        { key: 'qualName', label: '任职资格名称', defaultOn: false },
+        { key: 'qualEvalDate', label: '任职资格评定日期', defaultOn: false, mono: true },
+        { key: 'retireDate', label: '离退休年月', defaultOn: false, mono: true },
+        { key: 'innerRetireDate', label: '内退年月', defaultOn: false, mono: true },
+        { key: 'retireType', label: '退休类别', defaultOn: false },
+      ]},
+      { title: '教学信息', fields: [
+        { key: 'teachType', label: '任教类型', defaultOn: false },
+        { key: 'teachMajor', label: '任教专业名称', defaultOn: false },
+        { key: 'teachMajorCode', label: '任教专业代码', defaultOn: false, mono: true },
+        { key: 'teachMajorDate', label: '专业任教时间', defaultOn: false, mono: true },
+        { key: 'researchDir', label: '学科方向', defaultOn: false },
+        { key: 'isExp', label: '是否实验技术人员', defaultOn: false },
+        { key: 'isDualSkill', label: '是否双师双能型', defaultOn: false },
+        { key: 'isEngBg', label: '是否工程背景', defaultOn: false },
+        { key: 'isIndustryBg', label: '是否行业背景', defaultOn: false },
+        { key: 'isOverseasExp', label: '是否有国(境)外一年及以上经历', defaultOn: false },
+        { key: 'isDualShoulder', label: '是否"双肩挑"', defaultOn: false },
+        { key: 'isExternal', label: '是否外聘教师', defaultOn: false },
+        { key: 'isPartTime', label: '是否兼职教师', defaultOn: false },
+        { key: 'isAffiliated', label: '是否附属医院师资', defaultOn: false },
+        { key: 'isLeader', label: '是否校领导', defaultOn: false },
+      ]},
+      { title: '其他与状态', fields: [
+        { key: 'canCard', label: '是否可发卡', defaultOn: false },
+        { key: 'staffStatus', label: '教职工当前状态', defaultOn: true },
+        { key: 'personStatus', label: '人员状态', defaultOn: true },
+      ]},
+    ]
+  },
+
+  undergrad: {
+    name: '本科生',
+    icon: 'M22 10v6M2 10l10-5 10 5-10 5z M6 12v5c3 3 9 3 12 0v-5',
+    sections: [
+      { title: '基本信息', fields: [
+        { key: 'studentNo', label: '学生学号', defaultOn: true, mono: true },
+        { key: 'name', label: '学生姓名', defaultOn: true },
+        { key: 'gender', label: '性别', defaultOn: true },
+        { key: 'collegeName', label: '所在学院', defaultOn: true },
+        { key: 'major', label: '专业', defaultOn: true },
+        { key: 'studyStatus', label: '学籍状态', defaultOn: true },
+        { key: 'personStatus', label: '人员状态', defaultOn: false },
+      ]},
+    ]
+  },
+
+  grad: {
+    name: '研究生',
+    icon: 'M22 10v6M2 10l10-5 10 5-10 5z M6 12v5c3 3 9 3 12 0v-5',
+    sections: [
+      { title: '基本信息', fields: [
+        { key: 'studentNo', label: '学生学号', defaultOn: true, mono: true },
+        { key: 'name', label: '学生姓名', defaultOn: true },
+        { key: 'gender', label: '性别', defaultOn: true },
+        { key: 'collegeName', label: '所在学院', defaultOn: true },
+        { key: 'degreeType', label: '学位类型', defaultOn: true },
+        { key: 'major', label: '专业', defaultOn: true },
+        { key: 'supervisor', label: '导师', defaultOn: false },
+        { key: 'studyStatus', label: '学籍状态', defaultOn: true },
+        { key: 'personStatus', label: '人员状态', defaultOn: false },
+      ]},
+    ]
+  }
+};
+
+// ===== 字段配置（默认从 IDENTITY_FIELDS 推导出 defaultOn） =====
+let fieldConfig = {};
+function initFieldConfig() {
+  Object.keys(IDENTITY_FIELDS).forEach(idType => {
+    fieldConfig[idType] = {};
+    IDENTITY_FIELDS[idType].sections.forEach(sec => {
+      sec.fields.forEach(f => {
+        fieldConfig[idType][f.key] = f.defaultOn;
+      });
+    });
+  });
+}
+initFieldConfig();
+
+// ===== 人员数据池（一人多身份）=====
+const THEME_PEOPLE = [
+  {
+    uid: 'NP00000001', name: '张明远',
+    identities: {
+      staff: {
+        jobNo: 'T2018001', name: '张明远', enName: 'Zhang Mingyuan',
+        gender: '男', birth: '1975-03-12', birthPlace: '广东省广州市',
+        origin: '广东省广州市', nation: '汉族', country: '中国',
+        certType: '居民身份证', certNo: '440103197503121234',
+        marriage: '已婚', hktMacaoCode: '—', politics: '中共党员',
+        orgCode: 'C01', orgName: '计算机科学与技术学院', deptCode: 'C01-CS',
+        currentPost: '院长', currentTechPost: '教授',
+        currentTechPostDate: '2008-09', currentTechPostLevel: '二级',
+        currentPostType: '专业技术岗', currentPostDate: '2022-09',
+        currentPostLevel: '二级岗', currentAdminPost: '院长',
+        workStartDate: '2003-07', joinSchoolDate: '2003-07-15',
+        staffingType: '在编', highestSchool: '清华大学', highestEdu: '研究生',
+        highestDegree: '博士', discipline: '计算机科学与技术',
+        tenureDate: '2015-06-30', tenureStatus: '长聘',
+        tenureEndDate: '—', transferDate: '—',
+        contractType: '聘用合同', contractStart: '2018-09-01', contractEnd: '2028-08-31',
+        clinicalPostDate: '—', clinicalPost: '否',
+        qualName: '正教授', qualEvalDate: '2008-09-15',
+        retireDate: '—', innerRetireDate: '—', retireType: '—',
+        teachType: '专任教师', teachMajor: '计算机科学与技术', teachMajorCode: '080901',
+        teachMajorDate: '2003-09', researchDir: '人工智能/机器学习',
+        isExp: '否', isDualSkill: '否', isEngBg: '是', isIndustryBg: '否',
+        isOverseasExp: '是', isDualShoulder: '是', isExternal: '否',
+        isPartTime: '否', isAffiliated: '否', isLeader: '否',
+        canCard: '是', staffStatus: '在职', personStatus: '在档'
+      }
+    }
+  },
+  {
+    uid: 'NP00000003', name: '王建国',
+    identities: {
+      staff: {
+        jobNo: 'T2019015', name: '王建国', enName: 'Wang Jianguo',
+        gender: '男', birth: '1982-11-08', nation: '汉族', country: '中国',
+        certType: '居民身份证', politics: '中共党员',
+        orgCode: 'C01', orgName: '计算机科学与技术学院',
+        currentPost: '副教授', currentTechPost: '副教授',
+        currentTechPostDate: '2018-09', joinSchoolDate: '2019-03-15',
+        highestDegree: '博士', highestEdu: '研究生',
+        staffStatus: '在职', personStatus: '在档'
+      },
+      undergrad: {
+        studentNo: 'U2020030045', name: '王建国', gender: '男',
+        collegeName: '计算机科学与技术学院（已结束）', major: '软件工程',
+        studyStatus: '已毕业', personStatus: '在档'
+      }
+    }
+  },
+  {
+    uid: 'NP00000004', name: '陈雨桐',
+    identities: {
+      undergrad: {
+        studentNo: 'U2024060108', name: '陈雨桐', gender: '女',
+        collegeName: '数学学院', major: '数学与应用数学',
+        studyStatus: '在籍', personStatus: '在档'
+      }
+    }
+  },
+  {
+    uid: 'NP00000005', name: '刘浩然',
+    identities: {
+      grad: {
+        studentNo: 'I2023012088', name: '刘浩然', gender: '男',
+        collegeName: '研究生院', degreeType: '硕士研究生',
+        major: '计算机科学与技术', supervisor: '张明远 教授',
+        studyStatus: '在籍', personStatus: '在档'
+      }
+    }
+  },
+  {
+    uid: 'NP00000050', name: '吴志强',
+    identities: {
+      staff: {
+        jobNo: 'T2015042', name: '吴志强', enName: 'Wu Zhiqiang',
+        gender: '男', birth: '1978-05-20', nation: '汉族', country: '中国',
+        politics: '中共党员',
+        orgCode: 'C02', orgName: '数学学院',
+        currentPost: '副院长', currentTechPost: '教授',
+        currentTechPostDate: '2014-12', joinSchoolDate: '2015-09-01',
+        highestDegree: '博士', highestEdu: '研究生',
+        tenureStatus: '长聘', contractType: '聘用合同',
+        teachType: '专任教师', researchDir: '应用数学',
+        staffStatus: '在职', personStatus: '在档'
+      }
+    }
+  },
+  {
+    uid: 'NP00000006', name: '赵小雅',
+    identities: {
+      staff: {
+        jobNo: 'T2018033', name: '赵小雅', enName: 'Zhao Xiaoya',
+        gender: '女', birth: '1989-08-15',
+        orgName: '生命科学学院', currentPost: '副教授', currentTechPost: '副教授',
+        joinSchoolDate: '2018-09-01',
+        highestDegree: '博士',
+        staffStatus: '在职', personStatus: '在档'
+      },
+      grad: {
+        studentNo: 'I2015045088', name: '赵小雅', gender: '女',
+        collegeName: '生命科学学院（已结束）', degreeType: '博士研究生',
+        major: '生物化学', studyStatus: '已毕业', personStatus: '在档'
+      },
+      undergrad: {
+        studentNo: 'U2011078123', name: '赵小雅', gender: '女',
+        collegeName: '生命科学学院（已结束）', major: '生物科学',
+        studyStatus: '已毕业', personStatus: '在档'
+      }
+    }
+  },
+  {
+    uid: 'NP00000007', name: '周达康',
+    identities: {
+      grad: {
+        studentNo: 'I2022038015', name: '周达康', gender: '男',
+        collegeName: '医学院', degreeType: '博士研究生',
+        major: '内科学', supervisor: '李教授',
+        studyStatus: '在籍', personStatus: '在档'
+      }
+    }
+  },
+  {
+    uid: 'NP00000087', name: '孙雅丽',
+    identities: {
+      staff: {
+        jobNo: 'A2010012', name: '孙雅丽', gender: '女',
+        orgCode: 'B02', orgName: '财务处',
+        currentPost: '处长', currentAdminPost: '处长',
+        currentPostType: '管理岗', joinSchoolDate: '2010-04-01',
+        highestDegree: '硕士',
+        staffStatus: '在职', personStatus: '在档'
+      }
+    }
+  },
+  {
+    uid: 'NP00000312', name: '王慧颖',
+    identities: {
+      undergrad: {
+        studentNo: 'U2024061203', name: '王慧颖', gender: '女',
+        collegeName: '国际本科部', major: '国际经济与贸易',
+        studyStatus: '在籍', personStatus: '在档'
+      }
+    }
+  },
+  {
+    uid: 'NP00000124', name: '刘建华',
+    identities: {
+      staff: {
+        jobNo: 'T2017089', name: '刘建华', gender: '男',
+        orgName: '研究生院', currentPost: '讲师', currentTechPost: '讲师',
+        joinSchoolDate: '2017-08-01',
+        highestDegree: '博士',
+        staffStatus: '在职', personStatus: '在档'
+      }
+    }
+  },
+  {
+    uid: 'NP00000088', name: '陈伟杰',
+    identities: {
+      staff: {
+        jobNo: 'T2010088', name: '陈伟杰', gender: '男',
+        orgName: '化学学院（已结束）', currentPost: '专任教师',
+        joinSchoolDate: '2010-09-01',
+        contractEnd: '2024-12-31', retireDate: '—',
+        staffStatus: '已离职', personStatus: '已离职'
+      }
+    }
+  },
+  {
+    uid: 'NP00010234', name: '李晓涵',
+    identities: {
+      undergrad: {
+        studentNo: 'U2021103088', name: '李晓涵', gender: '女',
+        collegeName: '物理与天文学院', major: '物理学',
+        studyStatus: '已毕业', personStatus: '已毕业'
+      }
+    }
+  }
+];
+
+let currentPersonUid = null;     // 当前选中人员
+let currentIdentityTab = null;   // 当前展示的身份 tab
+
+function initThemeMasterDetail() {
+  renderPersonList();
+  // 绑定搜索 / 筛选
+  document.getElementById('md-person-search').addEventListener('input', renderPersonList);
+  document.getElementById('md-filter-identity').addEventListener('change', renderPersonList);
+  // 默认选第一个人
+  if (THEME_PEOPLE.length) selectPerson(THEME_PEOPLE[0].uid);
+  renderFieldConfigModal('staff');
+  // 字段配置 tab 切换
+  document.querySelectorAll('.fc-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.fc-tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      renderFieldConfigModal(t.dataset.fcTab);
+    });
+  });
+}
+
+function renderPersonList() {
+  const kw = (document.getElementById('md-person-search').value || '').toLowerCase().trim();
+  const filterType = document.getElementById('md-filter-identity').value;
+  let list = THEME_PEOPLE;
+  if (kw) {
+    list = list.filter(p => p.uid.toLowerCase().includes(kw) || p.name.includes(kw));
+  }
+  if (filterType) {
+    list = list.filter(p => p.identities[filterType]);
+  }
+
+  document.getElementById('md-person-total').textContent = list.length;
+  const multi = list.filter(p => Object.keys(p.identities).length > 1).length;
+  document.getElementById('md-person-meta').textContent = multi + ' 人多身份';
+
+  const wrap = document.getElementById('md-person-list');
+  if (list.length === 0) {
+    wrap.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-disabled);font-size:13px">无匹配人员</div>';
+    return;
+  }
+  const IDENTITY_LABEL = { staff: '教职工', undergrad: '本科生', grad: '研究生' };
+  const IDENTITY_COLOR = {
+    staff: 'background:rgba(56,126,245,0.1);color:#387EF5',
+    undergrad: 'background:rgba(15,177,123,0.1);color:#0FB17B',
+    grad: 'background:rgba(246,152,13,0.1);color:#F6980D'
+  };
+  wrap.innerHTML = list.map(p => {
+    const types = Object.keys(p.identities);
+    return `
+      <div class="md-person-item ${p.uid === currentPersonUid ? 'selected' : ''}" data-uid="${p.uid}">
+        <div class="md-person-avatar">${p.name.charAt(0)}</div>
+        <div class="md-person-info">
+          <div class="md-person-name">${p.name}</div>
+          <div class="md-person-meta">${p.uid}</div>
+          <div class="md-person-tags">
+            ${types.map(t => `<span class="tag" style="${IDENTITY_COLOR[t]}">${IDENTITY_LABEL[t]}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  wrap.querySelectorAll('.md-person-item').forEach(el => {
+    el.addEventListener('click', () => selectPerson(el.dataset.uid));
+  });
+}
+
+function selectPerson(uid) {
+  currentPersonUid = uid;
+  // 更新左侧选中态
+  document.querySelectorAll('.md-person-item').forEach(el => {
+    el.classList.toggle('selected', el.dataset.uid === uid);
+  });
+  const p = THEME_PEOPLE.find(x => x.uid === uid);
+  if (!p) return;
+  // 默认显示第一个身份
+  const types = Object.keys(p.identities);
+  currentIdentityTab = types[0];
+  renderDetailHead(p);
+  renderIdentityTabs(p);
+  renderDetailBody(p);
+}
+
+function renderDetailHead(p) {
+  const types = Object.keys(p.identities);
+  const IDENTITY_LABEL = { staff: '教职工', undergrad: '本科生', grad: '研究生' };
+  const IDENTITY_COLOR = {
+    staff: 'background:rgba(56,126,245,0.1);color:#387EF5',
+    undergrad: 'background:rgba(15,177,123,0.1);color:#0FB17B',
+    grad: 'background:rgba(246,152,13,0.1);color:#F6980D'
+  };
+  document.getElementById('md-detail-head').innerHTML = `
+    <div class="md-detail-name">
+      ${p.name}
+      <span class="md-detail-uid">${p.uid}</span>
+      ${types.map(t => `<span class="tag" style="${IDENTITY_COLOR[t]};font-size:11.5px;padding:1px 8px">${IDENTITY_LABEL[t]}</span>`).join('')}
+    </div>
+    <div class="md-detail-summary">
+      <span>持有身份数 <strong>${types.length}</strong></span>
+      <span>当前有效身份 <strong>${types.length}</strong></span>
+      <span style="color:var(--text-disabled)">已配置字段：随 Tab 切换显示</span>
+    </div>
+  `;
+}
+
+function renderIdentityTabs(p) {
+  const types = Object.keys(p.identities);
+  const IDENTITY_LABEL = { staff: '教职工', undergrad: '本科生', grad: '研究生' };
+  const ICONS = {
+    staff: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>',
+    undergrad: '<svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+    grad: '<svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>'
+  };
+  document.getElementById('md-identity-tabs').innerHTML = types.map(t => `
+    <div class="md-identity-tab ${t === currentIdentityTab ? 'active' : ''}" data-tab="${t}">
+      <span class="tab-icon">${ICONS[t]}</span>
+      ${IDENTITY_LABEL[t]} 身份
+    </div>
+  `).join('');
+  document.querySelectorAll('.md-identity-tab').forEach(el => {
+    el.addEventListener('click', () => {
+      currentIdentityTab = el.dataset.tab;
+      document.querySelectorAll('.md-identity-tab').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      renderDetailBody(p);
+    });
+  });
+}
+
+function renderDetailBody(p) {
+  const t = currentIdentityTab;
+  const data = p.identities[t];
+  const meta = IDENTITY_FIELDS[t];
+  const body = document.getElementById('md-detail-body');
+  if (!data || !meta) {
+    body.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-disabled)">无该身份数据</div>';
+    return;
+  }
+  // 按已配置字段渲染分区
+  body.innerHTML = meta.sections.map(sec => {
+    const visibleFields = sec.fields.filter(f => fieldConfig[t][f.key]);
+    if (visibleFields.length === 0) return '';
+    return `
+      <div class="field-section">
+        <div class="field-section-title">${sec.title}</div>
+        <div class="field-grid">
+          ${visibleFields.map(f => {
+            let v = data[f.key];
+            let empty = (v === undefined || v === null || v === '');
+            let html = empty ? '<span class="empty">未填写</span>' : v;
+            // 一些字段加 tag 渲染
+            if (f.key === 'staffStatus' || f.key === 'personStatus' || f.key === 'studyStatus') {
+              if (v === '在职' || v === '在档' || v === '在籍') html = `<span class="tag tag-green">${v}</span>`;
+              else if (v === '已毕业' || v === '已离职' || v === '已离校') html = `<span class="tag" style="background:rgba(245,63,63,0.08);color:var(--color-error)">${v}</span>`;
+            }
+            if (f.key === 'tenureStatus' && v === '长聘') html = `<span class="tag tag-blue">长聘</span>`;
+            if (f.key.startsWith('is') && (v === '是' || v === '否')) {
+              html = v === '是' ? '<span class="tag tag-green">是</span>' : '<span class="tag tag-gray">否</span>';
+            }
+            return `
+              <div class="field-item">
+                <div class="field-label">${f.label}</div>
+                <div class="field-value ${f.mono ? 'mono' : ''}">${html}</div>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ===== 字段配置弹窗 =====
+function renderFieldConfigModal(idType) {
+  const meta = IDENTITY_FIELDS[idType];
+  const body = document.getElementById('fc-body');
+  body.innerHTML = meta.sections.map((sec, sidx) => {
+    return `
+      <div class="fc-section">
+        <div class="fc-section-title">
+          ${sec.title}
+          <div class="fc-section-tools">
+            <a onclick="fcSelectSection('${idType}', ${sidx}, true)">全选</a>
+            <a onclick="fcSelectSection('${idType}', ${sidx}, false)">全不选</a>
+          </div>
+        </div>
+        <div class="fc-fields">
+          ${sec.fields.map(f => `
+            <label class="fc-field">
+              <input type="checkbox" data-fc-idtype="${idType}" data-fc-key="${f.key}" ${fieldConfig[idType][f.key] ? 'checked' : ''}>
+              <span>${f.label}</span>
+              ${f.defaultOn ? '<span class="tag tag-gray" style="font-size:10px;padding:0 5px;line-height:14px;margin-left:auto">默认</span>' : ''}
+            </label>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+  // 绑定 checkbox 变化
+  body.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', e => {
+      const idt = e.target.dataset.fcIdtype;
+      const k = e.target.dataset.fcKey;
+      fieldConfig[idt][k] = e.target.checked;
+      updateFieldCountTab(idt);
+    });
+  });
+  updateFieldCountTab(idType);
+}
+
+function fcSelectSection(idType, sidx, all) {
+  const sec = IDENTITY_FIELDS[idType].sections[sidx];
+  sec.fields.forEach(f => { fieldConfig[idType][f.key] = !!all; });
+  renderFieldConfigModal(idType);
+}
+window.fcSelectSection = fcSelectSection;
+
+function updateFieldCountTab(idType) {
+  const meta = IDENTITY_FIELDS[idType];
+  const total = meta.sections.reduce((s, sec) => s + sec.fields.length, 0);
+  const on = Object.values(fieldConfig[idType]).filter(Boolean).length;
+  const el = document.getElementById(`fc-count-${idType}`);
+  if (el) el.textContent = `${on} / ${total}`;
+}
+
+function saveFieldConfig() {
+  document.getElementById('field-config-modal').classList.remove('show');
+  // 重新渲染当前人员详情
+  if (currentPersonUid) {
+    const p = THEME_PEOPLE.find(x => x.uid === currentPersonUid);
+    if (p) renderDetailBody(p);
+  }
+}
+window.saveFieldConfig = saveFieldConfig;
+
+function resetFieldConfig() {
+  initFieldConfig();
+  const active = document.querySelector('.fc-tab.active');
+  if (active) renderFieldConfigModal(active.dataset.fcTab);
+}
+window.resetFieldConfig = resetFieldConfig;
+
+/* ===== 初始化 ===== */
+// 默认进入"人员身份数据查询"
+switchView('identity-tables');
+// 身份组初始化
+renderGroupFilters('identity');
+updateGroupTable('identity');
+// 主题主从页初始化
+initThemeMasterDetail();
+// SQL 表清单初始化
+renderSqlTableList();
+</script>
+</body>
+</html>

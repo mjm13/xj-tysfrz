@@ -1,0 +1,2023 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分类管理 · 人员分类身份 · 高校综合身份数据平台</title>
+<style>
+:root {
+    --color-primary: #2563EB;
+    --color-primary-secondary: #478EF7;
+    --color-success: #00B42A;
+    --color-warning: #FF7D00;
+    --color-error: #F53F3F;
+    --color-info: #165DFF;
+    --text-primary: #1D2129;
+    --text-secondary: #4E5969;
+    --text-disabled: #86909C;
+    --bg-page: #FAFAFB;
+    --bg-card: #FFFFFF;
+    --bg-secondary: #F2F3F5;
+    --border: #E5E6EB;
+    --chart-1: #387EF5;
+    --chart-2: #0FB17B;
+    --chart-3: #F6980D;
+    --chart-4: #A251F6;
+    --shadow-1: 0 1px 2px 0 rgba(0,0,0,.03), 0 1px 6px -1px rgba(0,0,0,.02);
+    --shadow-2: 0 4px 12px 0 rgba(0,0,0,.05), 0 2px 4px 0 rgba(0,0,0,.03);
+    --shadow-3: 0 8px 24px 0 rgba(0,0,0,.08), 0 4px 8px 0 rgba(0,0,0,.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg-page); }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+    color: var(--text-primary); font-size: 14px; line-height: 22px;
+  }
+  a { text-decoration: none; color: inherit; }
+  button, input, select { font: inherit; color: inherit; outline: none; }
+
+  /* ===== 顶部导航 ===== */
+  .topbar { height: 64px; background: var(--bg-card); box-shadow: var(--shadow-1);
+    display: flex; align-items: center; padding: 0 24px; position: sticky; top: 0; z-index: 100; }
+  .logo-wrap { display: flex; align-items: center; gap: 12px; margin-right: 32px; }
+  .logo-mark { width: 32px; height: 32px; border-radius: 6px; background: var(--color-primary);
+    display: flex; align-items: center; justify-content: center; }
+  .logo-mark svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; }
+  .logo-text { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+  .topbar nav { display: flex; gap: 32px; flex: 1; height: 100%; align-items: center; }
+  .topbar nav a { color: var(--text-secondary); font-size: 14px; height: 100%;
+    display: flex; align-items: center; position: relative; transition: color 200ms; }
+  .topbar nav a:hover { color: var(--color-primary); }
+  .topbar nav a.active { color: var(--color-primary); font-weight: 500; }
+  .topbar nav a.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--color-primary); }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .time-display { font-size: 12px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", monospace; }
+  .user-info { display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border); }
+  .user-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary);
+    color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; }
+  .user-name { font-size: 14px; color: var(--text-secondary); }
+
+  /* ===== 布局 ===== */
+  .layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 64px); }
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 16px 0; }
+  .sidebar-section { padding: 8px 16px; font-size: 12px; color: var(--text-disabled); letter-spacing: 1px; }
+  .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+    margin: 2px 8px; font-size: 14px; color: var(--text-secondary); cursor: pointer;
+    border-radius: 6px; transition: all 200ms; }
+  .sidebar-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; }
+  .sidebar-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .sidebar-item.active { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); font-weight: 500; }
+  .sidebar-item.disabled { color: var(--text-disabled); cursor: not-allowed; }
+  .sidebar-item .badge { margin-left: auto; font-size: 11px; padding: 1px 6px;
+    border-radius: 3px; background: var(--bg-secondary); color: var(--text-disabled); font-weight: 400; }
+  .sidebar-item .badge.warn { background: rgba(255, 125, 0, 0.1); color: var(--color-warning); }
+
+  .main { padding: 16px 24px 32px; min-width: 0; }
+  .breadcrumb { font-size: 14px; color: var(--text-disabled); margin-bottom: 12px; }
+  .breadcrumb a { color: var(--text-disabled); }
+  .breadcrumb a:hover { color: var(--color-primary); }
+  .breadcrumb .sep { margin: 0 8px; }
+  .breadcrumb .last { color: var(--text-primary); }
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .page-title { font-size: 20px; font-weight: 600; color: var(--text-primary); line-height: 28px; margin-bottom: 4px; }
+  .page-desc { font-size: 14px; color: var(--text-secondary); }
+  .page-stats { display: flex; gap: 24px; font-size: 12px; color: var(--text-secondary); }
+  .page-stats strong { font-size: 16px; color: var(--text-primary); margin-left: 4px; font-family: "DIN Alternate", "Roboto", inherit; }
+  .page-stats .warn strong { color: var(--color-warning); }
+
+  /* 视图切换 */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ===== 通用组件 ===== */
+  .panel { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); padding: 16px; margin-bottom: 16px; }
+  .panel-title { font-size: 16px; font-weight: 500; color: var(--text-primary);
+    padding-left: 12px; position: relative; margin-bottom: 16px; }
+  .panel-title::before { content: ''; position: absolute; left: 0; top: 4px;
+    width: 4px; height: 16px; background: var(--color-primary); border-radius: 2px; }
+  .panel-title .sub { font-size: 12px; color: var(--text-disabled); font-weight: 400; margin-left: 8px; }
+
+  /* 筛选条 */
+  .filter-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-input { height: 40px; padding: 0 12px; border: 1px solid var(--border);
+    border-radius: 6px; background: var(--bg-card); font-size: 14px; color: var(--text-primary);
+    transition: all 200ms; min-width: 200px; }
+  .filter-input:focus { border-color: var(--color-info); box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1); }
+  .filter-input.search { padding-left: 36px; }
+  .search-wrap { position: relative; }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-disabled); }
+  .filter-select { height: 40px; padding: 0 32px 0 12px; border: 1px solid var(--border);
+    border-radius: 6px; background: var(--bg-card) url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2386909C' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") right 12px center no-repeat;
+    font-size: 14px; cursor: pointer; appearance: none; min-width: 140px; }
+  .filter-spacer { flex: 1; }
+
+  /* 按钮 */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    height: 40px; padding: 0 16px; border-radius: 6px; font-size: 14px; font-weight: 500;
+    border: none; cursor: pointer; transition: all 200ms; }
+  .btn-primary { background: var(--color-primary); color: white; }
+  .btn-primary:hover { background: #1d4fc7; }
+  .btn-secondary { background: var(--bg-card); color: var(--color-info); border: 1px solid var(--color-info); }
+  .btn-secondary:hover { background: rgba(22, 93, 255, 0.04); }
+  .btn-text { background: transparent; color: var(--color-info); padding: 0 8px; height: 32px; }
+  .btn-text:hover { color: var(--color-primary); }
+  .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+
+  /* 表格 */
+  .table-wrap { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead { background: var(--bg-secondary); }
+  thead th { height: 48px; padding: 0 16px; text-align: left; font-weight: 500;
+    color: var(--text-secondary); white-space: nowrap; font-size: 14px; }
+  tbody td { height: 48px; padding: 0 16px; color: var(--text-primary); border-bottom: 1px solid var(--border); white-space: nowrap; vertical-align: middle; }
+  tbody tr { transition: background 200ms; }
+  tbody tr:hover { background: var(--bg-secondary); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono { font-family: "DIN Alternate", "Roboto", inherit; color: var(--text-secondary); }
+  tr.unmapped { background: rgba(255, 125, 0, 0.04); }
+  tr.unmapped:hover { background: rgba(255, 125, 0, 0.1); }
+  tr.unmapped td:first-child { box-shadow: inset 3px 0 0 var(--color-warning); }
+
+  /* 标签 */
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 12px; line-height: 20px; font-weight: 400; }
+  .tag-blue { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); }
+  .tag-green { background: rgba(0, 180, 42, 0.08); color: var(--color-success); }
+  .tag-orange { background: rgba(255, 125, 0, 0.08); color: var(--color-warning); }
+  .tag-red { background: rgba(245, 63, 63, 0.08); color: var(--color-error); }
+  .tag-purple { background: rgba(162, 81, 246, 0.08); color: var(--chart-4); }
+  .tag-gray { background: var(--bg-secondary); color: var(--text-secondary); }
+
+  /* 多类型徽章组 */
+  .type-group { display: flex; flex-direction: column; gap: 4px; padding: 4px 0; }
+  .type-row { display: flex; align-items: center; gap: 6px; }
+  .type-code { font-family: "DIN Alternate", "Roboto", inherit; font-size: 11px; color: var(--text-disabled); }
+  .multi-flag { display: inline-block; padding: 0 6px; border-radius: 3px;
+    background: rgba(162, 81, 246, 0.08); color: var(--chart-4); font-size: 10px; line-height: 16px; margin-left: 6px; }
+  .unmapped-flag { display: inline-flex; align-items: center; gap: 4px;
+    padding: 0 6px; border-radius: 3px; background: rgba(255, 125, 0, 0.1);
+    color: var(--color-warning); font-size: 11px; line-height: 18px; font-weight: 500; }
+  .unmapped-flag::before { content: '!'; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--color-warning); color: white; display: inline-flex;
+    align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+
+  /* 分页 */
+  .pagination { display: flex; align-items: center; justify-content: space-between;
+    padding: 16px; background: var(--bg-card); border-top: 1px solid var(--border);
+    font-size: 14px; color: var(--text-secondary); }
+  .page-controls { display: flex; gap: 8px; align-items: center; }
+  .page-btn { min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid var(--border);
+    border-radius: 6px; background: var(--bg-card); color: var(--text-secondary);
+    cursor: pointer; font-size: 14px; transition: all 200ms; }
+  .page-btn:hover:not(.disabled) { border-color: var(--color-primary); color: var(--color-primary); }
+  .page-btn.active { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+  .page-btn.disabled { color: var(--text-disabled); cursor: not-allowed; }
+
+  /* 信息提示框 */
+  .info-box { background: rgba(22, 93, 255, 0.04); border: 1px solid rgba(22, 93, 255, 0.16);
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;
+    display: flex; align-items: flex-start; gap: 12px; }
+  .info-box.warn { background: rgba(255, 125, 0, 0.04); border-color: rgba(255, 125, 0, 0.2); }
+  .info-box-icon { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; color: var(--color-info); }
+  .info-box.warn .info-box-icon { color: var(--color-warning); }
+  .info-box-icon svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 2; }
+  .info-box-content { flex: 1; font-size: 13px; color: var(--text-secondary); line-height: 22px; }
+  .info-box-content strong { color: var(--text-primary); font-weight: 500; }
+  .info-box-content a { color: var(--color-info); margin-left: 8px; cursor: pointer; }
+
+  /* ===== 分类树视图 ===== */
+  .tree-layout { display: grid; grid-template-columns: 1fr 1.4fr; gap: 16px; min-height: 500px; }
+  @media (max-width: 1200px) { .tree-layout { grid-template-columns: 1fr; } }
+
+  .tree-wrap { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); overflow: hidden; }
+  .tree-head { padding: 12px 16px; border-bottom: 1px solid var(--border);
+    background: var(--bg-secondary); display: flex; align-items: center; justify-content: space-between; }
+  .tree-head-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .tree-toolbar { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
+  .tree-search { flex: 1; height: 32px; padding: 0 10px; border: 1px solid var(--border);
+    border-radius: 6px; font-size: 13px; }
+  .tree-body { padding: 8px; max-height: 640px; overflow: auto; }
+  .tree-node { display: flex; align-items: center; gap: 6px; padding: 6px 8px;
+    border-radius: 4px; cursor: pointer; transition: background 150ms; font-size: 13px; }
+  .tree-node:hover { background: var(--bg-secondary); }
+  .tree-node.selected { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); font-weight: 500; }
+  .tree-caret { width: 14px; height: 14px; display: inline-flex; align-items: center;
+    justify-content: center; color: var(--text-disabled); font-size: 10px; flex-shrink: 0;
+    transition: transform 200ms; }
+  .tree-caret.empty { visibility: hidden; }
+  .tree-caret.expanded { transform: rotate(90deg); }
+  .tree-children { padding-left: 18px; }
+  .tree-children.collapsed { display: none; }
+  .tree-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tree-code { font-family: "DIN Alternate", "Roboto", inherit; font-size: 11px; color: var(--text-disabled); }
+  .tree-node.selected .tree-code { color: var(--color-primary); }
+  .tree-count { font-size: 11px; color: var(--text-disabled); padding: 0 6px;
+    border-radius: 3px; background: var(--bg-secondary); margin-left: 4px; }
+
+  /* 节点详情 */
+  .detail-panel { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); padding: 20px; }
+  .detail-head { padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .detail-path { font-size: 12px; color: var(--text-disabled); margin-bottom: 6px; }
+  .detail-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .detail-name { font-size: 18px; font-weight: 600; color: var(--text-primary); }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; margin-bottom: 16px; }
+  .detail-item { padding: 8px 0; border-bottom: 1px dashed var(--border); }
+  .detail-item.full { grid-column: 1 / -1; }
+  .detail-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+  .detail-value { font-size: 14px; color: var(--text-primary); word-break: break-all; }
+  .detail-value.mono { font-family: "DIN Alternate", "Roboto", inherit; }
+  .detail-value.empty { color: var(--text-disabled); font-style: italic; }
+
+  .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .stat-card {
+    background: var(--bg-page); border-radius: 6px; padding: 12px; text-align: center;
+    cursor: pointer; transition: all 200ms; border: 1.5px solid transparent;
+    position: relative;
+  }
+  .stat-card:hover { background: var(--bg-card); box-shadow: var(--shadow-1); transform: translateY(-1px); }
+  .stat-card.active {
+    background: rgba(37, 99, 235, 0.06);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+  }
+  .stat-card.active[data-pane="problem"] {
+    background: rgba(255, 125, 0, 0.06);
+    border-color: var(--color-warning);
+    box-shadow: 0 0 0 3px rgba(255, 125, 0, 0.08);
+  }
+  .stat-card.active[data-pane="persons"] {
+    background: rgba(15, 177, 123, 0.06);
+    border-color: var(--color-success);
+    box-shadow: 0 0 0 3px rgba(15, 177, 123, 0.08);
+  }
+  .stat-num { font-family: "DIN Alternate", "Roboto", inherit; font-size: 22px; font-weight: 600; color: var(--color-primary); line-height: 30px; }
+  .stat-label { font-size: 12px; color: var(--text-secondary); }
+  .stat-hint { font-size: 10.5px; color: var(--text-disabled); margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .stat-card.active .stat-hint { color: var(--color-primary); font-weight: 500; }
+  .stat-card.active[data-pane="problem"] .stat-hint { color: var(--color-warning); }
+  .stat-card.active[data-pane="persons"] .stat-hint { color: var(--color-success); }
+
+  /* 钻取明细区 */
+  .node-drill {
+    margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+  }
+  .node-drill-title {
+    font-size: 13px; font-weight: 500; color: var(--text-primary);
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .node-drill-title .tag { font-size: 11px; }
+
+  /* 层级人数统计 */
+  .level-stats { display: flex; flex-direction: column; gap: 6px; }
+  .level-row {
+    display: grid; grid-template-columns: 60px 1fr 80px;
+    align-items: center; gap: 10px;
+    padding: 8px 10px;
+    background: var(--bg-page); border-radius: 6px;
+    font-size: 12.5px;
+  }
+  .level-row:hover { background: var(--bg-card); box-shadow: var(--shadow-1); }
+  .level-tag {
+    font-size: 11px; padding: 1px 6px; border-radius: 3px;
+    background: rgba(37, 99, 235, 0.08); color: var(--color-primary);
+    text-align: center;
+  }
+  .level-bar-wrap { position: relative; height: 22px; display: flex; align-items: center; }
+  .level-bar-bg {
+    position: absolute; left: 0; right: 0; height: 6px;
+    background: var(--bg-secondary); border-radius: 3px;
+  }
+  .level-bar-fill {
+    position: absolute; left: 0; height: 6px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-secondary));
+    border-radius: 3px;
+    transition: width 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .level-name {
+    z-index: 1; position: relative; padding-left: 8px;
+    color: var(--text-primary); font-weight: 500;
+  }
+  .level-num {
+    text-align: right; font-family: "DIN Alternate", "Roboto", inherit;
+    font-weight: 600; color: var(--color-primary);
+  }
+
+  /* 人员清单（紧凑表格） */
+  .mini-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .mini-table thead { background: var(--bg-secondary); }
+  .mini-table th {
+    padding: 8px 10px; text-align: left; font-weight: 500;
+    color: var(--text-secondary); font-size: 11.5px;
+  }
+  .mini-table td {
+    padding: 8px 10px; border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+  }
+  .mini-table tbody tr:hover { background: var(--bg-page); }
+  .mini-table tbody tr.warn { background: rgba(255, 125, 0, 0.04); }
+  .mini-table tbody tr.warn:hover { background: rgba(255, 125, 0, 0.08); }
+  .mini-table tbody tr.warn td:first-child { box-shadow: inset 3px 0 0 var(--color-warning); }
+  .mini-empty {
+    padding: 32px; text-align: center; color: var(--text-disabled); font-size: 12.5px;
+  }
+
+  /* 时间轴 */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 1px; background: var(--border); }
+  .timeline-item { position: relative; padding-bottom: 20px; }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-dot { position: absolute; left: -22px; top: 6px; width: 12px; height: 12px;
+    border-radius: 50%; background: var(--bg-card); border: 2px solid var(--color-primary); }
+  .timeline-item.create .timeline-dot { background: var(--color-success); border-color: var(--color-success); }
+  .timeline-item.update .timeline-dot { background: var(--color-primary); border-color: var(--color-primary); }
+  .timeline-item.conflict .timeline-dot { background: var(--color-warning); border-color: var(--color-warning); }
+  .timeline-item.tree .timeline-dot { background: var(--chart-4); border-color: var(--chart-4); }
+  .timeline-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .timeline-ver { font-size: 12px; font-family: "DIN Alternate", "Roboto", inherit;
+    padding: 1px 8px; background: var(--bg-secondary); border-radius: 4px; color: var(--text-secondary); }
+  .timeline-time { font-size: 12px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", inherit; }
+  .timeline-action { font-size: 14px; color: var(--text-primary); font-weight: 500; }
+  .timeline-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+  .timeline-changes { background: var(--bg-page); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px 12px; font-size: 13px; }
+  .change-row { display: grid; grid-template-columns: 120px 1fr; gap: 12px; padding: 4px 0; }
+  .change-field { color: var(--text-secondary); font-size: 12px; }
+  .change-diff { font-size: 13px; }
+  .change-diff .from { color: var(--text-disabled); text-decoration: line-through; margin-right: 8px; }
+  .change-diff .arrow { color: var(--text-disabled); margin: 0 4px; }
+  .change-diff .to { color: var(--text-primary); font-weight: 500; }
+
+  /* ===== 顶导下拉菜单 ===== */
+  .nav-dropdown {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .nav-dropdown-trigger {
+    color: var(--text-secondary);
+    font-size: 14px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: color 200ms;
+  }
+  .nav-dropdown-trigger::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    margin-left: 4px;
+    margin-bottom: 3px;
+    transition: transform 200ms;
+    opacity: 0.6;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger {
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 16px;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger {
+    color: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger::after {
+    transform: rotate(-135deg);
+    margin-bottom: -3px;
+    opacity: 1;
+  }
+  .nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-2);
+    min-width: 220px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 200ms;
+    z-index: 200;
+  }
+  .nav-dropdown:hover .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+  .nav-dropdown-menu a {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    height: auto !important;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 150ms;
+  }
+  .nav-dropdown-menu a::after { display: none !important; }
+  .nav-dropdown-menu a:hover {
+    background: rgba(37, 99, 235, 0.06);
+    color: var(--color-primary);
+  }
+  .nav-dropdown-menu a svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+  .nav-dropdown-menu a:hover svg { opacity: 1; }
+  .nav-dropdown-menu .menu-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .nav-dropdown-menu .menu-label {
+    font-size: 14px;
+    line-height: 18px;
+  }
+  .nav-dropdown-menu .menu-desc {
+    font-size: 11px;
+    color: var(--text-disabled);
+    margin-top: 2px;
+    line-height: 14px;
+  }
+  .nav-dropdown-menu a:hover .menu-desc { color: var(--color-primary-secondary); }
+  .nav-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 0;
+    right: 0;
+    height: 8px;
+  }
+
+  /* 下拉菜单（导入/导出） */
+  .dropdown-wrap { position: relative; display: inline-block; }
+  .dropdown-menu { position: absolute; top: calc(100% + 6px); right: 0; min-width: 220px;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: var(--shadow-3); padding: 6px; z-index: 50; display: none; }
+  .dropdown-menu.show { display: block; }
+  .dropdown-menu a { display: block; padding: 8px 12px; border-radius: 6px; cursor: pointer; text-decoration: none; }
+  .dropdown-menu a:hover { background: var(--bg-secondary); }
+  .dropdown-menu .dd-title { font-size: 13px; color: var(--text-primary); font-weight: 500; }
+  .dropdown-menu .dd-desc { font-size: 11px; color: var(--text-disabled); margin-top: 2px; }
+  .dropdown-menu .dd-group { font-size: 11px; color: var(--text-disabled); padding: 6px 12px 2px; font-weight: 500; }
+  .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: rgba(0,0,0,.82); color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px;
+    z-index: 999; opacity: 0; transition: all 240ms; pointer-events: none; max-width: 80vw; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ===== 分类管理页专属 ===== */
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .tab { padding: 12px 20px; font-size: 14px; color: var(--text-secondary); cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 150ms; display:flex; align-items:center; gap:8px; }
+  .tab:hover { color: var(--color-primary); }
+  .tab.active { color: var(--color-primary); font-weight: 500; border-bottom-color: var(--color-primary); }
+  .tab .badge { background: var(--bg-secondary); color: var(--text-secondary); font-size: 11px; padding: 1px 7px; border-radius: 10px; }
+  .tab.active .badge { background: var(--color-primary); color: #fff; }
+  .tab .badge.warn { background: var(--color-warning); color: #fff; }
+  .tabpane { display: none; }
+  .tabpane.active { display: block; }
+
+  /* 映射总览统计卡 */
+  .ov-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+  .ov-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; position: relative; overflow: hidden; }
+  .ov-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; }
+  .ov-card.c1::before { background:#2563EB; } .ov-card.c2::before { background:#0FB17B; }
+  .ov-card.c3::before { background:#F6980D; } .ov-card.c4::before { background:#A251F6; }
+  .ov-card.c5::before { background:#2A8B9C; }
+  .ov-num { font-size: 22px; font-weight: 700; color: var(--text-primary); font-family:'DIN Alternate','Roboto',inherit; line-height: 28px; }
+  .ov-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .ov-sub { font-size: 11px; color: var(--text-disabled); margin-top: 4px; }
+
+  /* 映射表里"实际类型"多词体现复杂性 */
+  .raw-type { display:inline-block; background: var(--bg-secondary); border-radius: 4px; padding: 1px 8px; font-size: 12px; color: var(--text-secondary); margin: 2px 3px 2px 0; }
+  .raw-type.loose { background: rgba(246,152,13,.1); color: #C77800; border: 1px dashed rgba(246,152,13,.4); }
+
+  /* 树节点操作（维护态） */
+  .adm-tree-node { display:flex; align-items:center; padding:7px 8px; border-radius:6px; cursor:pointer; gap:6px; }
+  .adm-tree-node:hover { background: var(--bg-secondary); }
+  .adm-tree-node.sel { background: rgba(37,99,235,.08); }
+  .adm-tree-caret { width:16px; text-align:center; color:var(--text-disabled); font-size:10px; transition: transform 150ms; flex-shrink:0; cursor:pointer; }
+  .adm-tree-caret.expanded { transform: rotate(90deg); }
+  .adm-tree-caret.empty { visibility:hidden; }
+  .adm-tree-name { flex:1; font-size:13.5px; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .adm-tree-code { font-family:'DIN Alternate',monospace; font-size:11.5px; color:var(--text-disabled); margin-left:8px; }
+  .adm-tree-acts { display:none; gap:2px; margin-left:8px; }
+  .adm-tree-node:hover .adm-tree-acts { display:flex; }
+  .adm-act-btn { width:22px; height:22px; border:none; background:transparent; border-radius:4px; cursor:pointer; color:var(--text-disabled); font-size:13px; line-height:1; }
+  .adm-act-btn:hover { background:var(--bg-card); color:var(--color-primary); }
+  .adm-act-btn.del:hover { color:var(--color-error); }
+  .adm-tree-children { margin-left:18px; }
+  .new-flash { animation: flashbg 1.6s ease; }
+  @keyframes flashbg { 0% { background: rgba(15,177,123,.25); } 100% { background: transparent; } }
+
+  /* 抽屉表单（侧滑） */
+  .drawer-form-row { margin-bottom:16px; }
+  .dff-label { display:block; font-size:13px; color:var(--text-secondary); margin-bottom:6px; }
+  .dff-label .req { color:var(--color-error); margin-left:2px; }
+  .dff-ctrl { width:100%; height:38px; padding:0 12px; border:1px solid var(--border); border-radius:6px; background:var(--bg-card); font-size:14px; color:var(--text-primary); }
+  .dff-ctrl:focus { border-color:var(--color-primary); box-shadow:0 0 0 2px rgba(37,99,235,.1); outline:none; }
+  select.dff-ctrl { appearance:none; cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2386909C' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:30px; }
+  .dff-hint { font-size:11.5px; color:var(--text-disabled); margin-top:4px; }
+  .level-pills { display:flex; gap:6px; }
+  .level-pill { flex:1; text-align:center; padding:8px; border:1px solid var(--border); border-radius:6px; font-size:13px; cursor:pointer; color:var(--text-secondary); }
+  .level-pill.on { border-color:var(--color-primary); background:rgba(37,99,235,.06); color:var(--color-primary); font-weight:500; }
+
+  /* 映射弹窗里的下拉搜索 */
+  .map-select-wrap { position:relative; }
+  .map-options { position:absolute; top:calc(100% + 4px); left:0; right:0; max-height:240px; overflow-y:auto; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; box-shadow:var(--shadow-3); z-index:30; display:none; }
+  .map-options.show { display:block; }
+  .map-opt { padding:8px 12px; font-size:13px; cursor:pointer; display:flex; justify-content:space-between; gap:8px; }
+  .map-opt:hover { background:var(--bg-secondary); }
+  .map-opt .c { font-family:'DIN Alternate',monospace; font-size:11px; color:var(--text-disabled); }
+  .map-opt-add { padding:10px 12px; font-size:13px; color:var(--color-primary); cursor:pointer; border-top:1px solid var(--border); display:flex; align-items:center; gap:6px; position:sticky; bottom:0; background:var(--bg-card); }
+  .map-opt-add:hover { background:rgba(37,99,235,.06); }
+
+  .seg { display:inline-flex; border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+  .seg button { border:none; background:var(--bg-card); padding:6px 14px; font-size:13px; cursor:pointer; color:var(--text-secondary); }
+  .seg button.on { background:var(--color-primary); color:#fff; }
+
+  .relation-head { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--bg-secondary); border-radius:8px 8px 0 0; font-size:13px; font-weight:500; color:var(--text-primary); }
+  .pill-cnt { background:var(--bg-card); border-radius:10px; padding:1px 9px; font-size:11px; color:var(--text-secondary); font-weight:400; }
+
+  /* 分类原则 */
+  .principle { background:var(--bg-card); border:1px solid var(--border); border-left:3px solid var(--color-primary); border-radius:8px; padding:14px 16px; margin-bottom:16px; }
+  .principle-title { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--color-primary); margin-bottom:10px; }
+  .principle-body { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:8px 20px; }
+  .principle-item { font-size:12.5px; color:var(--text-secondary); line-height:18px; }
+  .principle-item b { color:var(--text-primary); }
+
+  /* 内层子 TAB（实际映射 / 规范分类） */
+  .subtabs { display:flex; align-items:center; gap:4px; background:var(--bg-secondary); border-radius:8px; padding:4px; margin-bottom:14px; flex-wrap:wrap; }
+  .subtab { padding:7px 16px; font-size:13px; color:var(--text-secondary); cursor:pointer; border-radius:6px; display:flex; align-items:center; gap:6px; }
+  .subtab:hover { color:var(--color-primary); }
+  .subtab.active { background:var(--bg-card); color:var(--color-primary); font-weight:500; box-shadow:var(--shadow-1); }
+  .subtab .badge { background:var(--bg-page); color:var(--text-secondary); font-size:11px; padding:1px 7px; border-radius:10px; }
+  .subtab.active .badge { background:var(--color-primary); color:#fff; }
+  .subtab-filters { display:flex; align-items:center; gap:8px; margin-left:auto; flex-wrap:wrap; }
+  .subtab-filters .filter-input, .subtab-filters .filter-select { height:32px; font-size:12.5px; }
+  .subpane { display:none; }
+  .subpane.active { display:block; }
+  .yes-map { color:var(--color-success); font-weight:500; }
+  /* 变更记录时间轴 */
+  .chg-item { position:relative; padding:0 0 16px 22px; border-left:2px solid var(--border); margin-left:6px; }
+  .chg-item:last-child { border-left-color:transparent; }
+  .chg-dot { position:absolute; left:-7px; top:2px; width:12px; height:12px; border-radius:50%; border:2px solid var(--bg-card); }
+  .chg-dot.tree { background:var(--color-primary); } .chg-dot.mapping { background:#0FB17B; } .chg-dot.unmapped { background:var(--color-warning); }
+  .chg-head { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .chg-action { font-size:13.5px; font-weight:500; color:var(--text-primary); }
+  .chg-time { font-size:11.5px; color:var(--text-disabled); font-family:'DIN Alternate',monospace; }
+  .chg-meta { font-size:12px; color:var(--text-secondary); margin-top:3px; }
+  .chg-diff { font-size:12px; margin-top:5px; background:var(--bg-page); border-radius:6px; padding:7px 10px; }
+  .chg-diff .from { color:var(--color-error); text-decoration:line-through; opacity:.75; }
+  .chg-diff .arrow { color:var(--text-disabled); margin:0 6px; }
+  .chg-diff .to { color:var(--color-success); }
+  .no-map { color:var(--text-disabled); }
+
+  .constraint { display:flex; align-items:flex-start; gap:8px; font-size:12px; color:#C77800;    background:rgba(246,152,13,.08); border:1px solid rgba(246,152,13,.25); border-radius:6px; padding:8px 12px; }
+  .constraint svg { flex-shrink:0; margin-top:1px; }
+  .constraint b { color:#A35A00; }
+
+  /* 简易内嵌树（映射窗口里新增分类） */
+  .mini-tree { border:1px solid var(--border); border-radius:8px; padding:8px; max-height:200px; overflow-y:auto; background:var(--bg-page); }
+  .mini-node { display:flex; align-items:center; gap:6px; padding:5px 6px; border-radius:5px; font-size:13px; }
+  .mini-node:hover { background:var(--bg-card); }
+  .mini-node.pick { background:rgba(37,99,235,.08); }
+  .mini-caret { width:14px; text-align:center; color:var(--text-disabled); font-size:9px; cursor:pointer; transition:transform 150ms; flex-shrink:0; }
+  .mini-caret.expanded { transform:rotate(90deg); }
+  .mini-caret.empty { visibility:hidden; }
+  .mini-name { flex:1; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mini-code { font-family:'DIN Alternate',monospace; font-size:10.5px; color:var(--text-disabled); }
+  .mini-addbtn { border:none; background:transparent; color:var(--color-primary); cursor:pointer; font-size:15px; width:20px; height:20px; border-radius:4px; line-height:1; }
+  .mini-addbtn:hover { background:rgba(37,99,235,.1); }
+  .mini-children { margin-left:16px; }
+  .mini-addrow { display:flex; gap:6px; margin-left:16px; padding:4px 6px; }
+  .mini-addrow input { flex:1; height:30px; padding:0 8px; border:1px solid var(--color-primary); border-radius:5px; font-size:12.5px; outline:none; }
+
+  /* 抽屉 */
+  .drawer-mask { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:200; opacity:0; visibility:hidden; transition:all 220ms; }
+  .drawer-mask.show { opacity:1; visibility:visible; }
+  .drawer { position:fixed; top:0; right:0; bottom:0; width:440px; max-width:92vw; background:var(--bg-card);
+    box-shadow:-4px 0 24px rgba(0,0,0,.12); z-index:201; transform:translateX(100%); transition:transform 260ms cubic-bezier(.4,0,.2,1);
+    display:flex; flex-direction:column; }
+  .drawer.show { transform:translateX(0); }
+  .drawer-head { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); flex-shrink:0; }
+  .drawer-title { font-size:16px; font-weight:600; color:var(--text-primary); }
+  .drawer-close { width:30px; height:30px; border:none; background:transparent; font-size:22px; color:var(--text-disabled); cursor:pointer; border-radius:6px; line-height:1; }
+  .drawer-close:hover { background:var(--bg-secondary); color:var(--text-primary); }
+  .drawer-body { padding:20px 22px; overflow-y:auto; flex:1; }
+  .drawer-foot { display:flex; justify-content:flex-end; gap:12px; padding:14px 22px; border-top:1px solid var(--border); flex-shrink:0; }
+</style>
+</head>
+<body><!-- 顶部导航 -->
+<header class="topbar">
+  <div class="logo-wrap">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>
+    </div>
+    <div class="logo-text">身份数据平台</div>
+  </div>
+  <nav>
+    <a href="页面主页.html">主页</a>
+    <div class="nav-dropdown active">
+      <a href="m1-basic-identity.html" class="nav-dropdown-trigger" style="text-decoration:none;color:inherit">身份管理</a>
+      <div class="nav-dropdown-menu">
+        <a href="m1-basic-identity.html">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员基础身份</div>
+            <div class="menu-desc">人员进档 · 一人一ID · 多源头采集</div>
+          </div>
+        </a>
+        <a href="m2-classification.html">
+          <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员分类身份</div>
+            <div class="menu-desc">树形分类 · 标准属性 · 实例挂载</div>
+          </div>
+        </a>
+        <a href="m3-position.html">
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员岗位身份</div>
+            <div class="menu-desc">广义岗位 · 一人多身份</div>
+          </div>
+        </a>
+        <a href="m7-custom-tags.html">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员自定义标签管理</div>
+            <div class="menu-desc">自定义群组 · 灵活标注 · 便捷查询</div>
+          </div>
+        </a>
+        <a href="m4-org.html">
+          <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">组织机构体系</div>
+            <div class="menu-desc">院系树 · 强绑定身份</div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <a href="m5-identity-permission.html">身份权限管理</a>
+    <a href="m6-data-query.html">数据查询</a>
+  </nav>
+  <div class="topbar-right">
+    <span class="time-display" id="time-display"></span>
+    <div class="user-info">
+      <div class="user-avatar">管</div>
+      <span class="user-name">管理员 · 数据治理岗</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- 左侧导航 -->
+  <aside class="sidebar">
+    <div class="sidebar-section">人员管理</div>
+    <a href="m1-basic-identity.html" style="display:block"><div class="sidebar-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg><span>人员基础身份</span></div></a>
+    <a href="m2-classification.html" style="display:block"><div class="sidebar-item active"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg><span>人员分类身份</span></div></a>
+    <a href="m3-position.html" style="display:block"><div class="sidebar-item"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg><span>人员岗位身份</span></div></a>
+    <a href="m7-custom-tags.html" style="display:block"><div class="sidebar-item"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg><span>自定义标签身份</span></div></a>
+    <a href="m4-org.html" style="display:block"><div class="sidebar-item"><svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg><span>组织机构体系</span></div></a>
+
+    <div class="sidebar-section" style="margin-top:8px">分类管理</div>
+    <div class="sidebar-item active" data-tab="tree"><svg viewBox="0 0 24 24"><path d="M12 2v6m0 0a3 3 0 1 0 0 6m0-6a3 3 0 1 1 0 6m0 0v6m-7-7h14"/></svg><span>分类树维护</span></div>
+    <div class="sidebar-item" data-tab="mapping"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>分类映射管理</span></div>
+    <div class="sidebar-item" data-tab="roster"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 10h16M4 15h10M4 20h10"/></svg><span>人员分类详细清单</span></div>
+    <div class="sidebar-item" data-tab="changes"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg><span>变更记录</span></div>
+    <div style="margin-top:auto;padding:12px"><a href="m2-classification.html" style="font-size:12px;color:var(--text-disabled);text-decoration:none">← 返回分类身份</a></div>
+  </aside>
+
+  <main class="main">
+    <div class="breadcrumb">
+      <a href="页面主页.html">平台总览</a><span class="sep">/</span>
+      <a href="m2-classification.html">人员分类身份</a><span class="sep">/</span>
+      <span class="last">分类管理</span>
+    </div>
+
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">分类管理</h1>
+        <p class="page-desc">分类树维护 · 分类映射治理 · 未映射人员处理 · 全部变更本地 JSON 持久化</p>
+      </div>
+      <div class="page-stats">
+        <span>分类节点 <strong id="ps-nodes">0</strong></span>
+        <span>映射关系 <strong id="ps-maps">0</strong></span>
+        <span class="warn">未映射 <strong id="ps-unm">0</strong></span>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="tree"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2v6m0 0a3 3 0 1 0 0 6m0-6a3 3 0 1 1 0 6m0 0v6m-7-7h14" stroke="currentColor" stroke-width="1.6"/></svg>分类树维护</div>
+      <div class="tab" data-tab="mapping"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="2"/></svg>分类映射管理 <span class="badge" id="tb-maps">0</span></div>
+      <div class="tab" data-tab="roster"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 5h16M4 10h16M4 15h10M4 20h10" stroke="currentColor" stroke-width="1.8"/></svg>人员分类详细清单 <span class="badge" id="tb-roster">0</span></div>
+      <div class="tab" data-tab="changes"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5" stroke="currentColor" stroke-width="1.8"/></svg>变更记录 <span class="badge" id="tb-chg">0</span></div>
+    </div>
+
+    <!-- ===== Tab1: 分类树维护 ===== -->
+    <section class="tabpane active" id="pane-tree">
+      <div class="info-box">
+        <div class="info-box-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+        <div class="info-box-content"><strong>分类树维护</strong>：在此新增 / 删除分类节点，支持一级、二级、三级（及以下）分类。所有改动自动保存在浏览器本地（JSON），可随时导出备份或导入恢复。</div>
+      </div>
+      <div class="filter-bar">
+        <div class="search-wrap"><span class="search-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg></span><input class="filter-input search" placeholder="搜索分类名称 / 编码" id="adm-tree-search"></div>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm" onclick="exportJSON()">导出 JSON 备份</button>
+        <button class="btn btn-secondary btn-sm" onclick="importJSON()">导入 JSON</button>
+        <button class="btn btn-secondary btn-sm" onclick="resetData()">重置演示数据</button>
+        <button class="btn btn-primary btn-sm" onclick="openClsDrawer()">+ 新增分类</button>
+      </div>
+      <div class="panel" style="padding:8px 4px">
+        <div style="display:flex;justify-content:space-between;padding:6px 12px;margin-bottom:4px">
+          <span style="font-size:13px;font-weight:500;color:var(--text-primary)">分类体系树</span>
+          <span style="font-size:12px;color:var(--text-disabled);font-family:'DIN Alternate',monospace" id="adm-tree-stats">0 项</span>
+        </div>
+        <div id="adm-tree-body" style="max-height:560px;overflow-y:auto;padding:0 8px"></div>
+      </div>
+    </section>
+
+    <!-- ===== Tab: 人员分类详细清单 ===== -->
+    <section class="tabpane" id="pane-roster">
+      <div class="info-box">
+        <div class="info-box-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+        <div class="info-box-content"><strong>人员分类详细清单</strong>：与「人员分类身份」主页面的人员分类数据结构一致。每名人员可有多个分类身份（一人多类型），每条分类单独标注<strong>人员分类状态</strong>与<strong>是否有效授权状态</strong>。可点击「编辑」逐条调整该人不同类型对应的人员分类。</div>
+      </div>
+      <div class="filter-bar">
+        <div class="search-wrap"><span class="search-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg></span><input class="filter-input search" placeholder="搜索 UID / 学工号 / 姓名" id="ros-search"></div>
+        <select class="filter-select" id="ros-root">
+          <option value="">全部一级分类</option>
+          <option value="01">教职工</option><option value="02">学生</option><option value="03">外协人员</option><option value="04">校友</option><option value="05">校外人员</option>
+        </select>
+        <select class="filter-select" id="ros-auth">
+          <option value="">全部授权状态</option>
+          <option value="yes">有有效授权</option>
+          <option value="no">无有效授权</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <span style="font-size:12px;color:var(--text-disabled)">共 <strong id="ros-count" style="color:var(--text-secondary)">0</strong> 人</span>
+      </div>
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th style="width:120px">人员唯一标识</th>
+              <th style="width:100px">学工号</th>
+              <th style="width:90px">姓名</th>
+              <th style="width:80px">单位号</th>
+              <th>单位名称</th>
+              <th>人员分类身份</th>
+              <th style="width:100px">人员分类状态</th>
+              <th style="width:110px">是否有效授权状态</th>
+              <th style="width:70px">操作</th>
+            </tr></thead>
+            <tbody id="ros-tbody"></tbody>
+          </table>
+        </div>
+        <div id="ros-pager"></div>
+      </div>
+    </section>
+
+    <!-- ===== Tab2: 分类映射管理 ===== -->
+    <section class="tabpane" id="pane-mapping">
+      <div class="info-box">
+        <div class="info-box-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+        <div class="info-box-content"><strong>分类映射管理</strong>：把各来源系统下发的<strong>不规范分类描述</strong>归类到校级统一分类，是常态化治理维护表。<strong>来源系统、管理单位、来源代码等源头信息在此维护</strong>（分类本身是校级的，无实际来源/管理单位）。</div>
+      </div>
+
+      <!-- 分类原则 -->
+      <div class="principle">
+        <div class="principle-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          分类原则 · 关系大类
+        </div>
+        <div class="principle-body" id="principle-body"></div>
+      </div>
+
+      <div class="ov-grid" id="ov-grid"></div>
+
+      <!-- 内层子 TAB -->
+      <div class="subtabs">
+        <div class="subtab active" data-sub="spec" onclick="switchSub('spec')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 7h18M3 12h18M3 17h18" stroke="currentColor" stroke-width="2"/></svg>
+          总体映射分类情况 <span class="badge" id="sub-spec-cnt">0</span>
+        </div>
+        <div class="subtab" data-sub="source" onclick="switchSub('source')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7" stroke="currentColor" stroke-width="1.8"/></svg>
+          源头人员分类情况 <span class="badge" id="sub-source-cnt">0</span>
+        </div>
+      </div>
+
+      <!-- 子页1：总体映射分类情况 -->
+      <div class="subpane active" id="subpane-spec">
+        <div class="info-box" style="margin-bottom:12px">
+          <div class="info-box-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+          <div class="info-box-content">人员分类标准的<strong>总体映射概览</strong>：逐条列出所有标准分类、已映射多少源头类型、哪些尚未映射。可在此<strong>编辑分类、快速新增分类、删除分类</strong>（已绑定映射关系的分类不可删除）。未映射的源头类型在「源头人员分类情况」中处理映射。</div>
+        </div>
+        <div class="filter-bar">
+          <div class="search-wrap"><span class="search-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg></span><input class="filter-input search" placeholder="搜索分类名称 / 编码" id="spec-search"></div>
+          <select class="filter-select" id="spec-rel-filter"><option value="">全部目标大类</option></select>
+          <select class="filter-select" id="spec-mapped-filter">
+            <option value="">是否已映射（全部）</option>
+            <option value="yes">已映射</option>
+            <option value="no">未映射</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="openClsDrawer()">+ 新增分类</button>
+          <div class="filter-spacer"></div>
+          <span style="font-size:12px;color:var(--text-disabled)">已映射 <strong id="spec-mapped-cnt" style="color:var(--color-success)">0</strong> / 共 <strong id="spec-total-cnt" style="color:var(--text-secondary)">0</strong> 个分类</span>
+        </div>
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table>
+              <thead><tr>
+                <th style="width:100px">目标大类</th>
+                <th>目标子类（统一分类）</th>
+                <th>来源数据人员类型 / 描述</th>
+                <th style="width:150px">来源系统</th>
+                <th style="width:120px">系统管理单位</th>
+                <th style="width:90px">来源代码</th>
+                <th style="width:80px">映射人数</th>
+                <th style="width:90px">是否已映射</th>
+                <th style="width:70px">操作</th>
+              </tr></thead>
+              <tbody id="spec-tbody"></tbody>
+            </table>
+          </div>
+          <div id="spec-pager"></div>
+        </div>
+      </div>
+
+      <!-- 子页3：源头人员分类情况 -->
+      <div class="subpane" id="subpane-source">
+        <div class="info-box" style="margin-bottom:12px">
+          <div class="info-box-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+          <div class="info-box-content">汇集各来源系统/线下采集下发的<strong>原始人员分类（来源人员类型/描述）</strong>，标注是否已完成映射及其对应的目标大类/目标子类。点击右上「同步源头数据」可拉取当下最新源头分类数据。</div>
+        </div>
+        <div class="filter-bar">
+          <div class="search-wrap"><span class="search-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg></span><input class="filter-input search" placeholder="搜索来源类型 / 描述" id="src-search"></div>
+          <select class="filter-select" id="src-sys-filter"><option value="">全部来源系统/线下采集</option></select>
+          <select class="filter-select" id="src-unit-filter"><option value="">全部来源单位</option></select>
+          <select class="filter-select" id="src-mapped-filter">
+            <option value="">是否完成映射（全部）</option>
+            <option value="yes">已完成映射</option>
+            <option value="no">未完成映射</option>
+          </select>
+          <a href="etl-monitor.html" target="_blank"><button class="btn btn-secondary btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="margin-right:4px"><path d="M21 12a9 9 0 1 1-3-6.7M21 3v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            同步源头数据（ETL 监控）
+          </button></a>
+          <div class="filter-spacer"></div>
+          <span style="font-size:12px;color:var(--text-disabled)">已映射 <strong id="src-mapped-cnt" style="color:var(--color-success)">0</strong> / 共 <strong id="src-total-cnt" style="color:var(--text-secondary)">0</strong> 条</span>
+        </div>
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table>
+              <thead><tr>
+                <th style="width:160px">来源系统 / 线下采集</th>
+                <th>来源人员类型 / 人员描述</th>
+                <th style="width:130px">来源单位</th>
+                <th style="width:100px">是否完成映射</th>
+                <th style="width:100px">映射目标大类</th>
+                <th>映射目标子类</th>
+                <th style="width:70px">操作</th>
+              </tr></thead>
+              <tbody id="src-tbody"></tbody>
+            </table>
+          </div>
+          <div id="src-pager"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Tab4: 变更记录 ===== -->
+    <section class="tabpane" id="pane-changes">
+      <div class="info-box">
+        <div class="info-box-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+        <div class="info-box-content"><strong>变更记录</strong>：记录分类管理下的全部操作——分类新增/修改/删除、映射调整、未映射人员归类等，含时间、操作方与变更内容，本地持久化保存。</div>
+      </div>
+      <div class="filter-bar">
+        <div class="search-wrap"><span class="search-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg></span><input class="filter-input search" placeholder="搜索变更内容 / 对象" id="chg-search"></div>
+        <select class="filter-select" id="chg-type-filter">
+          <option value="">全部变更类型</option>
+          <option value="tree">分类树变更</option>
+          <option value="mapping">映射变更</option>
+          <option value="unmapped">未映射归类</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm" onclick="clearChanges()">清空记录</button>
+        <span style="font-size:12px;color:var(--text-disabled)">共 <strong id="chg-count" style="color:var(--text-secondary)">0</strong> 条</span>
+      </div>
+      <div id="chg-timeline" style="padding:4px 0"></div>
+      <div id="chg-pager"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===== 新增/编辑 分类 抽屉 ===== -->
+<div class="drawer-mask" id="cls-mask" onclick="closeClsDrawer()"></div>
+<div class="drawer" id="cls-drawer">
+  <div class="drawer-head"><div class="drawer-title" id="cls-drawer-title">新增分类</div><button class="drawer-close" onclick="closeClsDrawer()">×</button></div>
+  <div class="drawer-body">
+    <div class="dff-hint" style="margin-bottom:14px;background:var(--bg-secondary);padding:10px 12px;border-radius:6px">分类为校级统一口径，<b style="color:var(--text-secondary)">仅维护名称、编码、层级、备注</b>。来源系统、管理单位、来源代码等源头信息在「分类映射管理」中维护。</div>
+    <div class="drawer-form-row" id="cls-level-row">
+      <label class="dff-label">分类层级 <span class="req">*</span></label>
+      <div class="level-pills" id="cls-levels">
+        <div class="level-pill on" data-lv="1">一级</div>
+        <div class="level-pill" data-lv="2">二级</div>
+        <div class="level-pill" data-lv="3">三级</div>
+        <div class="level-pill" data-lv="4">四级</div>
+      </div>
+    </div>
+    <div class="drawer-form-row" id="cls-parent-row" style="display:none">
+      <label class="dff-label">上级分类 <span class="req">*</span></label>
+      <select class="dff-ctrl" id="cls-parent"></select>
+      <div class="dff-hint">二级及以下需指定父级分类，子级编码将自动生成。</div>
+    </div>
+    <div class="drawer-form-row">
+      <label class="dff-label">分类名称 <span class="req">*</span></label>
+      <input class="dff-ctrl" id="cls-name" placeholder="如：附属医院新机制PI">
+    </div>
+    <div class="drawer-form-row">
+      <label class="dff-label">分类编码</label>
+      <input class="dff-ctrl" id="cls-code" placeholder="留空则自动生成">
+      <div class="dff-hint" id="cls-code-hint">留空将根据父级 + 序号自动生成编码。</div>
+    </div>
+    <div class="drawer-form-row">
+      <label class="dff-label">备注</label>
+      <input class="dff-ctrl" id="cls-note" placeholder="可选">
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn btn-secondary btn-sm" onclick="closeClsDrawer()">取消</button>
+    <button class="btn btn-primary btn-sm" onclick="saveCls()" id="cls-save-btn">保存分类</button>
+  </div>
+</div>
+
+<!-- ===== 映射 弹窗（未映射→选择分类，含简易内嵌树新增） ===== -->
+<div class="drawer-mask" id="unmap-mask" onclick="closeUnmapModal()"></div>
+<div class="drawer" id="unmap-drawer" style="width:520px">
+  <div class="drawer-head"><div class="drawer-title">映射人员到统一分类</div><button class="drawer-close" onclick="closeUnmapModal()">×</button></div>
+  <div class="drawer-body">
+    <div style="background:var(--bg-secondary);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px">
+      <div style="margin-bottom:6px"><span style="color:var(--text-disabled)">人员：</span><strong id="um-name"></strong> <span class="mono" style="color:var(--text-disabled)" id="um-uid"></span></div>
+      <div style="margin-bottom:6px"><span style="color:var(--text-disabled)">来源系统：</span><span id="um-src"></span></div>
+      <div><span style="color:var(--text-disabled)">来源分类描述：</span><span class="raw-type loose" id="um-rawtype"></span></div>
+    </div>
+    <div class="drawer-form-row">
+      <label class="dff-label">关系大类 <span class="req">*</span></label>
+      <select class="dff-ctrl" id="um-rel" onchange="onRelChange()"></select>
+      <div class="dff-hint">选定关系大类后，下方只展示该大类下的分类。</div>
+    </div>
+    <div class="drawer-form-row">
+      <label class="dff-label">映射到统一分类 <span class="req">*</span></label>
+      <div class="map-select-wrap">
+        <input class="dff-ctrl" id="um-cls-input" placeholder="搜索并选择分类…" autocomplete="off" onfocus="showMapOpts()" oninput="renderMapOpts()">
+        <div class="map-options" id="um-cls-opts"></div>
+      </div>
+      <input type="hidden" id="um-cls-code">
+    </div>
+
+    <!-- 简易内嵌分类编辑（找不到合适分类时直接在此新建） -->
+    <div class="drawer-form-row">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <label class="dff-label" style="margin:0">找不到合适分类？在此快速新增 <span id="mini-root-name" style="color:var(--color-primary)"></span></label>
+        <button class="btn btn-text btn-sm" onclick="toggleMiniTree()" id="mini-toggle">展开 ▾</button>
+      </div>
+      <div id="mini-tree-wrap" style="display:none">
+        <div class="dff-hint" style="margin-bottom:6px">一级默认为当前关系大类（可在下拉切换）；在二、三级节点上点 <b>+</b> 添加下级，只需填名称，编码按规则自动生成。新增后点该节点名即可选中映射。</div>
+        <div class="mini-tree" id="mini-tree"></div>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn btn-secondary btn-sm" onclick="closeUnmapModal()">取消</button>
+    <button class="btn btn-primary btn-sm" onclick="submitMapping()">提交映射</button>
+  </div>
+</div>
+
+<!-- ===== 编辑映射 抽屉（改目标分类，来源只读） ===== -->
+<div class="drawer-mask" id="mapedit-mask" onclick="closeMapEdit()"></div>
+<div class="drawer" id="mapedit-drawer" style="width:520px">
+  <div class="drawer-head"><div class="drawer-title">编辑映射</div><button class="drawer-close" onclick="closeMapEdit()">×</button></div>
+  <div class="drawer-body">
+    <div style="background:var(--bg-secondary);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px">
+      <div style="margin-bottom:6px"><span style="color:var(--text-disabled)">关系大类：</span><strong id="me-rel"></strong></div>
+      <div style="margin-bottom:6px"><span style="color:var(--text-disabled)">来源系统：</span><span id="me-src"></span> <span class="tag tag-gray" style="font-size:10px">只读</span></div>
+      <div><span style="color:var(--text-disabled)">来源实际类型：</span><span id="me-rawtypes"></span> <span class="tag tag-gray" style="font-size:10px">只读</span></div>
+    </div>
+    <div class="constraint" style="margin-bottom:14px">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      业务约束：一个来源系统 + 一个来源实际类型<b>只能对应一个目标分类</b>（可对应任意层级，但唯一）。
+    </div>
+    <div class="drawer-form-row">
+      <label class="dff-label">目标分类 <span class="req">*</span></label>
+      <div class="map-select-wrap">
+        <input class="dff-ctrl" id="me-cls-input" placeholder="搜索并选择分类…" autocomplete="off" onfocus="showMeOpts()" oninput="renderMeOpts()">
+        <div class="map-options" id="me-cls-opts"></div>
+      </div>
+      <input type="hidden" id="me-cls-code">
+      <div class="dff-hint">可对应一级到末级的任意分类，但保存后该(来源系统+实际类型)只保留这一个目标分类。</div>
+    </div>
+    <div class="drawer-form-row">
+      <label class="dff-label">管理单位（源头维护信息）</label>
+      <input class="dff-ctrl" id="me-unit" placeholder="如：人力资源管理处">
+    </div>
+    <div class="drawer-form-row">
+      <label class="dff-label">来源代码（源头维护信息）</label>
+      <input class="dff-ctrl" id="me-hr" placeholder="如：A03 / B开头">
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn btn-secondary btn-sm" onclick="closeMapEdit()">取消</button>
+    <button class="btn btn-primary btn-sm" onclick="saveMapEdit()">保存映射</button>
+  </div>
+</div>
+
+<!-- ===== 总体映射分类 · 编辑抽屉（四项可下拉） ===== -->
+<div class="drawer-mask" id="specedit-mask" onclick="closeSpecEdit()"></div>
+<div class="drawer" id="specedit-drawer" style="width:560px">
+  <div class="drawer-head"><div class="drawer-title">编辑映射 · 总体分类</div><button class="drawer-close" onclick="closeSpecEdit()">×</button></div>
+  <div class="drawer-body">
+    <!-- 当前展示所有字段 -->
+    <div style="background:var(--bg-secondary);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:12.5px;line-height:20px">
+      <div style="font-weight:500;color:var(--text-primary);margin-bottom:6px">当前映射信息</div>
+      <div id="se-current" style="color:var(--text-secondary)"></div>
+    </div>
+    <div class="constraint" style="margin-bottom:14px">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      业务约束：一个来源系统 + 一个来源类型<b>只能对应一个目标分类</b>。下方均为下拉选择。
+    </div>
+    <div class="drawer-form-row">
+      <label class="dff-label">目标大类 <span class="req">*</span></label>
+      <select class="dff-ctrl" id="se-rel" onchange="onSeRelChange()"></select>
+    </div>
+    <div class="drawer-form-row">
+      <label class="dff-label">目标子类 <span class="req">*</span>（标注已/未映射）</label>
+      <select class="dff-ctrl" id="se-code"></select>
+      <div class="dff-hint">仅展示所选目标大类下的子类，并标注其是否已被映射。</div>
+    </div>
+    <div class="drawer-form-row">
+      <label class="dff-label">来源系统 <span class="req">*</span></label>
+      <select class="dff-ctrl" id="se-src" onchange="onSeSrcChange()"></select>
+      <div class="dff-hint">必须先选择来源系统，再选择来源类型。</div>
+    </div>
+    <div class="drawer-form-row">
+      <label class="dff-label">来源数据人员类型 / 描述 <span class="req">*</span>（标注已/未映射）</label>
+      <select class="dff-ctrl" id="se-rawtype" disabled></select>
+      <div class="dff-hint" id="se-rawtype-hint">请先选择来源系统。</div>
+    </div>
+    <div class="drawer-form-row">
+      <label class="dff-label">管理单位</label>
+      <input class="dff-ctrl" id="se-unit" placeholder="如：人力资源管理处">
+    </div>
+    <div class="drawer-form-row">
+      <label class="dff-label">来源代码</label>
+      <input class="dff-ctrl" id="se-hr" placeholder="如：A03 / B开头">
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn btn-secondary btn-sm" onclick="closeSpecEdit()">取消</button>
+    <button class="btn btn-primary btn-sm" onclick="saveSpecEdit()">保存映射</button>
+  </div>
+</div>
+
+<!-- ===== 人员分类编辑 抽屉 ===== -->
+<div class="drawer-mask" id="rosedit-mask" onclick="closeRosterEdit()"></div>
+<div class="drawer" id="rosedit-drawer" style="width:560px">
+  <div class="drawer-head"><div class="drawer-title">编辑人员分类</div><button class="drawer-close" onclick="closeRosterEdit()">×</button></div>
+  <div class="drawer-body">
+    <div style="background:var(--bg-secondary);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px" id="rose-who"></div>
+    <div class="dff-hint" style="margin-bottom:12px">逐条调整该人员不同类型对应的人员分类、人员分类状态与是否有效授权状态。一人可有多条分类。</div>
+    <div id="rose-list"></div>
+    <button class="btn btn-secondary btn-sm" onclick="rosAddId()" style="width:100%;margin-top:4px">+ 新增一条分类</button>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn btn-secondary btn-sm" onclick="closeRosterEdit()">取消</button>
+    <button class="btn btn-primary btn-sm" onclick="saveRosterEdit()">保存</button>
+  </div>
+</div>
+
+<script src="sysu-cls.js"></script>
+<script>
+  // ===== 时间 =====
+  function tick(){const d=new Date(),p=n=>String(n).padStart(2,'0');const el=document.getElementById('time-display');if(el)el.textContent=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;}
+  setInterval(tick,1000);tick();
+
+  function toast(msg){let t=document.getElementById('app-toast');if(!t){t=document.createElement('div');t.id='app-toast';t.className='toast';document.body.appendChild(t);}t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2600);}
+
+  // ===== 持久化 =====
+  const LS_TREE='sysu_cls_tree2', LS_MAP='sysu_cls_mappings2', LS_UNM='sysu_cls_unmapped2', LS_CHG='sysu_cls_changes';
+  const LS_ROSTER='sysu_cls_roster', LS_SOURCE='sysu_cls_source';
+  let TREE=[], MAPPINGS=[], UNMAPPED=[], CHANGES=[], ROSTER=[], SOURCE=[];
+
+  function nowStr(){ const d=new Date(),p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
+  function logChange(type, action, target, diffs){
+    CHANGES.unshift({ type, action, target, diffs:diffs||[], time:nowStr(), operator:'管理员 · 数据治理岗' });
+    if(CHANGES.length>500) CHANGES.length=500;
+    try{ localStorage.setItem(LS_CHG, JSON.stringify(CHANGES)); }catch(e){}
+  }
+
+  // 关系大类 = 分类体系根名称
+  const RELATIONS=['教职工','学生','外协人员','校友','校外人员'];
+  const REL_ROOTCODE={ '教职工':'01','学生':'02','外协人员':'03','校友':'04','校外人员':'05' };
+  const REL_META={
+    '教职工':{cls:'c1', principle:'校内有<b>聘用关系</b>的人员：事业编制、合同聘用、专职科研、附属医院职工、博士后等。来源以人事系统为主。'},
+    '学生':{cls:'c2', principle:'与学校有<b>学籍/培养关系</b>的人员：本科生、研究生、非学籍生、进修生等。来源为教务/研究生系统。'},
+    '外协人员':{cls:'c3', principle:'为学校提供<b>合作协作/外包服务</b>的人员：安保、物业、驻场服务、商业服务等。来源多为协同平台，类型口语化、不规范。'},
+    '校友':{cls:'c4', principle:'已毕业的<b>校友</b>群体。来源为校友系统。'},
+    '校外人员':{cls:'c5', principle:'其他<b>校外关系</b>：访客、常客、退休返聘、校内住户等。来源多源，类型常无统一口径。'},
+  };
+
+  function defaultTree(){ return (typeof SYSU_CLASSIFICATION!=='undefined')?JSON.parse(JSON.stringify(SYSU_CLASSIFICATION)):[]; }
+
+  // 默认映射：rel 用根名称；源头信息（unit/hr）挂在映射上；校外类用口语化多词
+  function defaultMappings(){ return [
+    {rel:'教职工', src:'人力资源管理系统', rawTypes:['事业编制'], code:'010101', unit:'人力资源管理处', hr:'0', count:3120},
+    {rel:'教职工', src:'人力资源管理系统', rawTypes:['研究型教师','科研教师'], code:'010102', unit:'人力资源管理处', hr:'07', count:860},
+    {rel:'教职工', src:'人力资源管理系统', rawTypes:['项目聘用','合同制(项目)'], code:'010103', unit:'人力资源管理处', hr:'11', count:540},
+    {rel:'教职工', src:'附属医院HR', rawTypes:['固定编制'], code:'010301', unit:'附属医院', hr:'A02', count:2100},
+    {rel:'学生', src:'教务系统', rawTypes:['普通本科生'], code:'02010101', unit:'教务部', hr:'bksxslxmc=普通本科生', count:24500},
+    {rel:'学生', src:'研究生系统', rawTypes:['全日制学术学位','统招研究生'], code:'02010201', unit:'研究生院', hr:'sfqrz=1', count:13800},
+    {rel:'学生', src:'研究生系统', rawTypes:['外国来华留学研究生'], code:'02010202', unit:'研究生院', hr:'留学研究生', count:620},
+    {rel:'校外人员', src:'访客系统', rawTypes:['临时访客','临时进校','短期来访'], code:'050101', unit:'保卫处', hr:'', count:8800},
+    {rel:'校外人员', src:'访客系统', rawTypes:['教职工家属','职工亲属'], code:'050105', unit:'保卫处', hr:'', count:1200},
+    {rel:'外协人员', src:'协同人员管理服务平台', rawTypes:['食堂阿姨','饭堂工作人员','后勤帮厨'], code:'0302', unit:'二级单位', hr:'', count:430},
+    {rel:'外协人员', src:'协同人员管理服务平台', rawTypes:['保安','安保大叔','门岗师傅'], code:'0301', unit:'二级单位', hr:'', count:380},
+    {rel:'外协人员', src:'协同人员管理服务平台', rawTypes:['施工的','工地工人','基建队'], code:'030302', unit:'二级单位', hr:'', count:210},
+    {rel:'校外人员', src:'协同人员管理服务平台', rawTypes:['退休返聘老同志','离退休人员','老领导'], code:'050201', unit:'二级单位', hr:'', count:160},
+    {rel:'校外人员', src:'访客系统', rawTypes:['住在学校里的','校内住户','家属区住户'], code:'050204', unit:'保卫处', hr:'', count:90},
+    {rel:'校友', src:'校友系统', rawTypes:['毕业校友','往届毕业生'], code:'0401', unit:'校友会', hr:'', count:38000},
+  ]; }
+
+  function defaultUnmapped(){ return [
+    {uid:'NP00045672', name:'吴泽宇', dwmc:'附属第三医院', src:'附属医院HR', rawType:'编外合同工'},
+    {uid:'NP00046891', name:'佐藤健太', dwmc:'国际合作办公室', src:'访客系统', rawType:'外宾来访'},
+    {uid:'NP00047023', name:'王明远', dwmc:'保卫处', src:'协同人员管理服务平台', rawType:'安保实习生'},
+    {uid:'NP00047156', name:'陈思颖', dwmc:'继续教育学院', src:'继续教育办公室Excel', rawType:'继续教育学员'},
+    {uid:'NP00047458', name:'黄志远', dwmc:'后勤管理处', src:'后勤外包系统', rawType:'食堂打饭的师傅'},
+    {uid:'NP00047512', name:'李工', dwmc:'信息中心', src:'协同人员管理服务平台', rawType:'修电脑的外包'},
+    {uid:'NP00047603', name:'张阿姨', dwmc:'后勤集团', src:'后勤外包系统', rawType:'打扫卫生的'},
+  ]; }
+
+  // 人员分类详细清单（与 M2 主页 PERSON_DATA 结构一致；每条 identity 含 auth 授权状态）
+  function defaultRoster(){ return [
+    { uid:'NP00000001', xgh:'T2018001', name:'张明远', dwh:'100016', dwmc:'数计学院',
+      identities:[ {rysfm:'010102', rysfmc:'研究型教师', status:'在职', auth:true, isPrimary:true}, {rysfm:'0202', rysfmc:'非学籍生 · 博士后', status:'在站', auth:false, isPrimary:false} ] },
+    { uid:'NP00000002', xgh:'A2019003', name:'李雪琴', dwh:'02010', dwmc:'校长办公室',
+      identities:[ {rysfm:'010103', rysfmc:'合同聘用人员（项目制）', status:'在职', auth:true, isPrimary:true} ] },
+    { uid:'NP00000003', xgh:'T2020055', name:'陈志强', dwh:'100016', dwmc:'数计学院',
+      identities:[ {rysfm:'010108', rysfmc:'专职科研系列人员', status:'在职', auth:true, isPrimary:true}, {rysfm:'0501', rysfmc:'访客 · 校外兼职导师', status:'在期', auth:false, isPrimary:false} ] },
+    { uid:'NP00000004', xgh:'U2021103', name:'王慧颖', dwh:'100012', dwmc:'理工学院',
+      identities:[ {rysfm:'02010101', rysfmc:'全日制中国本科生', status:'在籍', auth:true, isPrimary:true} ] },
+    { uid:'NP00000005', xgh:'I2023012', name:'刘建华', dwh:'02300', dwmc:'研究生院',
+      identities:[ {rysfm:'02010201', rysfmc:'全日制中国研究生', status:'在籍', auth:true, isPrimary:true} ] },
+    { uid:'NP00000006', xgh:'V2024088', name:'Sarah Johnson', dwh:'100020', dwmc:'信科学院',
+      identities:[ {rysfm:'050102', rysfmc:'来校参加活动师生', status:'在期', auth:false, isPrimary:true} ] },
+    { uid:'NP00000007', xgh:'S2015008', name:'黄敏君', dwh:'02420', dwmc:'后勤工作办公室',
+      identities:[ {rysfm:'0302', rysfmc:'物业服务人员', status:'在职', auth:true, isPrimary:true} ] },
+    { uid:'NP00000008', xgh:'I2024015', name:'林晓东', dwh:'02300', dwmc:'研究生院',
+      identities:[ {rysfm:'02010202', rysfmc:'全日制外国研究生', status:'在籍', auth:true, isPrimary:true} ] },
+    { uid:'NP00000009', xgh:'S2020042', name:'赵磊', dwh:'02110', dwmc:'党委保卫部（保卫处）',
+      identities:[ {rysfm:'0301', rysfmc:'安保人员', status:'在职', auth:true, isPrimary:true} ] },
+    { uid:'NP00000010', xgh:'U2022087', name:'田静怡', dwh:'100016', dwmc:'数计学院',
+      identities:[ {rysfm:'02010101', rysfmc:'全日制中国本科生', status:'在籍', auth:true, isPrimary:true} ] },
+    { uid:'NP00000011', xgh:'AL2018001', name:'周文博', dwh:'02012', dwmc:'中山大学校友会',
+      identities:[ {rysfm:'0401', rysfmc:'校友', status:'在期', auth:false, isPrimary:true} ] },
+    { uid:'NP00000012', xgh:'A2010012', name:'孙雅丽', dwh:'02100', dwmc:'财务处（国有资产管理办公室）',
+      identities:[ {rysfm:'010101', rysfmc:'事业编制人员', status:'在职', auth:true, isPrimary:true} ] },
+  ]; }
+
+  // 源头人员分类情况（独立演示数据）：来源系统/线下采集下发的原始分类
+  function defaultSource(){ return [
+    { sys:'人力资源管理系统', sysType:'系统', rawType:'事业编制', unit:'人力资源管理处' },
+    { sys:'人力资源管理系统', sysType:'系统', rawType:'研究型教师', unit:'人力资源管理处' },
+    { sys:'人力资源管理系统', sysType:'系统', rawType:'科研教师', unit:'人力资源管理处' },
+    { sys:'人力资源管理系统', sysType:'系统', rawType:'项目聘用', unit:'人力资源管理处' },
+    { sys:'人力资源管理系统', sysType:'系统', rawType:'退休返聘人员', unit:'离退休工作处' },
+    { sys:'附属医院HR', sysType:'系统', rawType:'固定编制', unit:'附属医院' },
+    { sys:'附属医院HR', sysType:'系统', rawType:'编外合同工', unit:'附属第三医院' },
+    { sys:'教务系统', sysType:'系统', rawType:'普通本科生', unit:'教务部' },
+    { sys:'研究生系统', sysType:'系统', rawType:'全日制学术学位', unit:'研究生院' },
+    { sys:'研究生系统', sysType:'系统', rawType:'统招研究生', unit:'研究生院' },
+    { sys:'研究生系统', sysType:'系统', rawType:'外国来华留学研究生', unit:'研究生院' },
+    { sys:'访客系统', sysType:'系统', rawType:'临时访客', unit:'保卫处' },
+    { sys:'访客系统', sysType:'系统', rawType:'教职工家属', unit:'保卫处' },
+    { sys:'访客系统', sysType:'系统', rawType:'外宾来访', unit:'国际合作办公室' },
+    { sys:'校友系统', sysType:'系统', rawType:'毕业校友', unit:'校友会' },
+    { sys:'协同人员管理服务平台', sysType:'线下采集', rawType:'食堂阿姨', unit:'后勤集团' },
+    { sys:'协同人员管理服务平台', sysType:'线下采集', rawType:'保安', unit:'保卫处' },
+    { sys:'协同人员管理服务平台', sysType:'线下采集', rawType:'施工的', unit:'基建处' },
+    { sys:'后勤外包系统', sysType:'线下采集', rawType:'食堂打饭的师傅', unit:'后勤集团' },
+    { sys:'后勤外包系统', sysType:'线下采集', rawType:'打扫卫生的', unit:'后勤集团' },
+    { sys:'继续教育办公室Excel', sysType:'线下采集', rawType:'继续教育学员', unit:'继续教育学院' },
+  ]; }
+
+  function load(){
+    try{ TREE=JSON.parse(localStorage.getItem(LS_TREE))||defaultTree(); }catch(e){ TREE=defaultTree(); } if(!TREE.length)TREE=defaultTree();
+    try{ MAPPINGS=JSON.parse(localStorage.getItem(LS_MAP))||defaultMappings(); }catch(e){ MAPPINGS=defaultMappings(); }
+    try{ UNMAPPED=JSON.parse(localStorage.getItem(LS_UNM))||defaultUnmapped(); }catch(e){ UNMAPPED=defaultUnmapped(); }
+    try{ CHANGES=JSON.parse(localStorage.getItem(LS_CHG))||[]; }catch(e){ CHANGES=[]; }
+    try{ ROSTER=JSON.parse(localStorage.getItem(LS_ROSTER))||defaultRoster(); }catch(e){ ROSTER=defaultRoster(); } if(!ROSTER.length)ROSTER=defaultRoster();
+    try{ SOURCE=JSON.parse(localStorage.getItem(LS_SOURCE))||defaultSource(); }catch(e){ SOURCE=defaultSource(); } if(!SOURCE.length)SOURCE=defaultSource();
+  }
+  function save(){ localStorage.setItem(LS_TREE,JSON.stringify(TREE));localStorage.setItem(LS_MAP,JSON.stringify(MAPPINGS));localStorage.setItem(LS_UNM,JSON.stringify(UNMAPPED));localStorage.setItem(LS_ROSTER,JSON.stringify(ROSTER));localStorage.setItem(LS_SOURCE,JSON.stringify(SOURCE)); syncToMainPage(); }
+  // 写出供 M2 主页联动的摘要：各大类 已映射子类数/总分类数、整体已映射人数、未映射人数
+  function syncToMainPage(){
+    try{
+      const RC={ '教职工':'01','学生':'02','外协人员':'03','校友':'04','校外人员':'05' };
+      const perRel={};
+      Object.keys(RC).forEach(r=>{
+        const rootC=RC[r];
+        const total=TREE.filter(n=>n.code!==rootC && n.code.startsWith(rootC)).length;
+        const mapped=new Set(MAPPINGS.filter(m=>m.rel===r).map(m=>m.code)).size;
+        const people=MAPPINGS.filter(m=>m.rel===r).reduce((s,m)=>s+(m.count||0),0);
+        const problem=people>0?Math.max(1,Math.round(people*0.0029)):0;
+        perRel[r]={ mapped, total, people, problem };
+      });
+      const totalNodes=TREE.length;
+      const mappedPeople=MAPPINGS.reduce((s,m)=>s+(m.count||0),0);
+      const summary={ perRel, totalNodes, mappedPeople, unmapped:UNMAPPED.length, mappingCount:MAPPINGS.length, updatedAt:Date.now() };
+      localStorage.setItem('sysu_cls_summary', JSON.stringify(summary));
+    }catch(e){}
+  }
+  function nodeByCode(c){ return TREE.find(n=>n.code===c); }
+  function nameByCode(c){ const n=nodeByCode(c); return n?n.name:c; }
+  function rootCodeOf(c){ let n=nodeByCode(c); while(n&&n.parent){ n=nodeByCode(n.parent); } return n?n.code:c.slice(0,2); }
+  function descendantCodes(rootCode){ // 该根下所有 code（含自身）
+    const set=new Set(); function walk(cd){ set.add(cd); TREE.filter(n=>n.parent===cd).forEach(ch=>walk(ch.code)); } walk(rootCode); return set;
+  }
+
+  // ===== Tab 切换 =====
+  function switchTab(t){
+    document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));
+    document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('active'));
+    document.getElementById('pane-'+t).classList.add('active');
+    document.querySelectorAll('.sidebar-item[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));
+    if(t==='changes') renderChanges();
+    if(t==='roster') renderRoster();
+    if(location.hash.slice(1)!==t){ history.replaceState(null,'','#'+t); }
+  }
+  document.querySelectorAll('[data-tab]').forEach(el=>el.addEventListener('click',()=>switchTab(el.dataset.tab)));
+  // 支持 URL hash 直达对应 TAB（供主页入口跳转）
+  function applyHashTab(){ const h=location.hash.slice(1); if(['tree','roster','mapping','changes'].includes(h)) switchTab(h); }
+  window.addEventListener('hashchange', applyHashTab);
+
+  // ===== Tab1：分类树维护（含点击编辑） =====
+  let admExpanded=new Set(['01','02','03','04','05']);
+  function renderTree(){
+    const q=(document.getElementById('adm-tree-search').value||'').trim().toLowerCase();
+    let visible=null;
+    if(q){ visible=new Set(); TREE.forEach(n=>{ if(n.name.toLowerCase().includes(q)||n.code.includes(q)){ visible.add(n.code); let p=n.parent; while(p){ visible.add(p); const pn=nodeByCode(p); p=pn?pn.parent:null; } } }); }
+    const roots=TREE.filter(n=>!n.parent);
+    document.getElementById('adm-tree-body').innerHTML=roots.map(r=>renderNode(r,visible)).join('');
+    document.getElementById('adm-tree-stats').textContent=TREE.length+' 项';
+    document.getElementById('ps-nodes').textContent=TREE.length;
+  }
+  function renderNode(node,visible){
+    if(visible && !visible.has(node.code)) return '';
+    const children=TREE.filter(n=>n.parent===node.code);
+    const has=children.length>0;
+    const exp=admExpanded.has(node.code)||(visible&&visible.size>0);
+    return `<div>
+      <div class="adm-tree-node" data-code="${node.code}" onclick="openClsEdit('${node.code}')">
+        <span class="adm-tree-caret ${has?(exp?'expanded':''):'empty'}" onclick="event.stopPropagation();toggleNode('${node.code}')">▶</span>
+        <span class="adm-tree-name" title="点击编辑：${node.name}">${node.name}</span>
+        <span class="tag tag-gray" style="font-size:10px;padding:0 5px">L${node.level}</span>
+        <span class="adm-tree-code">${node.code}</span>
+        <span class="adm-tree-acts">
+          <button class="adm-act-btn" title="编辑" onclick="event.stopPropagation();openClsEdit('${node.code}')">✎</button>
+          <button class="adm-act-btn" title="新增子级" onclick="event.stopPropagation();openClsDrawer('${node.code}')">+</button>
+          <button class="adm-act-btn del" title="删除" onclick="event.stopPropagation();delNode('${node.code}')">×</button>
+        </span>
+      </div>
+      ${has&&exp?`<div class="adm-tree-children">${children.map(c=>renderNode(c,visible)).join('')}</div>`:''}
+    </div>`;
+  }
+  function toggleNode(c){ if(admExpanded.has(c))admExpanded.delete(c); else admExpanded.add(c); renderTree(); }
+  function delNode(c){
+    const children=TREE.filter(n=>n.parent===c);
+    if(children.length){ toast('该分类下有 '+children.length+' 个子分类，请先删除子级'); return; }
+    if(!confirm('确认删除分类「'+nameByCode(c)+'」('+c+')？')) return;
+    const delName=nameByCode(c);
+    TREE=TREE.filter(n=>n.code!==c); logChange('tree','分类删除',delName+'（'+c+'）',[{field:'状态',from:'在用',to:'已删除'}]); save(); renderTree(); refreshCounts(); toast('已删除分类 '+c);
+  }
+
+  // ===== 新增 / 编辑 分类 抽屉 =====
+  let clsLevel=1, afterAddCallback=null, editingCode=null;
+  function openClsDrawer(parentCode, cb){
+    editingCode=null; afterAddCallback=cb||null;
+    document.getElementById('cls-drawer-title').textContent='新增分类';
+    document.getElementById('cls-save-btn').textContent='保存分类';
+    document.getElementById('cls-level-row').style.display='block';
+    ['cls-name','cls-code','cls-note'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('cls-code').removeAttribute('readonly');
+    document.getElementById('cls-code-hint').textContent='留空将根据父级 + 序号自动生成编码。';
+    fillParentSelect();
+    if(parentCode){ const pn=nodeByCode(parentCode); setLevel(Math.min((pn?pn.level:0)+1,4)); document.getElementById('cls-parent').value=parentCode; }
+    else setLevel(1);
+    showDrawer('cls');
+  }
+  function openClsEdit(code){
+    const n=nodeByCode(code); if(!n) return;
+    editingCode=code; afterAddCallback=null;
+    document.getElementById('cls-drawer-title').textContent='编辑分类 · '+n.code;
+    document.getElementById('cls-save-btn').textContent='保存修改';
+    document.getElementById('cls-level-row').style.display='none';
+    document.getElementById('cls-parent-row').style.display='none';
+    document.getElementById('cls-name').value=n.name;
+    document.getElementById('cls-code').value=n.code;
+    document.getElementById('cls-code').removeAttribute('readonly');
+    document.getElementById('cls-code-hint').textContent='修改编码会同步更新其所有子级的编码前缀。';
+    document.getElementById('cls-note').value=n.note||'';
+    showDrawer('cls');
+  }
+  function closeClsDrawer(){ hideDrawer('cls'); afterAddCallback=null; editingCode=null; }
+  function setLevel(lv){ clsLevel=lv; document.querySelectorAll('#cls-levels .level-pill').forEach(p=>p.classList.toggle('on',+p.dataset.lv===lv)); document.getElementById('cls-parent-row').style.display=lv>1?'block':'none'; fillParentSelect(); }
+  document.querySelectorAll('#cls-levels .level-pill').forEach(p=>p.addEventListener('click',()=>setLevel(+p.dataset.lv)));
+  function fillParentSelect(){ const sel=document.getElementById('cls-parent'); if(!sel)return; const opts=TREE.filter(n=>n.level===clsLevel-1); sel.innerHTML=opts.map(n=>`<option value="${n.code}">${'　'.repeat(n.level-1)}${n.name}（${n.code}）</option>`).join(''); }
+  function genCode(parentCode, level){
+    if(level===1){ const roots=TREE.filter(n=>n.level===1).map(n=>parseInt(n.code,10)).filter(x=>!isNaN(x)); return String(Math.max(0,...roots)+1).padStart(2,'0'); }
+    const sibs=TREE.filter(n=>n.parent===parentCode); let max=0;
+    sibs.forEach(s=>{ const v=parseInt(s.code.slice(parentCode.length),10); if(!isNaN(v)&&v>max)max=v; });
+    return parentCode + String(max+1).padStart(2,'0');
+  }
+  function saveCls(){
+    const name=document.getElementById('cls-name').value.trim();
+    if(!name){ toast('请填写分类名称'); return; }
+    if(editingCode){ // 编辑：改名 + 改编码（同步子级前缀）
+      const node=nodeByCode(editingCode); const newCode=document.getElementById('cls-code').value.trim()||editingCode;
+      if(newCode!==editingCode && nodeByCode(newCode)){ toast('编码 '+newCode+' 已存在'); return; }
+      const oldName=node.name, oldCode=node.code, newNote=document.getElementById('cls-note').value.trim()||undefined;
+      const diffs=[];
+      if(oldName!==name) diffs.push({field:'名称',from:oldName,to:name});
+      if(newCode!==editingCode) diffs.push({field:'编码',from:oldCode,to:newCode});
+      if((node.note||'')!==(newNote||'')) diffs.push({field:'备注',from:node.note||'(空)',to:newNote||'(空)'});
+      node.name=name; node.note=newNote;
+      if(newCode!==editingCode){
+        const old=editingCode;
+        // 更新自身及所有子孙 code 前缀，并修复 parent 引用与映射引用
+        const affected=TREE.filter(n=>n.code===old||n.code.startsWith(old));
+        affected.forEach(n=>{ const tail=n.code.slice(old.length); const nc=newCode+tail; updateRefs(n.code,nc); n.code=nc; });
+        // 修 parent 引用
+        TREE.forEach(n=>{ if(n.parent===old) n.parent=newCode; });
+      }
+      if(diffs.length) logChange('tree','分类修改',name+'（'+newCode+'）',diffs);
+      save(); renderTree(); renderMappings(); renderSpec(); renderOverview(); refreshCounts(); closeClsDrawer(); toast('已保存修改：'+name); return;
+    }
+    // 新增
+    const parent = clsLevel>1 ? document.getElementById('cls-parent').value : null;
+    let code=document.getElementById('cls-code').value.trim(); if(!code) code=genCode(parent,clsLevel);
+    if(nodeByCode(code)){ toast('编码 '+code+' 已存在，请换一个'); return; }
+    const root = parent ? (nodeByCode(parent)||{}).root : name;
+    const node={ code, name, level:clsLevel, parent:parent||undefined, root, note:document.getElementById('cls-note').value.trim()||undefined, _new:true };
+    TREE.push(node); if(parent)admExpanded.add(parent);
+    logChange('tree','分类新增',name+'（'+code+'）',[{field:'层级',to:'L'+clsLevel},{field:'父级',to:parent?nameByCode(parent)+'（'+parent+'）':'(根)'}]);
+    save(); renderTree(); refreshCounts();
+    const cb=afterAddCallback; closeClsDrawer(); toast('已新增分类「'+name+'」'+code);
+    setTimeout(()=>{ const el=document.querySelector(`.adm-tree-node[data-code="${code}"]`); if(el){ el.classList.add('new-flash'); el.scrollIntoView({block:'center',behavior:'smooth'}); } },80);
+    if(cb) cb(code);
+  }
+  function updateRefs(oldCode,newCode){ MAPPINGS.forEach(m=>{ if(m.code===oldCode) m.code=newCode; }); }
+
+  // ===== Tab2：分类映射管理（含内层子TAB） =====
+  let curSub='actual';
+  function switchSub(s){
+    curSub=s;
+    document.querySelectorAll('.subtab').forEach(x=>x.classList.toggle('active',x.dataset.sub===s));
+    document.querySelectorAll('.subpane').forEach(x=>x.classList.remove('active'));
+    const pane=document.getElementById('subpane-'+s); if(pane)pane.classList.add('active');
+    if(s==='spec') renderSpec();
+    if(s==='source') renderSource();
+  }
+  function renderPrinciple(){
+    document.getElementById('principle-body').innerHTML=RELATIONS.map(r=>`<div class="principle-item"><b>${r}</b>：${REL_META[r].principle}</div>`).join('');
+    const optsRel='<option value="">全部目标大类</option>'+RELATIONS.map(r=>`<option value="${r}">${r}</option>`).join('');
+    const srf=document.getElementById('spec-rel-filter'); if(srf)srf.innerHTML=optsRel;
+    const ur=document.getElementById('um-rel'); if(ur)ur.innerHTML=RELATIONS.map(r=>`<option value="${r}">${r}</option>`).join('');
+  }
+  function refreshMapFilters(){ /* 实际映射子页已移除，相关筛选不再需要 */ }
+  function renderOverview(){
+    document.getElementById('ov-grid').innerHTML=RELATIONS.map(r=>{
+      const rootC=REL_ROOTCODE[r];
+      const totalSub=TREE.filter(n=>n.code!==rootC && n.code.startsWith(rootC)).length; // 该大类下总分类数
+      const mappedCodes=new Set(MAPPINGS.filter(m=>m.rel===r).map(m=>m.code));
+      const people=MAPPINGS.filter(m=>m.rel===r).reduce((s,m)=>s+(m.count||0),0);
+      const loose=(r==='外协人员'||r==='校外人员');
+      return `<div class="ov-card ${REL_META[r].cls}"><div class="ov-num">${mappedCodes.size}<span style="font-size:13px;color:var(--text-disabled);font-weight:400">/${totalSub}</span></div><div class="ov-label">${r} · 已映射/总分类</div><div class="ov-sub">${people.toLocaleString()} 人${loose?' · 类型不规范':''}</div></div>`;
+    }).join('');
+  }
+  const relTag={'教职工':'tag-blue','学生':'tag-green','外协人员':'tag-orange','校友':'tag-cyan','校外人员':'tag-purple'};
+
+  // ===== 分页（每页 15 行） =====
+  const PAGE_SIZE=15;
+  const pageState={ map:1, unm:1, spec:1, chg:1, ros:1, src:1 };
+  function paginate(list, key){
+    const total=list.length, pages=Math.max(1,Math.ceil(total/PAGE_SIZE));
+    if(pageState[key]>pages)pageState[key]=pages;
+    const cur=pageState[key];
+    const slice=list.slice((cur-1)*PAGE_SIZE, cur*PAGE_SIZE);
+    return {slice, total, pages, cur};
+  }
+  function pagerHTML(key, total, pages, cur){
+    if(total===0) return '';
+    let btns='';
+    btns+=`<button class="page-btn ${cur===1?'disabled':''}" ${cur===1?'':`onclick="gotoPage('${key}',${cur-1})"`}>‹</button>`;
+    const win=[];
+    for(let i=1;i<=pages;i++){ if(i===1||i===pages||Math.abs(i-cur)<=1)win.push(i); else if(win[win.length-1]!=='…')win.push('…'); }
+    win.forEach(i=>{ btns+= i==='…'?'<span style="color:var(--text-disabled);padding:0 4px">…</span>':`<button class="page-btn ${i===cur?'active':''}" onclick="gotoPage('${key}',${i})">${i}</button>`; });
+    btns+=`<button class="page-btn ${cur===pages?'disabled':''}" ${cur===pages?'':`onclick="gotoPage('${key}',${cur+1})"`}>›</button>`;
+    const from=(cur-1)*PAGE_SIZE+1, to=Math.min(cur*PAGE_SIZE,total);
+    return `<div class="pagination"><span>共 <strong>${total}</strong> 条 · 显示 <strong>${from}-${to}</strong> · 每页 ${PAGE_SIZE} 行</span><div class="page-controls">${btns}</div></div>`;
+  }
+  function gotoPage(key, p){ pageState[key]=p; if(key==='map')renderMappings(); else if(key==='unm')renderUnmapped(); else if(key==='spec')renderSpec(); else if(key==='chg')renderChanges(); else if(key==='ros')renderRoster(); else if(key==='src')renderSource(); }
+
+  function renderMappings(){ /* 实际映射子页已移除 */ }
+
+  // 子页2：总体映射分类情况（列出全部目标子类，标注是否已映射）
+  function renderSpec(){
+    const q=(document.getElementById('spec-search').value||'').trim().toLowerCase();
+    const rf=document.getElementById('spec-rel-filter').value;
+    const mf=document.getElementById('spec-mapped-filter').value;
+    // 规范分类 = 所有非根（level>=2）节点
+    const subs=TREE.filter(n=>n.level>=2);
+    const mappedByCode={};
+    MAPPINGS.forEach(m=>{ (mappedByCode[m.code]=mappedByCode[m.code]||[]).push(m); });
+    const rows=subs.filter(n=>{
+      const rel=relOfCode(n.code);
+      if(rf&&rel!==rf)return false;
+      const isMapped=!!mappedByCode[n.code];
+      if(mf==='yes'&&!isMapped)return false;
+      if(mf==='no'&&isMapped)return false;
+      if(q && !n.name.toLowerCase().includes(q) && !n.code.includes(q))return false;
+      return true;
+    });
+    const tb=document.getElementById('spec-tbody');
+    const {slice,total:pgTotal,pages,cur}=paginate(rows,'spec');
+    tb.innerHTML=slice.length? slice.map(n=>{
+      const rel=relOfCode(n.code);
+      const ms=mappedByCode[n.code]||[];
+      const isMapped=ms.length>0;
+      const rawTypes=ms.flatMap(m=>m.rawTypes);
+      const srcs=[...new Set(ms.map(m=>m.src))];
+      const units=[...new Set(ms.map(m=>m.unit).filter(Boolean))];
+      const hrs=[...new Set(ms.map(m=>m.hr).filter(Boolean))];
+      const people=ms.reduce((s,m)=>s+(m.count||0),0);
+      const loose=(rel==='外协人员'||rel==='校外人员');
+      const gi=isMapped?MAPPINGS.indexOf(ms[0]):-1;
+      return `<tr ${isMapped?'':'style="background:rgba(134,144,156,.04)"'}>
+        <td><span class="tag ${relTag[rel]||'tag-gray'}">${rel||'—'}</span></td>
+        <td><strong>${n.name}</strong> <span class="mono" style="color:var(--text-disabled);font-size:11px">${n.code}</span> <span class="tag tag-gray" style="font-size:10px">L${n.level}</span></td>
+        <td>${rawTypes.length?rawTypes.map(t=>`<span class="raw-type ${loose?'loose':''}">${t}</span>`).join(''):'<span class="no-map" style="font-size:12px">—（暂无来源类型下发）</span>'}</td>
+        <td style="font-size:12.5px">${srcs.join('、')||'—'}</td>
+        <td style="font-size:12.5px;color:var(--text-secondary)">${units.join('、')||'—'}</td>
+        <td class="mono" style="font-size:11px;color:var(--text-disabled)">${hrs.join('、')||'—'}</td>
+        <td class="mono">${isMapped?people.toLocaleString():'0'}</td>
+        <td>${isMapped?'<span class="yes-map">● 已映射</span>':'<span class="no-map">○ 未映射</span>'}</td>
+        <td style="white-space:nowrap"><button class="btn btn-text btn-sm" onclick="openClsEdit('${n.code}')">编辑</button><button class="btn btn-text btn-sm" style="color:var(--color-error)" onclick="delSpecNode('${n.code}')">删除</button></td>
+      </tr>`;
+    }).join('') : `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-disabled)">无匹配分类</td></tr>`;
+    document.getElementById('spec-pager').innerHTML=pagerHTML('spec',pgTotal,pages,cur);
+    const total=subs.length;
+    const mappedCount=subs.filter(n=>mappedByCode[n.code]).length;
+    document.getElementById('spec-total-cnt').textContent=total;
+    document.getElementById('spec-mapped-cnt').textContent=mappedCount;
+    document.getElementById('sub-spec-cnt').textContent=total;
+  }
+  function relOfCode(code){ const rc=rootCodeOf(code); for(const r in REL_ROOTCODE){ if(REL_ROOTCODE[r]===rc)return r; } return ''; }
+
+  // 总体映射分类 · 删除分类（绑定映射的分类禁止删除）
+  function delSpecNode(code){
+    const children=TREE.filter(n=>n.parent===code);
+    if(children.length){ toast('该分类下有 '+children.length+' 个子分类，请先删除子级'); return; }
+    // 绑定校验：自身或其任一子孙 code 被映射关系引用，则禁止删除
+    const within=descendantCodes(code);
+    const bound=MAPPINGS.filter(m=>within.has(m.code));
+    if(bound.length){
+      const eg=bound.slice(0,2).map(m=>m.src+'·'+m.rawTypes[0]).join('、');
+      toast('「'+nameByCode(code)+'」已绑定 '+bound.length+' 条映射关系（如 '+eg+'），不可删除。请先在「源头人员分类情况」解除相关映射。');
+      return;
+    }
+    if(!confirm('确认删除分类「'+nameByCode(code)+'」('+code+')？')) return;
+    const delName=nameByCode(code);
+    TREE=TREE.filter(n=>n.code!==code);
+    logChange('tree','分类删除',delName+'（'+code+'）',[{field:'状态',from:'在用',to:'已删除'}]);
+    save(); renderTree(); renderSpec(); renderOverview(); refreshCounts(); toast('已删除分类 '+code);
+  }
+
+  // ===== 人员分类详细清单 =====
+  function renderRoster(){
+    const q=(document.getElementById('ros-search').value||'').trim();
+    const root=document.getElementById('ros-root').value;
+    const auth=document.getElementById('ros-auth').value;
+    const list=ROSTER.filter(p=>{
+      if(q && !p.name.includes(q) && !p.uid.includes(q) && !(p.xgh||'').includes(q)) return false;
+      if(root && !p.identities.some(i=>i.rysfm.startsWith(root))) return false;
+      if(auth==='yes' && !p.identities.some(i=>i.auth)) return false;
+      if(auth==='no' && !p.identities.some(i=>!i.auth)) return false;
+      return true;
+    });
+    const tb=document.getElementById('ros-tbody');
+    const {slice,total,pages,cur}=paginate(list,'ros');
+    tb.innerHTML=slice.length? slice.map(p=>{
+      const idx=ROSTER.indexOf(p);
+      const idCell = p.identities.length===1
+        ? `<div class="type-row"><span class="type-code">${p.identities[0].rysfm}</span> <span>${p.identities[0].rysfmc}</span></div>`
+        : `<div class="type-group">${p.identities.map(i=>`<div class="type-row"><span class="type-code">${i.rysfm}</span> <span>${i.rysfmc}</span>${i.isPrimary?' <span class="tag tag-blue" style="font-size:10px;line-height:14px;padding:0 5px">主</span>':''}</div>`).join('')}<span class="multi-flag">一人 ${p.identities.length} 类型</span></div>`;
+      const stCell = p.identities.map(i=>`<span class="tag tag-green" style="display:block;margin:2px 0">${i.status}</span>`).join('');
+      const authCell = p.identities.map(i=>i.auth?'<span class="yes-map" style="display:block;margin:2px 0">是</span>':'<span class="no-map" style="display:block;margin:2px 0">否</span>').join('');
+      return `<tr>
+        <td class="mono">${p.uid}</td>
+        <td class="mono">${p.xgh||'—'}</td>
+        <td><strong>${p.name}</strong></td>
+        <td class="mono">${p.dwh||'—'}</td>
+        <td>${p.dwmc}</td>
+        <td>${idCell}</td>
+        <td>${stCell}</td>
+        <td>${authCell}</td>
+        <td><button class="btn btn-text btn-sm" onclick="openRosterEdit(${idx})">编辑</button></td>
+      </tr>`;
+    }).join('') : `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-disabled)">暂无匹配人员</td></tr>`;
+    document.getElementById('ros-pager').innerHTML=pagerHTML('ros',total,pages,cur);
+    document.getElementById('ros-count').textContent=ROSTER.length;
+    document.getElementById('tb-roster').textContent=ROSTER.length;
+  }
+
+  // 人员分类编辑（逐条调整该人不同类型对应的人员分类 / 状态 / 授权）
+  let rosEditIdx=null;
+  function openRosterEdit(idx){
+    rosEditIdx=idx; renderRosterForm();
+    showDrawer('rosedit');
+  }
+  function closeRosterEdit(){ hideDrawer('rosedit'); rosEditIdx=null; }
+  function renderRosterForm(){
+    const p=ROSTER[rosEditIdx]; if(!p)return;
+    document.getElementById('rose-who').innerHTML=`<b style="color:var(--text-primary)">${p.name}</b> <span class="mono" style="color:var(--text-disabled)">${p.uid}</span>　${p.dwmc}`;
+    const subs=TREE.filter(n=>n.level>=2);
+    const rows=p.identities.map((it,i)=>`
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:12px;color:var(--text-disabled)">分类 #${i+1}${it.isPrimary?' · 主身份':''}</span>
+          <button class="btn btn-text btn-sm" style="color:var(--color-error)" onclick="rosDelId(${i})">删除该分类</button>
+        </div>
+        <div class="drawer-form-row" style="margin-bottom:8px">
+          <label class="dff-label">人员分类</label>
+          <select class="dff-ctrl rose-code" data-i="${i}">${subs.map(n=>`<option value="${n.code}" ${n.code===it.rysfm?'selected':''}>${n.name}（${n.code}）</option>`).join('')}</select>
+        </div>
+        <div style="display:flex;gap:10px">
+          <div style="flex:1">
+            <label class="dff-label">人员分类状态</label>
+            <select class="dff-ctrl rose-status" data-i="${i}">${['在职','在籍','在站','在期','暂停','休学','离职','结业','毕业'].map(s=>`<option ${s===it.status?'selected':''}>${s}</option>`).join('')}</select>
+          </div>
+          <div style="flex:1">
+            <label class="dff-label">是否有效授权状态</label>
+            <select class="dff-ctrl rose-auth" data-i="${i}"><option value="yes" ${it.auth?'selected':''}>是</option><option value="no" ${!it.auth?'selected':''}>否</option></select>
+          </div>
+        </div>
+      </div>`).join('');
+    document.getElementById('rose-list').innerHTML=rows||'<div style="color:var(--text-disabled);font-size:13px;padding:8px">该人员暂无分类，点击下方"新增一条分类"</div>';
+  }
+  function rosCollect(){
+    const p=ROSTER[rosEditIdx];
+    document.querySelectorAll('.rose-code').forEach(sel=>{ const i=+sel.dataset.i; if(p.identities[i]){ p.identities[i].rysfm=sel.value; p.identities[i].rysfmc=nameByCode(sel.value); } });
+    document.querySelectorAll('.rose-status').forEach(sel=>{ const i=+sel.dataset.i; if(p.identities[i]) p.identities[i].status=sel.value; });
+    document.querySelectorAll('.rose-auth').forEach(sel=>{ const i=+sel.dataset.i; if(p.identities[i]) p.identities[i].auth=(sel.value==='yes'); });
+  }
+  function rosDelId(i){ rosCollect(); const p=ROSTER[rosEditIdx]; p.identities.splice(i,1); renderRosterForm(); }
+  function rosAddId(){ rosCollect(); const p=ROSTER[rosEditIdx]; const first=TREE.find(n=>n.level>=2); p.identities.push({rysfm:first.code, rysfmc:first.name, status:'在职', auth:false, isPrimary:p.identities.length===0}); renderRosterForm(); }
+  function saveRosterEdit(){
+    rosCollect(); const p=ROSTER[rosEditIdx];
+    logChange('mapping','人员分类编辑',p.name+'（'+p.uid+'）',[{field:'分类条数',to:p.identities.length+' 条'},{field:'有效授权',to:p.identities.filter(i=>i.auth).length+' / '+p.identities.length}]);
+    save(); renderRoster(); closeRosterEdit(); toast('已保存「'+p.name+'」的人员分类');
+  }
+
+  // ===== 源头人员分类情况 =====
+  function refreshSrcFilters(){
+    const syss=[...new Set(SOURCE.map(s=>s.sys))];
+    const sf=document.getElementById('src-sys-filter'); const cur=sf.value;
+    sf.innerHTML='<option value="">全部来源系统/线下采集</option>'+syss.map(s=>`<option value="${s}">${s}</option>`).join(''); sf.value=cur;
+    const units=[...new Set(SOURCE.map(s=>s.unit))];
+    const uf=document.getElementById('src-unit-filter'); const curu=uf.value;
+    uf.innerHTML='<option value="">全部来源单位</option>'+units.map(u=>`<option value="${u}">${u}</option>`).join(''); uf.value=curu;
+  }
+  // 某源头(sys+rawType)是否已映射 → 返回映射条
+  function srcMappingOf(item){ return MAPPINGS.find(m=>m.src===item.sys && m.rawTypes.includes(item.rawType)); }
+  function renderSource(){
+    refreshSrcFilters();
+    const q=(document.getElementById('src-search').value||'').trim();
+    const sys=document.getElementById('src-sys-filter').value;
+    const unit=document.getElementById('src-unit-filter').value;
+    const mf=document.getElementById('src-mapped-filter').value;
+    const list=SOURCE.filter(it=>{
+      const m=srcMappingOf(it); const mapped=!!m;
+      if(sys&&it.sys!==sys)return false;
+      if(unit&&it.unit!==unit)return false;
+      if(mf==='yes'&&!mapped)return false;
+      if(mf==='no'&&mapped)return false;
+      if(q&&!it.rawType.includes(q))return false;
+      return true;
+    });
+    const tb=document.getElementById('src-tbody');
+    const {slice,total,pages,cur}=paginate(list,'src');
+    tb.innerHTML=slice.length? slice.map(it=>{
+      const m=srcMappingOf(it); const mapped=!!m;
+      const rel=mapped?m.rel:''; const code=mapped?m.code:'';
+      const loose=(it.sysType==='线下采集');
+      return `<tr ${mapped?'':'style="background:rgba(246,152,13,.04)"'}>
+        <td>${it.sys} <span class="tag ${it.sysType==='线下采集'?'tag-orange':'tag-blue'}" style="font-size:10px">${it.sysType}</span></td>
+        <td><span class="raw-type ${loose?'loose':''}">${it.rawType}</span></td>
+        <td style="font-size:12.5px;color:var(--text-secondary)">${it.unit}</td>
+        <td>${mapped?'<span class="yes-map">● 已完成</span>':'<span class="no-map">○ 未完成</span>'}</td>
+        <td>${mapped?`<span class="tag ${relTag[rel]||'tag-gray'}">${rel}</span>`:'<span style="color:var(--text-disabled)">—</span>'}</td>
+        <td>${mapped?`<strong>${nameByCode(code)}</strong> <span class="mono" style="color:var(--text-disabled);font-size:11px">${code}</span>`:'<span style="color:var(--text-disabled);font-size:12px">未映射 — 点击右侧"映射"</span>'}</td>
+        <td><button class="btn ${mapped?'btn-text':'btn-primary'} btn-sm" onclick="openSourceMap(${SOURCE.indexOf(it)})">${mapped?'改映射':'映射'}</button></td>
+      </tr>`;
+    }).join('') : `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-disabled)">暂无匹配源头数据</td></tr>`;
+    document.getElementById('src-pager').innerHTML=pagerHTML('src',total,pages,cur);
+    const mappedCount=SOURCE.filter(it=>srcMappingOf(it)).length;
+    document.getElementById('src-total-cnt').textContent=SOURCE.length;
+    document.getElementById('src-mapped-cnt').textContent=mappedCount;
+    document.getElementById('sub-source-cnt').textContent=SOURCE.length;
+  }
+  // 同步源头数据：模拟从各来源系统/线下采集拉取当下最新源头分类
+  function syncSourceData(){
+    const pool=[
+      {sys:'人力资源管理系统', sysType:'系统', rawType:'新机制长聘教授', unit:'人力资源管理处'},
+      {sys:'附属医院HR', sysType:'系统', rawType:'规培住院医师', unit:'附属医院'},
+      {sys:'协同人员管理服务平台', sysType:'线下采集', rawType:'绿化养护工', unit:'后勤集团'},
+      {sys:'访客系统', sysType:'系统', rawType:'合作企业来访', unit:'科技成果转化办'},
+      {sys:'后勤外包系统', sysType:'线下采集', rawType:'宿管阿姨', unit:'学生宿舍管理中心'},
+      {sys:'继续教育办公室Excel', sysType:'线下采集', rawType:'高级研修班学员', unit:'继续教育学院'},
+    ];
+    let added=0;
+    pool.forEach(it=>{ if(!SOURCE.some(s=>s.sys===it.sys && s.rawType===it.rawType)){ SOURCE.push(it); added++; } });
+    save(); renderSource();
+    if(added) { logChange('mapping','同步源头数据','源头人员分类',[{field:'新增源头类型',to:added+' 条'}]); toast('同步完成，新增 '+added+' 条源头分类'); }
+    else toast('同步完成，暂无新增源头分类');
+  }
+
+
+  // ===== 编辑映射（只改目标分类 + 源头单位/代码；来源只读；唯一性约束） =====
+  let editMapIdx=null;
+  function openMapEdit(i){
+    const m=MAPPINGS[i]; if(!m)return; editMapIdx=i;
+    document.getElementById('me-rel').textContent=m.rel;
+    document.getElementById('me-src').textContent=m.src;
+    document.getElementById('me-rawtypes').innerHTML=m.rawTypes.map(t=>`<span class="raw-type">${t}</span>`).join('');
+    document.getElementById('me-cls-input').value=nameByCode(m.code)+'（'+m.code+'）';
+    document.getElementById('me-cls-code').value=m.code;
+    document.getElementById('me-unit').value=m.unit||'';
+    document.getElementById('me-hr').value=m.hr||'';
+    showDrawer('mapedit');
+  }
+  function closeMapEdit(){ hideDrawer('mapedit'); document.getElementById('me-cls-opts').classList.remove('show'); editMapIdx=null; }
+  function showMeOpts(){ document.getElementById('me-cls-opts').classList.add('show'); renderMeOpts(); }
+  function renderMeOpts(){
+    const q=(document.getElementById('me-cls-input').value||'').trim().toLowerCase();
+    const m=MAPPINGS[editMapIdx]; const rootC=REL_ROOTCODE[m.rel];
+    const within=descendantCodes(rootC);
+    // 可对应任意层级（含一级），但限定在该关系大类树下
+    const cand=TREE.filter(n=>within.has(n.code) && (!q||n.name.toLowerCase().includes(q)||n.code.includes(q))).slice(0,60);
+    const box=document.getElementById('me-cls-opts');
+    box.innerHTML=cand.map(n=>`<div class="map-opt" onclick="pickMe('${n.code}')"><span>${'· '.repeat(Math.max(0,n.level-1))}${n.name} <span style="color:var(--text-disabled);font-size:10px">L${n.level}</span></span><span class="c">${n.code}</span></div>`).join('')||'<div style="padding:12px;color:var(--text-disabled);font-size:12px">无匹配分类</div>';
+    box.classList.add('show');
+  }
+  function pickMe(code){ document.getElementById('me-cls-input').value=nameByCode(code)+'（'+code+'）'; document.getElementById('me-cls-code').value=code; document.getElementById('me-cls-opts').classList.remove('show'); }
+  function saveMapEdit(){
+    const code=document.getElementById('me-cls-code').value; if(!code){ toast('请选择目标分类'); return; }
+    const m=MAPPINGS[editMapIdx];
+    // 唯一性校验：同一(来源系统+任一实际类型) 不可在别的映射里对应不同分类
+    const conflict=MAPPINGS.find((x,idx)=>idx!==editMapIdx && x.src===m.src && x.code!==code && x.rawTypes.some(t=>m.rawTypes.includes(t)));
+    if(conflict){ toast('冲突：来源「'+m.src+'」的实际类型已映射到「'+nameByCode(conflict.code)+'」，一个来源类型只能对应一个分类'); return; }
+    const oldCode=m.code, oldUnit=m.unit||'', oldHr=m.hr||'';
+    const newUnit=document.getElementById('me-unit').value.trim(), newHr=document.getElementById('me-hr').value.trim();
+    const diffs=[];
+    if(oldCode!==code) diffs.push({field:'目标分类',from:nameByCode(oldCode)+'（'+oldCode+'）',to:nameByCode(code)+'（'+code+'）'});
+    if(oldUnit!==newUnit) diffs.push({field:'管理单位',from:oldUnit||'(空)',to:newUnit||'(空)'});
+    if(oldHr!==newHr) diffs.push({field:'来源代码',from:oldHr||'(空)',to:newHr||'(空)'});
+    m.code=code; m.unit=newUnit; m.hr=newHr;
+    if(diffs.length) logChange('mapping','映射修改',m.rel+' · '+m.src,diffs);
+    save(); renderMappings(); renderSpec(); renderOverview(); refreshMapFilters(); closeMapEdit(); toast('映射已更新 → '+nameByCode(code));
+  }
+
+  // ===== 总体映射分类 · 独立编辑（四项下拉，方案B） =====
+  let seEditCode=null, seEditMapIdx=null;
+  function allSrcs(){ return [...new Set(MAPPINGS.map(m=>m.src))]; }
+  // 某来源系统下出现过的所有 (rawType -> 已映射到的 code 或 null)
+  function typesOfSrc(src){
+    const map={};
+    MAPPINGS.filter(m=>m.src===src).forEach(m=>{ m.rawTypes.forEach(t=>{ map[t]=m.code; }); });
+    return map; // { rawType: code }
+  }
+  function isCodeMapped(code){ return MAPPINGS.some(m=>m.code===code); }
+  function openSpecEdit(code, mapIdx){
+    seEditCode=code; seEditMapIdx=(mapIdx>=0?mapIdx:null);
+    const node=nodeByCode(code); const rel=relOfCode(code);
+    const m=(seEditMapIdx!=null)?MAPPINGS[seEditMapIdx]:null;
+    // 当前信息
+    document.getElementById('se-current').innerHTML=
+      `目标大类：<b style="color:var(--text-primary)">${rel||'—'}</b>　|　目标子类：<b style="color:var(--text-primary)">${node?node.name:'—'}（${code}）</b> ${isCodeMapped(code)?'<span class="yes-map" style="font-size:11px">●已映射</span>':'<span class="no-map" style="font-size:11px">○未映射</span>'}<br>`+
+      (m?`来源系统：<b style="color:var(--text-primary)">${m.src}</b>　|　来源类型：<b style="color:var(--text-primary)">${m.rawTypes.join('、')}</b>　|　管理单位：${m.unit||'—'}　|　来源代码：${m.hr||'—'}　|　人数：${(m.count||0).toLocaleString()}`
+        :`<span class="no-map">该分类暂无映射来源（新建一条映射）</span>`);
+    // 目标大类下拉
+    document.getElementById('se-rel').innerHTML=RELATIONS.map(r=>`<option value="${r}">${r}</option>`).join('');
+    document.getElementById('se-rel').value=rel||RELATIONS[0];
+    fillSeCode();
+    document.getElementById('se-code').value=code;
+    // 来源系统下拉
+    const srcs=allSrcs();
+    document.getElementById('se-src').innerHTML='<option value="">请选择来源系统</option>'+srcs.map(s=>`<option value="${s}">${s}</option>`).join('');
+    document.getElementById('se-src').value=m?m.src:'';
+    fillSeRawType(m?m.rawTypes[0]:'');
+    document.getElementById('se-unit').value=m?(m.unit||''):'';
+    document.getElementById('se-hr').value=m?(m.hr||''):'';
+    showDrawer('specedit');
+  }
+  function closeSpecEdit(){ hideDrawer('specedit'); seEditCode=null; seEditMapIdx=null; }
+  function onSeRelChange(){ fillSeCode(); }
+  function fillSeCode(){
+    const rel=document.getElementById('se-rel').value; const rootC=REL_ROOTCODE[rel];
+    const within=descendantCodes(rootC);
+    const subs=TREE.filter(n=>within.has(n.code)&&n.level>=2);
+    document.getElementById('se-code').innerHTML=subs.map(n=>{
+      const mapped=isCodeMapped(n.code);
+      return `<option value="${n.code}">${'· '.repeat(Math.max(0,n.level-2))}${n.name}（${n.code}）${mapped?' ✓已映射':' ○未映射'}</option>`;
+    }).join('');
+  }
+  function onSeSrcChange(){ fillSeRawType(''); }
+  function fillSeRawType(preset){
+    const src=document.getElementById('se-src').value;
+    const sel=document.getElementById('se-rawtype');
+    const hint=document.getElementById('se-rawtype-hint');
+    if(!src){ sel.innerHTML='<option value="">—</option>'; sel.disabled=true; hint.textContent='请先选择来源系统。'; return; }
+    sel.disabled=false; hint.textContent='仅展示该来源系统已有的类型，并标注是否已映射。';
+    const typeMap=typesOfSrc(src); const types=Object.keys(typeMap);
+    sel.innerHTML=types.length? types.map(t=>`<option value="${t}">${t} ${typeMap[t]?('✓已映射→'+nameByCode(typeMap[t])):'○未映射'}</option>`).join('')
+      : '<option value="">该来源系统暂无已有类型</option>';
+    if(preset && types.includes(preset)) sel.value=preset;
+  }
+  function saveSpecEdit(){
+    const rel=document.getElementById('se-rel').value;
+    const code=document.getElementById('se-code').value;
+    const src=document.getElementById('se-src').value;
+    const rawType=document.getElementById('se-rawtype').value;
+    const unit=document.getElementById('se-unit').value.trim();
+    const hr=document.getElementById('se-hr').value.trim();
+    if(!code){ toast('请选择目标子类'); return; }
+    if(!src){ toast('请选择来源系统'); return; }
+    if(!rawType){ toast('请选择来源数据人员类型'); return; }
+    // 唯一性：该来源系统+类型 是否已映射到别的分类（排除当前编辑条）
+    const conflict=MAPPINGS.find((x,idx)=>idx!==seEditMapIdx && x.src===src && x.rawTypes.includes(rawType) && x.code!==code);
+    if(conflict){ toast('冲突：「'+src+' · '+rawType+'」已映射到「'+nameByCode(conflict.code)+'」，一个来源系统+类型只能对应一个目标分类'); return; }
+    const diffs=[];
+    if(seEditMapIdx!=null){
+      const m=MAPPINGS[seEditMapIdx];
+      if(m.rel!==rel) diffs.push({field:'目标大类',from:m.rel,to:rel});
+      if(m.code!==code) diffs.push({field:'目标子类',from:nameByCode(m.code)+'（'+m.code+'）',to:nameByCode(code)+'（'+code+'）'});
+      if(m.src!==src) diffs.push({field:'来源系统',from:m.src,to:src});
+      if(!m.rawTypes.includes(rawType)) diffs.push({field:'来源类型',from:m.rawTypes.join('、'),to:rawType});
+      if((m.unit||'')!==unit) diffs.push({field:'管理单位',from:m.unit||'(空)',to:unit||'(空)'});
+      if((m.hr||'')!==hr) diffs.push({field:'来源代码',from:m.hr||'(空)',to:hr||'(空)'});
+      m.rel=rel; m.code=code; m.src=src; m.rawTypes=[rawType]; m.unit=unit; m.hr=hr;
+      if(diffs.length) logChange('mapping','总体映射编辑',rel+' · '+nameByCode(code),diffs);
+    } else {
+      // 该分类原本未映射 → 新建一条映射
+      MAPPINGS.push({rel, src, rawTypes:[rawType], code, unit, hr, count:0, _new:true});
+      logChange('mapping','总体映射新建',rel+' · '+nameByCode(code),[{field:'来源',to:src+' · '+rawType},{field:'目标子类',to:nameByCode(code)+'（'+code+'）'}]);
+    }
+    save(); renderMappings(); renderSpec(); renderOverview(); refreshMapFilters(); closeSpecEdit();
+    toast('已保存：'+src+' · '+rawType+' → '+nameByCode(code));
+  }
+
+  // ===== 未映射人员（独立表已移除，未映射人员现于「人员分类详细清单」体现；保留数据计数） =====
+  function refreshUnmFilters(){ /* 未映射独立表已移除 */ }
+  function renderUnmapped(){
+    const n=UNMAPPED.length;
+    ['unm-count','ps-unm','tb-unm','sb-unm','sub-unmapped-cnt'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=n;});
+  }
+  function addMockUnmapped(){ /* 入口已移除 */ }
+
+  // ===== Tab4：变更记录 =====
+  const chgTypeMeta={ tree:{label:'分类树变更',tag:'tag-blue'}, mapping:{label:'映射变更',tag:'tag-green'}, unmapped:{label:'未映射归类',tag:'tag-orange'} };
+  function renderChanges(){
+    const q=(document.getElementById('chg-search').value||'').trim().toLowerCase();
+    const tf=document.getElementById('chg-type-filter').value;
+    const list=CHANGES.filter(c=>{
+      if(tf&&c.type!==tf)return false;
+      if(q){ const hay=(c.action+' '+(c.target||'')+' '+c.diffs.map(d=>d.field+d.from+d.to).join(' ')).toLowerCase(); if(!hay.includes(q))return false; }
+      return true;
+    });
+    const tl=document.getElementById('chg-timeline');
+    const {slice,total,pages,cur}=paginate(list,'chg');
+    tl.innerHTML=slice.length? slice.map(c=>{
+      const m=chgTypeMeta[c.type]||{label:'变更',tag:'tag-gray'};
+      return `<div class="chg-item">
+        <div class="chg-dot ${c.type}"></div>
+        <div class="chg-head">
+          <span class="chg-action">${c.action}</span>
+          <span class="tag ${m.tag}" style="font-size:10px">${m.label}</span>
+          <span class="chg-time">${c.time}</span>
+          ${c.target?`<span class="tag tag-gray" style="font-size:10px;margin-left:auto">${c.target}</span>`:''}
+        </div>
+        <div class="chg-meta">操作方：${c.operator}</div>
+        ${c.diffs&&c.diffs.length?`<div class="chg-diff">${c.diffs.map(d=>`<div><b style="color:var(--text-secondary)">${d.field}：</b>${d.from!==undefined&&d.from!==''?`<span class="from">${d.from}</span><span class="arrow">→</span>`:''}<span class="to">${d.to}</span></div>`).join('')}</div>`:''}
+      </div>`;
+    }).join('') : `<div style="text-align:center;padding:40px;color:var(--text-disabled)">暂无变更记录</div>`;
+    document.getElementById('chg-pager').innerHTML=pagerHTML('chg',total,pages,cur);
+    document.getElementById('chg-count').textContent=CHANGES.length;
+    document.getElementById('tb-chg').textContent=CHANGES.length;
+  }
+  function clearChanges(){ if(!confirm('确认清空全部变更记录？'))return; CHANGES=[]; try{localStorage.setItem(LS_CHG,JSON.stringify(CHANGES));}catch(e){} renderChanges(); toast('已清空变更记录'); }
+
+  // 未映射映射弹窗
+  let curUnmUid=null;
+  function guessRel(rawType){
+    if(/合同|编制|教师|聘|博士后/.test(rawType))return '教职工';
+    if(/学员|学生|研究生|本科|勤工/.test(rawType))return '学生';
+    if(/校友/.test(rawType))return '校友';
+    if(/外包|施工|保安|食堂|护工|装修|物业|服务|帮厨/.test(rawType))return '外协人员';
+    return '校外人员';
+  }
+  let mapCtx=null; // {kind:'source', srcIdx} —— 当前映射上下文
+  function openUnmapModal(uid){
+    const p=UNMAPPED.find(x=>x.uid===uid); if(!p)return; curUnmUid=uid; mapCtx={kind:'unmapped'};
+    document.getElementById('um-name').textContent=p.name;
+    document.getElementById('um-uid').textContent=p.uid;
+    document.getElementById('um-src').textContent=p.src;
+    document.getElementById('um-rawtype').textContent=p.rawType;
+    document.getElementById('um-cls-input').value=''; document.getElementById('um-cls-code').value='';
+    document.getElementById('um-rel').value=guessRel(p.rawType);
+    document.getElementById('mini-tree-wrap').style.display='none';
+    document.getElementById('mini-toggle').textContent='展开 ▾';
+    onRelChange();
+    showDrawer('unmap'); renderMapOpts();
+  }
+  // 源头人员分类 → 映射（复用同一弹窗，逻辑保持映射不变）
+  function openSourceMap(idx){
+    const it=SOURCE[idx]; if(!it)return; mapCtx={kind:'source', srcIdx:idx}; curUnmUid=null;
+    const existing=srcMappingOf(it);
+    document.getElementById('um-name').textContent=it.rawType;
+    document.getElementById('um-uid').textContent='源头类型';
+    document.getElementById('um-src').textContent=it.sys+'（'+it.sysType+'）';
+    document.getElementById('um-rawtype').textContent=it.rawType;
+    document.getElementById('um-cls-input').value=existing?nameByCode(existing.code)+'（'+existing.code+'）':'';
+    document.getElementById('um-cls-code').value=existing?existing.code:'';
+    document.getElementById('um-rel').value=existing?existing.rel:guessRel(it.rawType);
+    document.getElementById('mini-tree-wrap').style.display='none';
+    document.getElementById('mini-toggle').textContent='展开 ▾';
+    onRelChange();
+    if(existing){ document.getElementById('um-cls-input').value=nameByCode(existing.code)+'（'+existing.code+'）'; document.getElementById('um-cls-code').value=existing.code; }
+    showDrawer('unmap');
+  }
+  function closeUnmapModal(){ hideDrawer('unmap'); document.getElementById('um-cls-opts').classList.remove('show'); curUnmUid=null; }
+  function onRelChange(){
+    const rel=document.getElementById('um-rel').value;
+    document.getElementById('mini-root-name').textContent='（'+rel+'）';
+    document.getElementById('um-cls-input').value=''; document.getElementById('um-cls-code').value='';
+    renderMapOpts(); renderMiniTree();
+  }
+  function showMapOpts(){ document.getElementById('um-cls-opts').classList.add('show'); renderMapOpts(); }
+  function renderMapOpts(){
+    const q=(document.getElementById('um-cls-input').value||'').trim().toLowerCase();
+    const rel=document.getElementById('um-rel').value; const rootC=REL_ROOTCODE[rel];
+    const within=descendantCodes(rootC);
+    // 只展示当前大类下的子类（level>=2），不展示其他大类
+    const cand=TREE.filter(n=>within.has(n.code)&&n.level>=2&&(!q||n.name.toLowerCase().includes(q)||n.code.includes(q))).slice(0,60);
+    const box=document.getElementById('um-cls-opts');
+    box.innerHTML=cand.map(n=>`<div class="map-opt" onclick="pickCls('${n.code}')"><span>${'· '.repeat(Math.max(0,n.level-2))}${n.name} <span style="color:var(--text-disabled);font-size:10px">L${n.level}</span></span><span class="c">${n.code}</span></div>`).join('')
+      + `<div class="map-opt-add" onclick="focusMiniTree()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/></svg> 在下方树中新增分类</div>`;
+    box.classList.add('show');
+  }
+  function pickCls(code){ document.getElementById('um-cls-input').value=nameByCode(code)+'（'+code+'）'; document.getElementById('um-cls-code').value=code; document.getElementById('um-cls-opts').classList.remove('show'); }
+  function focusMiniTree(){ document.getElementById('um-cls-opts').classList.remove('show'); document.getElementById('mini-tree-wrap').style.display='block'; document.getElementById('mini-toggle').textContent='收起 ▴'; renderMiniTree(); }
+  function toggleMiniTree(){ const w=document.getElementById('mini-tree-wrap'); const on=w.style.display==='none'; w.style.display=on?'block':'none'; document.getElementById('mini-toggle').textContent=on?'收起 ▴':'展开 ▾'; if(on)renderMiniTree(); }
+
+  // 简易内嵌树（限定当前关系大类）：节点上可加子级
+  let miniExpanded=new Set(), miniAddParent=null;
+  function renderMiniTree(){
+    const rel=document.getElementById('um-rel').value; const rootC=REL_ROOTCODE[rel];
+    const root=nodeByCode(rootC); if(!root){ document.getElementById('mini-tree').innerHTML=''; return; }
+    miniExpanded.add(rootC);
+    document.getElementById('mini-tree').innerHTML=miniNode(root);
+  }
+  function miniNode(node){
+    const children=TREE.filter(n=>n.parent===node.code); const has=children.length>0;
+    const exp=miniExpanded.has(node.code);
+    const canAdd=node.level<4;
+    return `<div>
+      <div class="mini-node" data-code="${node.code}">
+        <span class="mini-caret ${has?(exp?'expanded':''):'empty'}" onclick="miniToggle('${node.code}')">▶</span>
+        <span class="mini-name" onclick="pickClsFromMini('${node.code}')" title="点击选中">${node.name}</span>
+        <span class="mini-code">${node.code}</span>
+        ${canAdd?`<button class="mini-addbtn" title="加下级" onclick="miniAdd('${node.code}')">+</button>`:''}
+      </div>
+      ${miniAddParent===node.code?`<div class="mini-addrow"><input id="mini-input" placeholder="输入${node.level+1}级分类名称，回车保存" onkeydown="if(event.key==='Enter')miniSave('${node.code}');if(event.key==='Escape')miniCancel()"><button class="btn btn-primary btn-sm" onclick="miniSave('${node.code}')">加</button><button class="btn btn-secondary btn-sm" onclick="miniCancel()">取消</button></div>`:''}
+      ${has&&exp?`<div class="mini-children">${children.map(miniNode).join('')}</div>`:''}
+    </div>`;
+  }
+  function miniToggle(c){ if(miniExpanded.has(c))miniExpanded.delete(c); else miniExpanded.add(c); renderMiniTree(); }
+  function miniAdd(parentCode){ miniAddParent=parentCode; miniExpanded.add(parentCode); renderMiniTree(); setTimeout(()=>{const i=document.getElementById('mini-input');if(i)i.focus();},50); }
+  function miniCancel(){ miniAddParent=null; renderMiniTree(); }
+  function miniSave(parentCode){
+    const name=(document.getElementById('mini-input').value||'').trim(); if(!name){ toast('请输入分类名称'); return; }
+    const pn=nodeByCode(parentCode); const code=genCode(parentCode, pn.level+1);
+    TREE.push({code, name, level:pn.level+1, parent:parentCode, root:pn.root, _new:true});
+    logChange('tree','分类新增（映射中快速新建）',name+'（'+code+'）',[{field:'层级',to:'L'+(pn.level+1)},{field:'父级',to:pn.name+'（'+parentCode+'）'}]);
+    miniAddParent=null; save(); renderTree(); refreshCounts(); renderMiniTree();
+    toast('已新增分类「'+name+'」'+code+'，可点击选中');
+    setTimeout(()=>pickClsFromMini(code),50);
+  }
+  function pickClsFromMini(code){ const n=nodeByCode(code); if(n.level<2){ toast('请选择二级及以下的具体分类'); return; } pickCls(code); toast('已选择：'+n.name); }
+
+  function submitMapping(){
+    const code=document.getElementById('um-cls-code').value; if(!code){ toast('请选择要映射到的分类'); return; }
+    const rel=document.getElementById('um-rel').value;
+    if(mapCtx && mapCtx.kind==='source'){
+      const it=SOURCE[mapCtx.srcIdx]; if(!it)return;
+      // 唯一性：该来源系统+类型 是否已映射到别的分类（排除自身已建的映射）
+      const conflict=MAPPINGS.find(m=>m.src===it.sys && m.rawTypes.includes(it.rawType) && m.code!==code);
+      if(conflict){ toast('冲突：「'+it.sys+' · '+it.rawType+'」已映射到「'+nameByCode(conflict.code)+'」，一个来源类型只能对应一个分类'); return; }
+      // 若该源头类型已映射到别的分类，先解绑旧的
+      const old=MAPPINGS.find(m=>m.src===it.sys && m.rawTypes.includes(it.rawType));
+      if(old && old.code!==code){ old.rawTypes=old.rawTypes.filter(t=>t!==it.rawType); if(!old.rawTypes.length) MAPPINGS=MAPPINGS.filter(m=>m!==old); }
+      let m=MAPPINGS.find(x=>x.rel===rel&&x.src===it.sys&&x.code===code);
+      if(m){ if(!m.rawTypes.includes(it.rawType))m.rawTypes.push(it.rawType); }
+      else MAPPINGS.push({rel,src:it.sys,rawTypes:[it.rawType],code,unit:it.unit||'',hr:'',count:0,_new:true});
+      logChange('mapping','源头类型映射',it.sys+' · '+it.rawType,[{field:'映射到',to:rel+' / '+nameByCode(code)+'（'+code+'）'}]);
+      save(); hideDrawer('unmap'); document.getElementById('um-cls-opts').classList.remove('show'); mapCtx=null;
+      renderSource(); renderSpec(); renderOverview(); refreshCounts();
+      toast('已映射「'+it.rawType+'」→ '+nameByCode(code));
+      return;
+    }
+    // 默认：未映射人员上下文
+    const p=UNMAPPED.find(x=>x.uid===curUnmUid); if(!p)return;
+    const conflict=MAPPINGS.find(m=>m.src===p.src && m.rawTypes.includes(p.rawType) && m.code!==code);
+    if(conflict){ toast('冲突：「'+p.src+' · '+p.rawType+'」已映射到「'+nameByCode(conflict.code)+'」，一个来源类型只能对应一个分类'); return; }
+    let m=MAPPINGS.find(x=>x.rel===rel&&x.src===p.src&&x.code===code);
+    if(m){ if(!m.rawTypes.includes(p.rawType))m.rawTypes.push(p.rawType); m.count=(m.count||0)+1; }
+    else MAPPINGS.push({rel,src:p.src,rawTypes:[p.rawType],code,unit:'',hr:'',count:1,_new:true});
+    logChange('unmapped','未映射人员归类',p.name+'（'+p.uid+'）',[{field:'来源',to:p.src+' · '+p.rawType},{field:'映射到',to:rel+' / '+nameByCode(code)+'（'+code+'）'}]);
+    UNMAPPED=UNMAPPED.filter(x=>x.uid!==curUnmUid); save();
+    closeUnmapModal(); renderSpec(); renderOverview(); refreshCounts();
+    toast('已映射「'+p.name+'」→ '+nameByCode(code)+'，映射管理已更新');
+  }
+
+  // ===== 抽屉显隐 =====
+  function showDrawer(k){ document.getElementById(k+'-mask').classList.add('show'); document.getElementById(k+'-drawer').classList.add('show'); }
+  function hideDrawer(k){ document.getElementById(k+'-mask').classList.remove('show'); document.getElementById(k+'-drawer').classList.remove('show'); }
+
+  // ===== JSON 导入/导出/重置 =====
+  function exportJSON(){ const blob=new Blob([JSON.stringify({tree:TREE,mappings:MAPPINGS,unmapped:UNMAPPED,_exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}); const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='分类管理数据_'+Date.now()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('已导出 JSON 备份'); }
+  function importJSON(){ const inp=document.createElement('input');inp.type='file';inp.accept='.json';inp.onchange=()=>{const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(o.tree)TREE=o.tree;if(o.mappings)MAPPINGS=o.mappings;if(o.unmapped)UNMAPPED=o.unmapped;save();renderAll();toast('已导入并恢复数据');}catch(e){toast('JSON 解析失败');}};r.readAsText(f);};inp.click(); }
+  function resetData(){ if(!confirm('确认重置为初始演示数据？将清空本地改动。'))return; localStorage.removeItem(LS_TREE);localStorage.removeItem(LS_MAP);localStorage.removeItem(LS_UNM);load();renderAll();toast('已重置演示数据'); }
+
+  function refreshCounts(){ const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;}; set('ps-nodes',TREE.length); set('ps-maps',MAPPINGS.length); set('ps-unm',UNMAPPED.length); set('tb-maps',MAPPINGS.length); set('sub-unmapped-cnt',UNMAPPED.length); set('tb-roster',ROSTER.length); }
+  function renderAll(){ renderTree(); renderPrinciple(); renderOverview(); renderSpec(); renderSource(); renderChanges(); renderRoster(); refreshCounts(); syncToMainPage(); }
+
+  // 搜索/筛选绑定
+  document.getElementById('adm-tree-search').addEventListener('input',renderTree);
+  document.getElementById('spec-search').addEventListener('input',()=>{pageState.spec=1;renderSpec();});
+  document.getElementById('spec-rel-filter').addEventListener('change',()=>{pageState.spec=1;renderSpec();});
+  document.getElementById('spec-mapped-filter').addEventListener('change',()=>{pageState.spec=1;renderSpec();});
+  const _unmS=document.getElementById('unm-search'); if(_unmS)_unmS.addEventListener('input',()=>{pageState.unm=1;renderUnmapped();});
+  const _unmSf=document.getElementById('unm-src-filter'); if(_unmSf)_unmSf.addEventListener('change',()=>{pageState.unm=1;renderUnmapped();});
+  const _unmUf=document.getElementById('unm-unit-filter'); if(_unmUf)_unmUf.addEventListener('change',()=>{pageState.unm=1;renderUnmapped();});
+  document.getElementById('chg-search').addEventListener('input',()=>{pageState.chg=1;renderChanges();});
+  document.getElementById('chg-type-filter').addEventListener('change',()=>{pageState.chg=1;renderChanges();});
+  document.getElementById('ros-search').addEventListener('input',()=>{pageState.ros=1;renderRoster();});
+  document.getElementById('ros-root').addEventListener('change',()=>{pageState.ros=1;renderRoster();});
+  document.getElementById('ros-auth').addEventListener('change',()=>{pageState.ros=1;renderRoster();});
+  document.getElementById('src-search').addEventListener('input',()=>{pageState.src=1;renderSource();});
+  document.getElementById('src-sys-filter').addEventListener('change',()=>{pageState.src=1;renderSource();});
+  document.getElementById('src-unit-filter').addEventListener('change',()=>{pageState.src=1;renderSource();});
+  document.getElementById('src-mapped-filter').addEventListener('change',()=>{pageState.src=1;renderSource();});
+  document.addEventListener('click',(e)=>{ document.querySelectorAll('.map-select-wrap').forEach(w=>{ if(!w.contains(e.target)){ const o=w.querySelector('.map-options'); if(o)o.classList.remove('show'); } }); });
+
+  load(); save(); renderAll(); applyHashTab();
+</script>
+</body>
+</html>

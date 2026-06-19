@@ -15,7 +15,7 @@
     <artifactId>xj-zbpt-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>xj-zbpt-backend</name>
-    <description>指标平台后端工程骨架</description>
+    <description>高校综合身份数据平台后端工程</description>
 
     <properties>
         <java.version>21</java.version>

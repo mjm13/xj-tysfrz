@@ -1,25 +1,31 @@
 <script setup lang="ts">
-import AppSidebar from '@/components/shell/AppSidebar.vue'
+import AppTopbar from '@/components/shell/AppTopbar.vue'
+import AppFooter from '@/components/shell/AppFooter.vue'
 </script>
 
 <template>
   <div class="layout">
-    <AppSidebar />
+    <AppTopbar />
     <main class="main">
       <router-view />
     </main>
+    <AppFooter />
   </div>
 </template>
 
 <style scoped>
 .layout {
-  display: flex;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .main {
   flex: 1;
-  padding: 20px 24px 40px;
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px;
   min-width: 0;
 }
 </style>

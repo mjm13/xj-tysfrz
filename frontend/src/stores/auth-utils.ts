@@ -1,4 +1,4 @@
-export const AUTH_STORAGE_KEY = 'zbpt-auth'
+export const AUTH_STORAGE_KEY = 'tysfrz-auth'
 
 export interface AuthPersistedState {
   isAuthenticated: boolean

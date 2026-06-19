@@ -9,6 +9,10 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
 logging:
   level:
     com.xj.zbpt: DEBUG

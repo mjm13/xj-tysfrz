@@ -1,0 +1,2359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>身份权限管理 · 高校综合身份数据平台</title>
+<style>
+  :root {
+    --color-primary: #2563EB;
+    --color-primary-secondary: #478EF7;
+    --color-success: #00B42A;
+    --color-warning: #FF7D00;
+    --color-error: #F53F3F;
+    --color-info: #165DFF;
+    --text-primary: #1D2129;
+    --text-secondary: #4E5969;
+    --text-disabled: #86909C;
+    --bg-page: #FAFAFB;
+    --bg-card: #FFFFFF;
+    --bg-secondary: #F2F3F5;
+    --border: #E5E6EB;
+    --chart-1: #387EF5; --chart-2: #0FB17B; --chart-3: #F6980D; --chart-4: #A251F6;
+
+    /* 矩阵三态色 */
+    --grant-default: #00B42A;       /* 绿色 - 默认授予 */
+    --grant-default-bg: rgba(0, 180, 42, 0.10);
+    --grant-default-border: rgba(0, 180, 42, 0.25);
+
+    --grant-apply: #FF7D00;          /* 黄/橙 - 可申请 */
+    --grant-apply-bg: rgba(255, 125, 0, 0.10);
+    --grant-apply-border: rgba(255, 125, 0, 0.25);
+
+    --grant-denied: #F53F3F;         /* 红 - 不予授权 */
+    --grant-denied-bg: rgba(245, 63, 63, 0.08);
+    --grant-denied-border: rgba(245, 63, 63, 0.22);
+
+    --shadow-1: 0 1px 2px 0 rgba(0,0,0,.03), 0 1px 6px -1px rgba(0,0,0,.02);
+    --shadow-2: 0 4px 12px 0 rgba(0,0,0,.05), 0 2px 4px 0 rgba(0,0,0,.03);
+    --shadow-3: 0 8px 24px 0 rgba(0,0,0,.08), 0 4px 8px 0 rgba(0,0,0,.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg-page); }
+  body { font-family: "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+    color: var(--text-primary); font-size: 14px; line-height: 22px; }
+  a { text-decoration: none; color: inherit; }
+  button, input, select { font: inherit; color: inherit; outline: none; }
+
+  /* 顶导 */
+  .topbar { height: 64px; background: var(--bg-card); box-shadow: var(--shadow-1);
+    display: flex; align-items: center; padding: 0 24px; position: sticky; top: 0; z-index: 100; }
+  .logo-wrap { display: flex; align-items: center; gap: 12px; margin-right: 32px; }
+  .logo-mark { width: 32px; height: 32px; border-radius: 6px; background: var(--color-primary);
+    display: flex; align-items: center; justify-content: center; }
+  .logo-mark svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; }
+  .logo-text { font-size: 16px; font-weight: 600; }
+  .topbar nav { display: flex; gap: 32px; flex: 1; height: 100%; align-items: center; }
+  .topbar nav a { color: var(--text-secondary); font-size: 14px; height: 100%;
+    display: flex; align-items: center; position: relative; transition: color 200ms; }
+  .topbar nav a:hover { color: var(--color-primary); }
+  .topbar nav a.active { color: var(--color-primary); font-weight: 500; }
+  .topbar nav a.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--color-primary); }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .time-display { font-size: 12px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", monospace; }
+  .user-info { display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border); }
+  .user-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary);
+    color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; }
+  .user-name { font-size: 14px; color: var(--text-secondary); }
+
+  /* 布局 */
+  .layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 64px); }
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 16px 0; }
+  .sidebar-section { padding: 8px 16px; font-size: 12px; color: var(--text-disabled); letter-spacing: 1px; }
+  .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+    margin: 2px 8px; font-size: 14px; color: var(--text-secondary); cursor: pointer;
+    border-radius: 6px; transition: all 200ms; }
+  .sidebar-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; }
+  .sidebar-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .sidebar-item.active { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); font-weight: 500; }
+  .sidebar-item .badge { margin-left: auto; font-size: 11px; padding: 1px 6px;
+    border-radius: 3px; background: var(--bg-secondary); color: var(--text-disabled); }
+
+  .main { padding: 16px 24px 32px; min-width: 0; }
+  .breadcrumb { font-size: 14px; color: var(--text-disabled); margin-bottom: 12px; }
+  .breadcrumb a { color: var(--text-disabled); }
+  .breadcrumb a:hover { color: var(--color-primary); }
+  .breadcrumb .sep { margin: 0 8px; }
+  .breadcrumb .last { color: var(--text-primary); }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .page-title { font-size: 20px; font-weight: 600; color: var(--text-primary); line-height: 28px; margin-bottom: 4px; }
+  .page-desc { font-size: 14px; color: var(--text-secondary); }
+  .page-stats { display: flex; gap: 24px; font-size: 12px; color: var(--text-secondary); }
+  .page-stats strong { font-size: 16px; color: var(--text-primary); margin-left: 4px; font-family: "DIN Alternate", "Roboto", inherit; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* 通用 */
+  .panel { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); padding: 16px; margin-bottom: 16px; }
+  .panel-title { font-size: 16px; font-weight: 500; color: var(--text-primary);
+    padding-left: 12px; position: relative; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .panel-title::before { content: ''; position: absolute; left: 0; top: 4px;
+    width: 4px; height: 16px; background: var(--color-primary); border-radius: 2px; }
+  .panel-title .sub { font-size: 12px; color: var(--text-disabled); font-weight: 400; margin-left: 4px; }
+
+  /* 信息提示框 */
+  .info-box { background: rgba(22, 93, 255, 0.04); border: 1px solid rgba(22, 93, 255, 0.16);
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;
+    display: flex; align-items: flex-start; gap: 12px; }
+  .info-box-icon { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; color: var(--color-info); }
+  .info-box-icon svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 2; }
+  .info-box-content { flex: 1; font-size: 13px; color: var(--text-secondary); line-height: 22px; }
+  .info-box-content strong { color: var(--text-primary); font-weight: 500; }
+
+  /* 筛选条 */
+  .filter-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-input { height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg-card); font-size: 14px; color: var(--text-primary); transition: all 200ms; min-width: 200px; }
+  .filter-input:focus { border-color: var(--color-info); box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1); }
+  .filter-input.search { padding-left: 36px; }
+  .search-wrap { position: relative; }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-disabled); }
+  .filter-select { height: 40px; padding: 0 32px 0 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg-card) url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2386909C' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") right 12px center no-repeat;
+    font-size: 14px; cursor: pointer; appearance: none; min-width: 160px; }
+  .filter-spacer { flex: 1; }
+  .filter-label {
+    font-size: 12px; color: var(--text-secondary); margin-right: 4px;
+  }
+
+  /* 按钮 */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    height: 40px; padding: 0 16px; border-radius: 6px; font-size: 14px; font-weight: 500;
+    border: none; cursor: pointer; transition: all 200ms; }
+  .btn-primary { background: var(--color-primary); color: white; }
+  .btn-primary:hover { background: #1d4fc7; }
+  .btn-secondary { background: var(--bg-card); color: var(--color-info); border: 1px solid var(--color-info); }
+  .btn-secondary:hover { background: rgba(22, 93, 255, 0.04); }
+  .btn-text { background: transparent; color: var(--color-info); padding: 0 8px; height: 28px; }
+  .btn-text:hover { color: var(--color-primary); }
+  .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+
+  /* ===== 矩阵 ===== */
+  .matrix-wrap {
+    background: var(--bg-card); border-radius: 8px;
+    box-shadow: var(--shadow-1); overflow: hidden;
+  }
+  .matrix-scroll { overflow-x: auto; }
+  .matrix-table {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    font-size: 13px; min-width: 1100px;
+  }
+  .matrix-table thead th {
+    background: var(--bg-secondary);
+    height: 64px;
+    padding: 8px 12px;
+    text-align: center;
+    font-weight: 500; color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 5;
+    white-space: nowrap;
+  }
+  .matrix-table thead th.corner {
+    text-align: left;
+    background: var(--bg-secondary);
+    width: 220px;
+    min-width: 220px;
+    border-right: 1px solid var(--border);
+    position: sticky; left: 0; z-index: 6;
+    padding-left: 16px;
+  }
+  .matrix-table thead .col-head-name {
+    font-size: 13px; font-weight: 500; color: var(--text-primary);
+    line-height: 18px;
+  }
+  .matrix-table thead .col-head-sub {
+    font-size: 11px; color: var(--text-disabled); margin-top: 2px;
+    font-weight: 400;
+  }
+  .matrix-table tbody td.row-head {
+    width: 220px; min-width: 220px;
+    padding: 14px 16px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    position: sticky; left: 0; z-index: 4;
+    transition: background 200ms;
+  }
+  .matrix-table tbody tr:hover td.row-head { background: var(--bg-secondary); }
+  .matrix-table tbody tr.expanded td.row-head { background: rgba(37, 99, 235, 0.06); }
+  .row-head-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .row-head-name {
+    font-size: 14px; font-weight: 500; color: var(--text-primary);
+  }
+  .row-head-code {
+    font-family: "DIN Alternate", "Roboto", inherit;
+    font-size: 11px; color: var(--text-disabled);
+    padding: 1px 6px; background: var(--bg-secondary); border-radius: 3px;
+  }
+  .row-head-meta {
+    font-size: 11.5px; color: var(--text-secondary);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .row-head-count {
+    color: var(--color-primary); font-weight: 500;
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+  .row-head-actions {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--border);
+    display: flex; gap: 4px;
+  }
+  .detail-toggle-btn {
+    flex: 1;
+    height: 24px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--color-info);
+    border-radius: 4px;
+    font-size: 11.5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 150ms;
+  }
+  .detail-toggle-btn:hover {
+    background: rgba(22, 93, 255, 0.06);
+    border-color: var(--color-info);
+  }
+  .detail-toggle-btn.active {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+  }
+  .detail-toggle-btn .caret {
+    transition: transform 200ms;
+    font-size: 9px;
+  }
+  .detail-toggle-btn.active .caret {
+    transform: rotate(90deg);
+  }
+
+  /* 矩阵单元格 */
+  .matrix-table tbody td.cell {
+    padding: 6px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    vertical-align: middle;
+  }
+  .grant-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: calc(100% - 4px);
+    min-width: 92px;
+    height: 52px;
+    border-radius: 6px;
+    border: 1px solid;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 150ms;
+    padding: 4px 8px;
+    line-height: 1.3;
+    flex-direction: column;
+    user-select: none;
+  }
+  .grant-chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-1); }
+  .grant-chip .chip-icon {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 9px; color: white;
+    flex-shrink: 0;
+  }
+  .grant-chip .chip-text {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px;
+  }
+  .grant-chip .chip-sub {
+    font-size: 10px;
+    opacity: 0.85;
+    font-weight: 400;
+  }
+  .grant-chip.granted {
+    background: var(--grant-default-bg);
+    border-color: var(--grant-default-border);
+    color: var(--grant-default);
+  }
+  .grant-chip.granted .chip-icon { background: var(--grant-default); }
+  .grant-chip.apply {
+    background: var(--grant-apply-bg);
+    border-color: var(--grant-apply-border);
+    color: var(--grant-apply);
+  }
+  .grant-chip.apply .chip-icon { background: var(--grant-apply); }
+  .grant-chip.denied {
+    background: var(--grant-denied-bg);
+    border-color: var(--grant-denied-border);
+    color: var(--grant-denied);
+  }
+  .grant-chip.denied .chip-icon { background: var(--grant-denied); }
+
+  /* 图例 */
+  .legend {
+    display: flex; gap: 20px; align-items: center;
+    font-size: 12.5px; color: var(--text-secondary);
+    padding: 12px 16px;
+    background: var(--bg-page);
+    border-bottom: 1px solid var(--border);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot {
+    width: 14px; height: 14px; border-radius: 4px; border: 1px solid;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .legend-dot.granted { background: var(--grant-default-bg); border-color: var(--grant-default-border); }
+  .legend-dot.apply { background: var(--grant-apply-bg); border-color: var(--grant-apply-border); }
+  .legend-dot.denied { background: var(--grant-denied-bg); border-color: var(--grant-denied-border); }
+
+  /* ===== 明细钻取行（同页展开） ===== */
+  .detail-row {
+    background: rgba(37, 99, 235, 0.03);
+  }
+  .detail-row td {
+    padding: 0 !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+  .detail-content {
+    padding: 20px 24px;
+    border-left: 4px solid var(--color-primary);
+    background: var(--bg-card);
+    margin: 0 12px 12px;
+    border-radius: 0 8px 8px 0;
+    box-shadow: var(--shadow-1);
+  }
+  .detail-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-head-left { display: flex; align-items: center; gap: 12px; }
+  .detail-head-title {
+    font-size: 15px; font-weight: 500; color: var(--text-primary);
+  }
+  .detail-head-meta { font-size: 12px; color: var(--text-secondary); }
+
+  /* 明细 - 该分类下的权限说明卡 */
+  .perm-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .perm-summary-card {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-page);
+  }
+  .perm-summary-name {
+    font-size: 13px; font-weight: 500; color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .perm-summary-stat {
+    display: flex; align-items: baseline; gap: 6px;
+  }
+  .perm-summary-num {
+    font-family: "DIN Alternate", "Roboto", inherit;
+    font-size: 18px; font-weight: 600;
+  }
+  .perm-summary-total { font-size: 11px; color: var(--text-disabled); }
+  .perm-summary-status {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; padding: 1px 6px;
+    border-radius: 3px;
+    margin-top: 6px;
+  }
+  .perm-summary-status.granted { background: var(--grant-default-bg); color: var(--grant-default); }
+  .perm-summary-status.apply { background: var(--grant-apply-bg); color: var(--grant-apply); }
+  .perm-summary-status.denied { background: var(--grant-denied-bg); color: var(--grant-denied); }
+
+  .perm-summary-card.has-issue {
+    background: rgba(245, 63, 63, 0.025);
+    border-color: rgba(245, 63, 63, 0.25);
+  }
+  .perm-summary-issues {
+    display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+  }
+  .issue-tag {
+    display: inline-flex; align-items: center;
+    font-size: 11px; padding: 1px 6px; border-radius: 3px;
+    font-family: "DIN Alternate", "Roboto", inherit; font-weight: 500;
+    line-height: 18px;
+  }
+  .issue-tag.violation {
+    background: rgba(245, 63, 63, 0.12); color: var(--color-error);
+    border: 1px solid rgba(245, 63, 63, 0.3);
+  }
+  .issue-tag.zombie {
+    background: rgba(255, 125, 0, 0.12); color: var(--color-warning);
+    border: 1px solid rgba(255, 125, 0, 0.3);
+  }
+  .issue-tag.none-tag {
+    background: var(--bg-secondary); color: var(--text-secondary);
+  }
+  .issue-tag.ok {
+    background: rgba(0, 180, 42, 0.06); color: var(--grant-default);
+  }
+
+  /* 对账概览 4 卡 */
+  .recon-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  .recon-card {
+    padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-page); position: relative; overflow: hidden;
+  }
+  .recon-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  }
+  .recon-card.ok::before { background: var(--grant-default); }
+  .recon-card.warn-mild::before { background: var(--text-disabled); }
+  .recon-card.warn::before { background: var(--color-warning); }
+  .recon-card.error::before { background: var(--color-error); }
+  .recon-card.idle::before { background: var(--border); }
+  .recon-card-num {
+    font-family: "DIN Alternate", "Roboto", inherit;
+    font-size: 28px; font-weight: 600; line-height: 36px;
+  }
+  .recon-card.ok .recon-card-num { color: var(--grant-default); }
+  .recon-card.warn-mild .recon-card-num { color: var(--text-secondary); }
+  .recon-card.warn .recon-card-num { color: var(--color-warning); }
+  .recon-card.error .recon-card-num { color: var(--color-error); }
+  .recon-card.idle .recon-card-num { color: var(--text-disabled); }
+  .recon-card-label { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-top: 2px; }
+  .recon-card-desc { font-size: 11.5px; color: var(--text-disabled); margin-top: 4px; line-height: 16px; }
+
+  /* 对账异常表 */
+  .data-table tbody tr {
+    border-bottom: 1px solid var(--border); transition: background 200ms;
+  }
+  .data-table tbody tr:hover { background: var(--bg-secondary); }
+  .data-table tbody tr:last-child { border-bottom: none; }
+  .data-table tbody td { padding: 12px 16px; font-size: 13px; vertical-align: middle; }
+  .data-table tbody td.mono { font-family: "DIN Alternate", "Roboto", inherit; color: var(--text-secondary); }
+  .data-table tbody tr.severe td:first-child { box-shadow: inset 3px 0 0 var(--color-error); }
+  .data-table tbody tr.warn td:first-child { box-shadow: inset 3px 0 0 var(--color-warning); }
+
+  /* 数据源卡 */
+  .source-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;
+  }
+  .source-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; transition: all 200ms;
+  }
+  .source-card:hover { box-shadow: var(--shadow-2); border-color: var(--color-primary); }
+  .source-card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .source-card-name { font-size: 14px; font-weight: 500; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+  .source-card-icon { font-size: 18px; }
+  .source-rows { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; }
+  .source-rows .row { display: flex; justify-content: space-between; padding: 4px 0; }
+  .source-rows .row span:first-child { color: var(--text-secondary); }
+  .source-rows .row strong { color: var(--text-primary); font-weight: 500; font-family: "DIN Alternate", "Roboto", inherit; }
+
+  /* ============ 开关按钮 (启用/停用) ============ */
+  .toggle-switch {
+    display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer; user-select: none;
+  }
+  .toggle-switch input { display: none; }
+  .toggle-track {
+    width: 36px; height: 20px; background: var(--bg-secondary);
+    border-radius: 10px; position: relative; transition: background 200ms;
+  }
+  .toggle-track::after {
+    content: ''; position: absolute; left: 2px; top: 2px;
+    width: 16px; height: 16px; background: white; border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    transition: left 200ms;
+  }
+  .toggle-switch input:checked + .toggle-track { background: var(--color-success); }
+  .toggle-switch input:checked + .toggle-track::after { left: 18px; }
+  .toggle-label { font-size: 12.5px; color: var(--text-secondary); }
+  .toggle-switch input:checked ~ .toggle-label { color: var(--color-success); font-weight: 500; }
+
+  /* ============ 检查任务卡片 ============ */
+  .task-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+  }
+  .task-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; transition: all 200ms; position: relative;
+  }
+  .task-card:hover { box-shadow: var(--shadow-2); border-color: var(--color-primary); }
+  .task-card.paused { background: #FBFBFC; }
+  .task-card.paused .task-card-name { color: var(--text-secondary); }
+  .task-card-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 12px; gap: 10px;
+  }
+  .task-card-info { flex: 1; min-width: 0; }
+  .task-card-name { font-size: 15px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; }
+  .task-card-code { font-family: "DIN Alternate", "Roboto", monospace; font-size: 11px; color: var(--text-disabled); }
+  .task-card-status {
+    flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11.5px; padding: 1px 8px; border-radius: 3px; font-weight: 500;
+  }
+  .task-card-status.running { background: rgba(0, 180, 42, 0.1); color: var(--color-success); }
+  .task-card-status.paused { background: var(--bg-secondary); color: var(--text-disabled); }
+  .task-card-status::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor;
+  }
+  .task-card-status.running::before { animation: pulse-dot 1.5s infinite; }
+  @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .task-card-meta {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 16px;
+    padding: 12px; background: var(--bg-page); border-radius: 6px; margin-bottom: 12px;
+    font-size: 12.5px;
+  }
+  .task-meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .task-meta-label { color: var(--text-disabled); font-size: 11px; }
+  .task-meta-value { color: var(--text-primary); font-weight: 500; }
+  .task-meta-value.mono { font-family: "DIN Alternate", "Roboto", inherit; }
+  .task-meta-value.success { color: var(--color-success); }
+  .task-meta-value.warning { color: var(--color-warning); }
+
+  .task-card-foot {
+    display: flex; align-items: center; gap: 8px;
+    padding-top: 12px; border-top: 1px dashed var(--border);
+  }
+  .task-card-foot .spacer { flex: 1; }
+
+  /* ============ 规则列表 ============ */
+  .rule-list {
+    background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); overflow: hidden;
+  }
+  .rule-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    transition: background 200ms;
+  }
+  .rule-item:last-child { border-bottom: none; }
+  .rule-item:hover { background: var(--bg-page); }
+  .rule-item.disabled { background: rgba(0,0,0,0.015); }
+  .rule-item.disabled .rule-name { color: var(--text-secondary); }
+  .rule-icon {
+    width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .rule-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .rule-icon.violation { background: rgba(245, 63, 63, 0.1); color: var(--color-error); }
+  .rule-icon.zombie { background: rgba(255, 125, 0, 0.1); color: var(--color-warning); }
+  .rule-icon.integrity { background: rgba(37, 99, 235, 0.1); color: var(--color-primary); }
+  .rule-icon.security { background: rgba(162, 81, 246, 0.1); color: var(--chart-4); }
+  .rule-info { flex: 1; min-width: 0; }
+  .rule-name {
+    font-size: 14.5px; font-weight: 500; color: var(--text-primary);
+    margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .rule-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 18px; }
+  .rule-meta {
+    display: flex; gap: 16px; flex-shrink: 0; font-size: 12px;
+    color: var(--text-disabled); margin-right: 8px;
+  }
+  .rule-meta strong { color: var(--text-primary); font-weight: 500; font-family: "DIN Alternate", "Roboto", inherit; }
+  .rule-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+  /* ============ 任务执行情况统计 ============ */
+  .run-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  .run-stat-card {
+    background: var(--bg-card); padding: 16px 18px; border-radius: 8px;
+    box-shadow: var(--shadow-1); position: relative; overflow: hidden;
+  }
+  .run-stat-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  }
+  .run-stat-card.ok::before { background: var(--color-success); }
+  .run-stat-card.warn::before { background: var(--color-warning); }
+  .run-stat-card.info::before { background: var(--color-info); }
+  .run-stat-card.neutral::before { background: var(--text-disabled); }
+  .run-stat-num {
+    font-family: "DIN Alternate", "Roboto", inherit;
+    font-size: 28px; font-weight: 600; line-height: 36px;
+  }
+  .run-stat-card.ok .run-stat-num { color: var(--color-success); }
+  .run-stat-card.warn .run-stat-num { color: var(--color-warning); }
+  .run-stat-card.info .run-stat-num { color: var(--color-info); }
+  .run-stat-card.neutral .run-stat-num { color: var(--text-secondary); }
+  .run-stat-label { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* ============ 模态/抽屉 ============ */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    display: none; align-items: stretch; justify-content: flex-end;
+    z-index: 1000; opacity: 0; transition: opacity 200ms;
+  }
+  .modal-mask.show { display: flex; opacity: 1; }
+  .modal-drawer {
+    width: 680px; max-width: 100%;
+    background: var(--bg-card); display: flex; flex-direction: column;
+    box-shadow: -8px 0 24px rgba(0,0,0,0.1);
+    transform: translateX(100%); transition: transform 300ms cubic-bezier(.2,.8,.2,1);
+  }
+  .modal-mask.show .modal-drawer { transform: translateX(0); }
+  .modal-head {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .modal-close {
+    width: 32px; height: 32px; border: none; background: transparent;
+    border-radius: 6px; cursor: pointer; font-size: 22px; color: var(--text-disabled);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .modal-body {
+    flex: 1; overflow-y: auto; padding: 24px;
+  }
+  .modal-foot {
+    padding: 16px 24px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 12px;
+  }
+
+  /* 步骤指示 */
+  .step-bar {
+    display: flex; align-items: center;
+    padding: 14px 18px; margin-bottom: 20px;
+    background: var(--bg-page); border-radius: 8px;
+  }
+  .step { display: flex; align-items: center; gap: 8px; color: var(--text-disabled); font-size: 13px; }
+  .step.active { color: var(--color-primary); font-weight: 500; }
+  .step-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--bg-secondary); color: var(--text-disabled);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; font-family: "DIN Alternate", "Roboto", inherit;
+  }
+  .step.active .step-num { background: var(--color-primary); color: white; }
+  .step-line { flex: 1; height: 1px; background: var(--border); margin: 0 12px; }
+
+  /* 表单 */
+  .form-block {
+    background: var(--bg-card); padding: 16px;
+    border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px;
+  }
+  .form-block-title {
+    font-size: 14px; font-weight: 500; color: var(--text-primary);
+    margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  }
+  .form-block-sub { font-size: 11.5px; font-weight: 400; color: var(--text-disabled); margin-left: 6px; }
+  .form-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px;
+  }
+  .form-item { display: flex; flex-direction: column; gap: 6px; }
+  .form-item.full { grid-column: 1 / -1; }
+  .form-item label {
+    font-size: 12.5px; color: var(--text-secondary); font-weight: 500;
+  }
+  .form-tip { font-size: 11px; font-weight: 400; color: var(--text-disabled); margin-left: 4px; }
+
+  /* 权限项 checkbox */
+  .perm-checkbox-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 12px;
+    padding: 12px; background: var(--bg-page); border-radius: 6px;
+  }
+  .perm-checkbox {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--text-primary); cursor: pointer; user-select: none;
+  }
+  .perm-checkbox input { margin: 0; accent-color: var(--color-primary); }
+
+  /* 规则选择 - 任务表单内 */
+  .rule-pick-list {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .rule-pick {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px;
+    background: var(--bg-page); border: 1px solid var(--border);
+    border-radius: 6px; cursor: pointer; transition: all 150ms;
+  }
+  .rule-pick:hover { border-color: var(--color-primary); }
+  .rule-pick.disabled { opacity: 0.55; cursor: not-allowed; }
+  .rule-pick input { margin: 0; accent-color: var(--color-primary); }
+  .rule-pick-info { flex: 1; min-width: 0; }
+  .rule-pick-name { font-size: 13.5px; font-weight: 500; color: var(--text-primary); margin-bottom: 2px; }
+  .rule-pick-desc { font-size: 11.5px; color: var(--text-disabled); }
+
+  /* ============ 数据表通用 ============ */
+  .data-table .actions { display: flex; gap: 8px; }
+  .data-table .row-disabled td:nth-child(n+2):nth-child(-n+5) { color: var(--text-disabled); }
+
+  /* 明细 - 人员表 */
+  .detail-toolbar {
+    display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .detail-table-wrap {
+    border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+  }
+  .detail-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .detail-table thead { background: var(--bg-secondary); }
+  .detail-table th {
+    height: 38px; padding: 0 12px; text-align: left;
+    font-weight: 500; color: var(--text-secondary);
+    font-size: 12.5px; white-space: nowrap;
+  }
+  .detail-table td {
+    padding: 10px 12px; border-top: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .detail-table tbody tr:hover { background: var(--bg-page); }
+  .detail-table td.mono { font-family: "DIN Alternate", "Roboto", inherit;
+    color: var(--text-secondary); font-size: 12px; }
+  /* 表中的小色块 */
+  .mini-grant {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px;
+    border-radius: 4px; border: 1px solid;
+    font-size: 9px; font-weight: 600;
+    cursor: default;
+  }
+  .mini-grant.granted { background: var(--grant-default-bg); border-color: var(--grant-default-border); color: var(--grant-default); }
+  .mini-grant.apply { background: var(--grant-apply-bg); border-color: var(--grant-apply-border); color: var(--grant-apply); }
+  .mini-grant.denied { background: var(--grant-denied-bg); border-color: var(--grant-denied-border); color: var(--grant-denied); }
+  .mini-grant.none { background: var(--bg-secondary); border-color: var(--border); color: var(--text-disabled); }
+  .mini-grant.violation {
+    background: rgba(245, 63, 63, 0.16); border: 1.5px solid var(--color-error); color: var(--color-error);
+    font-weight: 700; animation: pulse-violation 1.6s infinite;
+  }
+  .mini-grant.zombie {
+    background: rgba(255, 125, 0, 0.16); border: 1.5px solid var(--color-warning); color: var(--color-warning);
+    font-weight: 700;
+  }
+  @keyframes pulse-violation {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 63, 63, 0); }
+    50% { box-shadow: 0 0 0 3px rgba(245, 63, 63, 0.25); }
+  }
+
+  /* 状态徽标 */
+  .tag {
+    display: inline-block; padding: 1px 8px; border-radius: 4px;
+    font-size: 11.5px; line-height: 18px;
+  }
+  .tag-blue { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); }
+  .tag-green { background: rgba(0, 180, 42, 0.08); color: var(--color-success); }
+  .tag-orange { background: rgba(255, 125, 0, 0.08); color: var(--color-warning); }
+  .tag-gray { background: var(--bg-secondary); color: var(--text-secondary); }
+
+  /* ===== 顶导下拉菜单 ===== */
+  .nav-dropdown {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .nav-dropdown-trigger {
+    color: var(--text-secondary);
+    font-size: 14px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: color 200ms;
+  }
+  .nav-dropdown-trigger::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    margin-left: 4px;
+    margin-bottom: 3px;
+    transition: transform 200ms;
+    opacity: 0.6;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger {
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 16px;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger {
+    color: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger::after {
+    transform: rotate(-135deg);
+    margin-bottom: -3px;
+    opacity: 1;
+  }
+  .nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-2);
+    min-width: 220px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 200ms;
+    z-index: 200;
+  }
+  .nav-dropdown:hover .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+  .nav-dropdown-menu a {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    height: auto !important;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 150ms;
+  }
+  .nav-dropdown-menu a::after { display: none !important; }
+  .nav-dropdown-menu a:hover {
+    background: rgba(37, 99, 235, 0.06);
+    color: var(--color-primary);
+  }
+  .nav-dropdown-menu a svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+  .nav-dropdown-menu a:hover svg { opacity: 1; }
+  .nav-dropdown-menu .menu-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .nav-dropdown-menu .menu-label {
+    font-size: 14px;
+    line-height: 18px;
+  }
+  .nav-dropdown-menu .menu-desc {
+    font-size: 11px;
+    color: var(--text-disabled);
+    margin-top: 2px;
+    line-height: 14px;
+  }
+  .nav-dropdown-menu a:hover .menu-desc { color: var(--color-primary-secondary); }
+  .nav-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 0;
+    right: 0;
+    height: 8px;
+  }
+
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo-wrap">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>
+    </div>
+    <div class="logo-text">身份数据平台</div>
+  </div>
+  <nav>
+    <a href="页面主页.html">主页</a>
+    <div class="nav-dropdown">
+      <a href="m1-basic-identity.html" class="nav-dropdown-trigger" style="text-decoration:none;color:inherit">身份管理</a>
+      <div class="nav-dropdown-menu">
+        <a href="m1-basic-identity.html">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员基础身份</div>
+            <div class="menu-desc">人员进档 · 一人一ID · 多源头采集</div>
+          </div>
+        </a>
+        <a href="m2-classification.html">
+          <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员分类身份</div>
+            <div class="menu-desc">树形分类 · 标准属性 · 实例挂载</div>
+          </div>
+        </a>
+        <a href="m3-position.html">
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员岗位身份</div>
+            <div class="menu-desc">广义岗位 · 一人多身份</div>
+          </div>
+        </a>
+        <a href="m7-custom-tags.html">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员自定义标签管理</div>
+            <div class="menu-desc">自定义群组 · 灵活标注 · 便捷查询</div>
+          </div>
+        </a>
+        <a href="m4-org.html">
+          <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">组织机构体系</div>
+            <div class="menu-desc">院系树 · 强绑定身份</div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <a href="m5-identity-permission.html" class="active">身份权限管理</a>
+    <a href="m6-data-query.html">数据查询</a>
+  </nav>
+  <div class="topbar-right">
+    <span class="time-display" id="time-display"></span>
+    <div class="user-info">
+      <div class="user-avatar">管</div>
+      <span class="user-name">管理员 · 数据治理岗</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-section">权限项主数据</div>
+    <div class="sidebar-item" data-view="catalog">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 13h6M9 17h4"/></svg>
+      <span>公共权限维护</span>
+      <span class="badge">8 项</span>
+    </div>
+
+    <div class="sidebar-section">权限数据查看</div>
+    <div class="sidebar-item active" data-view="matrix">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>授权矩阵</span>
+      <span class="badge">基线规则</span>
+    </div>
+    <div class="sidebar-item" data-view="reconcile">
+      <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0z"/><path d="M9 12l2 2 4-4"/></svg>
+      <span>对账异常</span>
+      <span class="badge" style="background:rgba(245,63,63,0.1);color:var(--color-error)">42</span>
+    </div>
+    <div class="sidebar-item" data-view="zombie">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 9h.01M15 9h.01M9 16c.5-1 1.5-2 3-2s2.5 1 3 2"/></svg>
+      <span>僵尸账号</span>
+      <span class="badge" style="background:rgba(255,125,0,0.1);color:var(--color-warning)">18</span>
+    </div>
+
+    <div class="sidebar-section">权限质量检查</div>
+    <div class="sidebar-item" data-view="tasks">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span>检查任务</span>
+      <span class="badge">5</span>
+    </div>
+    <div class="sidebar-item" data-view="rules">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/><circle cx="20" cy="18" r="2"/></svg>
+      <span>检查规则</span>
+      <span class="badge">12</span>
+    </div>
+    <div class="sidebar-item" data-view="runs">
+      <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+      <span>任务执行情况</span>
+    </div>
+    <div class="sidebar-item" data-view="sources">
+      <svg viewBox="0 0 24 24"><path d="M21 12c0 5-4 9-9 9s-9-4-9-9 4-9 9-9c2.5 0 4.7 1 6.4 2.6"/></svg>
+      <span>数据源对接</span>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="页面主页.html">平台总览</a>
+      <span class="sep">/</span>
+      <span class="last" id="crumb-last">身份权限管理 · 授权矩阵</span>
+    </div>
+
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">身份权限管理 <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:var(--bg-secondary);border-radius:3px;font-size:11px;color:var(--text-secondary);margin-left:12px;vertical-align:middle"><span style="width:5px;height:5px;border-radius:50%;background:var(--text-disabled)"></span>对账治理 · 不参与授权流程</span></h1>
+        <p class="page-desc">权限基线规则 × 实际数据对账 · 发现越权/僵尸账号/规则缺失 · 推送源头系统处置</p>
+      </div>
+      <div class="page-stats">
+        <span>权限项 <strong>8</strong></span>
+        <span>分类数 <strong>15</strong></span>
+        <span class="apply">对账异常 <strong style="color:var(--color-error)">42</strong></span>
+        <span class="apply">僵尸账号 <strong style="color:var(--color-warning)">18</strong></span>
+        <span>本月对账 <strong>3</strong></span>
+      </div>
+    </div>
+
+    <!-- ============ 视图1：授权矩阵 ============ -->
+    <section class="view active" id="view-matrix">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>对账治理定位</strong>：本平台<strong style="color:var(--color-error)">不参与权限申请审批</strong>，权限授予仍由源头系统（一卡通、门禁、网络中心、访客系统等）执行。本页面定义授权<strong>基线规则</strong>——
+          <span style="display:inline-flex;align-items:center;gap:4px"><span class="legend-dot granted"></span><strong style="color:var(--grant-default)">默认授予</strong></span> /
+          <span style="display:inline-flex;align-items:center;gap:4px;margin-left:8px"><span class="legend-dot apply"></span><strong style="color:var(--grant-apply)">可申请授权</strong></span> /
+          <span style="display:inline-flex;align-items:center;gap:4px;margin-left:8px"><span class="legend-dot denied"></span><strong style="color:var(--grant-denied)">不予授权</strong></span>，平台<strong>定期拉取源头实际数据进行比对</strong>，发现越权 / 僵尸账号 / 规则缺失等异常并推送处置。
+        </div>
+      </div>
+
+      <!-- 筛选条 -->
+      <div class="filter-bar">
+        <span class="filter-label">人员分类范围：</span>
+        <select class="filter-select" id="filter-cat">
+          <option value="">全部分类</option>
+          <option value="01">教职工（含校本部/附属医院）</option>
+          <option value="0101">教职工 · 校本部全职</option>
+          <option value="02">学生（含本科/研究生）</option>
+          <option value="0201">学生 · 学籍生</option>
+          <option value="03">外协人员</option>
+          <option value="04">校友</option>
+          <option value="05">校外人员</option>
+        </select>
+        <span class="filter-label" style="margin-left:8px">组织机构范围：</span>
+        <select class="filter-select" id="filter-org">
+          <option value="">全校</option>
+          <option value="A00">学校（一级法人）</option>
+          <option value="C01">计算机科学与技术学院</option>
+          <option value="C02">数学学院</option>
+          <option value="C06">医学院</option>
+          <option value="B01">人力资源管理处</option>
+          <option value="B08">后勤管理处</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm">导出矩阵</button>
+      </div>
+
+      <!-- 矩阵 -->
+      <div class="matrix-wrap">
+
+        <div class="legend">
+          <span style="font-weight:500;color:var(--text-primary)">图例：</span>
+          <div class="legend-item"><span class="legend-dot granted"></span>默认授予（人员归类即自动获得）</div>
+          <div class="legend-item"><span class="legend-dot apply"></span>可申请授权（需走审批流程）</div>
+          <div class="legend-item"><span class="legend-dot denied"></span>不予授权（策略禁止）</div>
+        </div>
+
+        <div class="matrix-scroll">
+          <table class="matrix-table" id="matrix-table">
+            <thead>
+              <tr id="matrix-head"></tr>
+            </thead>
+            <tbody id="matrix-body"></tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ============ 视图2：对账异常 ============ -->
+    <section class="view" id="view-reconcile">
+
+      <div class="info-box" style="background:rgba(245, 63, 63, 0.04);border-color:rgba(245, 63, 63, 0.16)">
+        <div class="info-box-icon" style="color:var(--color-error)">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>对账异常清单</strong>：本期（2026-05-15 凌晨）对账发现 <strong style="color:var(--color-error)">42 人</strong>存在<strong style="color:var(--color-error)">越权使用</strong>异常——即基线规则禁止但实际数据显示持有该权限。本平台不直接处置，需推送至源头系统由其管理员核实处理。
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <span class="filter-label">异常类型：</span>
+        <select class="filter-select">
+          <option>全部异常类型</option>
+          <option>越权 - 一卡通</option>
+          <option>越权 - 门禁</option>
+          <option>越权 - 校园网</option>
+          <option>越权 - 图书馆</option>
+        </select>
+        <span class="filter-label" style="margin-left:8px">本次对账批次：</span>
+        <select class="filter-select">
+          <option>2026-05-15 凌晨（最新）</option>
+          <option>2026-04-15 凌晨</option>
+          <option>2026-03-15 凌晨</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm">导出</button>
+        <button class="btn btn-primary btn-sm">推送源头处置</button>
+      </div>
+
+      <div class="panel" style="padding:0;overflow:hidden">
+        <table class="data-table" style="width:100%;border-collapse:collapse">
+          <thead style="background:var(--bg-secondary)">
+            <tr>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:110px">UID</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:80px">姓名</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500">所在分类</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500">异常权限</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500">实际来源</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:120px">最近活动</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:100px">建议动作</th>
+            </tr>
+          </thead>
+          <tbody id="reconcile-tbody"></tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- ============ 视图3：僵尸账号 ============ -->
+    <section class="view" id="view-zombie">
+
+      <div class="info-box" style="background:rgba(255, 125, 0, 0.04);border-color:rgba(255, 125, 0, 0.16)">
+        <div class="info-box-icon" style="color:var(--color-warning)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 9h.01M15 9h.01M9 16c.5-1 1.5-2 3-2s2.5 1 3 2"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>僵尸账号清理</strong>：人员已离校/离职/毕业但权限未及时回收的账号。本期发现 <strong style="color:var(--color-warning)">18 个</strong>僵尸账号，涉及 <strong>43 项</strong>未回收权限。
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <span class="filter-label">失效原因：</span>
+        <select class="filter-select">
+          <option>全部失效原因</option>
+          <option>已离职</option>
+          <option>已毕业</option>
+          <option>已离校</option>
+          <option>访客超期</option>
+        </select>
+        <span class="filter-label" style="margin-left:8px">失效天数：</span>
+        <select class="filter-select">
+          <option>全部</option>
+          <option>超期 30 天以上</option>
+          <option>超期 90 天以上</option>
+          <option>超期 180 天以上</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm">导出</button>
+        <button class="btn btn-primary btn-sm">批量推送回收</button>
+      </div>
+
+      <div class="panel" style="padding:0;overflow:hidden">
+        <table class="data-table" style="width:100%;border-collapse:collapse">
+          <thead style="background:var(--bg-secondary)">
+            <tr>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:110px">UID</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:80px">姓名</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:90px">失效原因</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:100px">失效日期</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:90px">超期天数</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500">未回收权限</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:120px">最近一次使用</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:100px">操作</th>
+            </tr>
+          </thead>
+          <tbody id="zombie-tbody"></tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- ============ 视图4：数据源对接 ============ -->
+    <section class="view" id="view-sources">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>对账数据源对接</strong>：本平台通过定时拉取以下源头系统的实际授权数据进行对账。任何源头变更都在 T+1 内反映到对账结果。
+        </div>
+      </div>
+
+      <div class="source-grid" id="source-grid"></div>
+
+    </section>
+
+    <!-- ============ 视图5：公共权限维护 ============ -->
+    <section class="view" id="view-catalog">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>公共权限主数据</strong>：本平台管理的全部校园公共权限项。新权限可通过<strong>新增</strong>录入，已有权限项<strong>不允许删除</strong>，仅可<strong>启用/停用</strong>来控制是否参与对账。停用的权限项历史数据保留可查。
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg></span>
+          <input class="filter-input search" placeholder="搜索权限名称 / 编码">
+        </div>
+        <select class="filter-select">
+          <option>全部状态</option>
+          <option>仅启用</option>
+          <option>仅停用</option>
+        </select>
+        <select class="filter-select">
+          <option>全部归属系统</option>
+          <option>一卡通</option>
+          <option>门禁系统</option>
+          <option>网络中心</option>
+          <option>图书馆</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm">导出</button>
+        <button class="btn btn-primary btn-sm">+ 新增权限项</button>
+      </div>
+
+      <div class="panel" style="padding:0;overflow:hidden">
+        <table class="data-table" style="width:100%;border-collapse:collapse">
+          <thead style="background:var(--bg-secondary)">
+            <tr>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:80px">编码</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500">权限名称</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500">归属源头系统</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500">业务说明</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:100px">在用账号</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:90px">状态</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:140px">操作</th>
+            </tr>
+          </thead>
+          <tbody id="catalog-tbody"></tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- ============ 视图6：检查任务 ============ -->
+    <section class="view" id="view-tasks">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>检查任务配置</strong>：每个任务定义一次"<strong>源头数据 ⇔ 权限分类表</strong>"的对账行为：选定数据源、选用已启用的规则集、配置执行时间（cron）和通知策略。任务执行后产出"对账异常"和"僵尸账号"清单。
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg></span>
+          <input class="filter-input search" placeholder="搜索任务名称">
+        </div>
+        <select class="filter-select">
+          <option>全部状态</option>
+          <option>运行中</option>
+          <option>已暂停</option>
+        </select>
+        <select class="filter-select">
+          <option>全部数据源</option>
+          <option>一卡通</option>
+          <option>门禁系统</option>
+          <option>网络中心</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm">导出</button>
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('task-modal').classList.add('show')">+ 新建检查任务</button>
+      </div>
+
+      <div class="task-grid" id="task-grid"></div>
+
+    </section>
+
+    <!-- ============ 视图7：检查规则 ============ -->
+    <section class="view" id="view-rules">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>检查规则库</strong>：规则定义"<strong>什么算异常</strong>"。新规则可通过新增录入，已有规则仅支持<strong>启用/停用</strong>。<strong>启用后该规则对所有人员分类生效，不可按分类区分。</strong>这是为了保证治理一致性——避免出现"A 类查越权但 B 类不查"的合规盲区。
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg></span>
+          <input class="filter-input search" placeholder="搜索规则名称">
+        </div>
+        <select class="filter-select">
+          <option>全部规则类型</option>
+          <option>越权检查</option>
+          <option>失效检查</option>
+          <option>数据完整性</option>
+        </select>
+        <select class="filter-select">
+          <option>全部状态</option>
+          <option>启用中</option>
+          <option>已停用</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm">导出</button>
+        <button class="btn btn-primary btn-sm">+ 新增规则</button>
+      </div>
+
+      <div class="rule-list" id="rule-list"></div>
+
+    </section>
+
+    <!-- ============ 视图8：任务执行情况 ============ -->
+    <section class="view" id="view-runs">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>执行情况</strong>：所有检查任务的运行日志。可查看每次执行的耗时、处理记录数、发现的异常数、错误信息。失败任务支持重试或查看错误堆栈。
+        </div>
+      </div>
+
+      <!-- 顶部统计 -->
+      <div class="run-stats">
+        <div class="run-stat-card ok">
+          <div class="run-stat-num">128</div>
+          <div class="run-stat-label">本月成功执行</div>
+        </div>
+        <div class="run-stat-card warn">
+          <div class="run-stat-num">3</div>
+          <div class="run-stat-label">本月失败</div>
+        </div>
+        <div class="run-stat-card info">
+          <div class="run-stat-num">42</div>
+          <div class="run-stat-label">本期发现异常</div>
+        </div>
+        <div class="run-stat-card neutral">
+          <div class="run-stat-num">1.8K</div>
+          <div class="run-stat-label">本月处理记录</div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <select class="filter-select">
+          <option>全部任务</option>
+          <option>一卡通对账</option>
+          <option>门禁对账</option>
+          <option>校园网对账</option>
+          <option>僵尸账号扫描</option>
+        </select>
+        <select class="filter-select">
+          <option>全部状态</option>
+          <option>成功</option>
+          <option>失败</option>
+          <option>运行中</option>
+        </select>
+        <select class="filter-select">
+          <option>近 7 天</option>
+          <option>近 30 天</option>
+          <option>近 90 天</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm">导出日志</button>
+      </div>
+
+      <div class="panel" style="padding:0;overflow:hidden">
+        <table class="data-table" style="width:100%;border-collapse:collapse">
+          <thead style="background:var(--bg-secondary)">
+            <tr>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:160px">执行时间</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500">任务名称</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:80px">状态</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:90px">耗时</th>
+              <th style="padding:12px 16px;text-align:right;font-size:13px;color:var(--text-secondary);font-weight:500;width:120px">处理记录数</th>
+              <th style="padding:12px 16px;text-align:right;font-size:13px;color:var(--text-secondary);font-weight:500;width:110px">发现异常</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:120px">触发方式</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;width:140px">操作</th>
+            </tr>
+          </thead>
+          <tbody id="runs-tbody"></tbody>
+        </table>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ 新建检查任务 - 抽屉/弹窗 ============ -->
+<div class="modal-mask" id="task-modal" onclick="if(event.target===this) this.classList.remove('show')">
+  <div class="modal-drawer">
+    <div class="modal-head">
+      <div>
+        <div style="font-size:18px;font-weight:600;color:var(--text-primary)">新建检查任务</div>
+        <div style="font-size:12.5px;color:var(--text-secondary);margin-top:2px">配置数据源、规则、执行时间和通知策略</div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('task-modal').classList.remove('show')">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- 步骤指示 -->
+      <div class="step-bar">
+        <div class="step active"><span class="step-num">1</span><span>基本信息</span></div>
+        <div class="step-line"></div>
+        <div class="step active"><span class="step-num">2</span><span>数据源 & 检查范围</span></div>
+        <div class="step-line"></div>
+        <div class="step active"><span class="step-num">3</span><span>规则配置</span></div>
+        <div class="step-line"></div>
+        <div class="step active"><span class="step-num">4</span><span>执行 & 通知</span></div>
+      </div>
+
+      <!-- 基本信息 -->
+      <div class="form-block">
+        <div class="form-block-title">① 基本信息</div>
+        <div class="form-grid">
+          <div class="form-item">
+            <label>任务名称 <span style="color:var(--color-error)">*</span></label>
+            <input class="filter-input" style="width:100%;min-width:0" placeholder="例：一卡通对账任务" value="一卡通对账任务">
+          </div>
+          <div class="form-item">
+            <label>任务编码</label>
+            <input class="filter-input" style="width:100%;min-width:0;font-family:'DIN Alternate',monospace" placeholder="自动生成" value="TASK-CARD-001" disabled>
+          </div>
+          <div class="form-item full">
+            <label>任务描述</label>
+            <textarea class="filter-input" style="width:100%;min-width:0;height:60px;padding:8px 12px;resize:vertical;font-family:inherit" placeholder="该任务用于...">每日凌晨对账一卡通系统授权数据与平台基线规则，发现越权使用、僵尸账号等异常并推送至一卡通管理员处置。</textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 数据源 & 检查范围 -->
+      <div class="form-block">
+        <div class="form-block-title">② 数据源 & 检查范围</div>
+        <div class="form-grid">
+          <div class="form-item">
+            <label>数据源 <span style="color:var(--color-error)">*</span></label>
+            <select class="filter-select" style="width:100%;min-width:0">
+              <option>一卡通系统 (CARD)</option>
+              <option>门禁系统 (GATE)</option>
+              <option>校园网认证 (NET)</option>
+              <option>图书馆系统 (LIB)</option>
+              <option>访客系统 (VISIT)</option>
+            </select>
+          </div>
+          <div class="form-item">
+            <label>对比基线 <span style="color:var(--color-error)">*</span></label>
+            <select class="filter-select" style="width:100%;min-width:0">
+              <option>权限分类基线表 (默认)</option>
+            </select>
+          </div>
+          <div class="form-item full">
+            <label>权限项范围 <span style="color:var(--color-disabled)">（所有启用的权限项自动覆盖）</span></label>
+            <div class="perm-checkbox-grid">
+              <label class="perm-checkbox"><input type="checkbox" checked> 进校权限</label>
+              <label class="perm-checkbox"><input type="checkbox" checked> 校园网</label>
+              <label class="perm-checkbox"><input type="checkbox" checked> 校园卡</label>
+              <label class="perm-checkbox"><input type="checkbox" checked> 图书馆</label>
+              <label class="perm-checkbox"><input type="checkbox" checked> 实验室</label>
+              <label class="perm-checkbox"><input type="checkbox" checked> 教学楼</label>
+              <label class="perm-checkbox"><input type="checkbox" checked> 宿舍楼</label>
+              <label class="perm-checkbox"><input type="checkbox"> 财务系统</label>
+            </div>
+          </div>
+          <div class="form-item full">
+            <label>人员分类范围 <span class="form-tip">检查规则对所有人员分类统一应用，无法按分类区分</span></label>
+            <div style="background:var(--bg-page);border:1px dashed var(--border);border-radius:6px;padding:10px 14px;font-size:12.5px;color:var(--text-secondary)">
+              <span style="color:var(--color-primary);font-weight:500">全部 15 个人员分类</span>（教职工 / 学生 / 外协 / 校友 / 校外）· 一旦启用规则即对所有分类生效
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 规则配置 -->
+      <div class="form-block">
+        <div class="form-block-title">③ 规则配置 <span class="form-block-sub">仅显示已启用的规则，可勾选纳入本任务</span></div>
+        <div class="rule-pick-list">
+          <label class="rule-pick"><input type="checkbox" checked>
+            <div class="rule-pick-info">
+              <div class="rule-pick-name">越权使用检查 <span class="tag" style="background:rgba(245,63,63,0.1);color:var(--color-error);margin-left:6px">越权</span></div>
+              <div class="rule-pick-desc">规则禁止 + 实际数据持有 → 标记为越权</div>
+            </div>
+            <span class="tag tag-green">启用中</span>
+          </label>
+          <label class="rule-pick"><input type="checkbox" checked>
+            <div class="rule-pick-info">
+              <div class="rule-pick-name">僵尸账号扫描 <span class="tag" style="background:rgba(255,125,0,0.1);color:var(--color-warning);margin-left:6px">失效</span></div>
+              <div class="rule-pick-desc">人员状态 = 已离职/已毕业/已离校，但权限仍有效</div>
+            </div>
+            <span class="tag tag-green">启用中</span>
+          </label>
+          <label class="rule-pick"><input type="checkbox" checked>
+            <div class="rule-pick-info">
+              <div class="rule-pick-name">访客超期检查 <span class="tag" style="background:rgba(255,125,0,0.1);color:var(--color-warning);margin-left:6px">失效</span></div>
+              <div class="rule-pick-desc">访客实际离校后 N 天权限未回收（默认 7 天）</div>
+            </div>
+            <span class="tag tag-green">启用中</span>
+          </label>
+          <label class="rule-pick"><input type="checkbox">
+            <div class="rule-pick-info">
+              <div class="rule-pick-name">应有未生效检查 <span class="tag tag-gray" style="margin-left:6px">完整性</span></div>
+              <div class="rule-pick-desc">规则默认授予 + 实际数据无 → 数据同步可能失败</div>
+            </div>
+            <span class="tag tag-green">启用中</span>
+          </label>
+          <label class="rule-pick disabled"><input type="checkbox" disabled>
+            <div class="rule-pick-info">
+              <div class="rule-pick-name">异地登录检查 <span class="tag tag-gray" style="margin-left:6px">安全</span></div>
+              <div class="rule-pick-desc">同账号短时间内多 IP 登录</div>
+            </div>
+            <span class="tag" style="background:var(--bg-secondary);color:var(--text-disabled)">已停用</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 执行 & 通知 -->
+      <div class="form-block">
+        <div class="form-block-title">④ 执行 & 通知</div>
+        <div class="form-grid">
+          <div class="form-item">
+            <label>执行时间 <span style="color:var(--color-error)">*</span></label>
+            <select class="filter-select" style="width:100%;min-width:0">
+              <option>每日定时</option>
+              <option>每小时</option>
+              <option>每周</option>
+              <option>每月</option>
+              <option>手动触发</option>
+            </select>
+          </div>
+          <div class="form-item">
+            <label>执行时刻</label>
+            <input class="filter-input" style="width:100%;min-width:0;font-family:'DIN Alternate',monospace" value="02:00" placeholder="HH:MM">
+          </div>
+          <div class="form-item full">
+            <label>Cron 表达式 <span class="form-tip">高级用户可直接编辑</span></label>
+            <input class="filter-input" style="width:100%;min-width:0;font-family:'DIN Alternate',monospace" value="0 0 2 * * ?" placeholder="0 0 2 * * ?">
+          </div>
+          <div class="form-item">
+            <label>超时时长（分钟）</label>
+            <input class="filter-input" style="width:100%;min-width:0" value="60" type="number">
+          </div>
+          <div class="form-item">
+            <label>失败重试</label>
+            <select class="filter-select" style="width:100%;min-width:0">
+              <option>失败重试 3 次</option>
+              <option>失败重试 1 次</option>
+              <option>不重试</option>
+            </select>
+          </div>
+          <div class="form-item full">
+            <label>通知策略</label>
+            <div style="display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--text-secondary)">
+              <label class="perm-checkbox"><input type="checkbox" checked> 发现异常时邮件通知</label>
+              <label class="perm-checkbox"><input type="checkbox" checked> 任务失败时邮件通知</label>
+              <label class="perm-checkbox"><input type="checkbox"> 微信企业号通知</label>
+              <label class="perm-checkbox"><input type="checkbox"> 站内信通知</label>
+            </div>
+          </div>
+          <div class="form-item full">
+            <label>通知接收人</label>
+            <input class="filter-input" style="width:100%;min-width:0" value="一卡通管理员 (T2018001 张明远), 数据治理岗 (admin)" placeholder="搜索人员或角色">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="document.getElementById('task-modal').classList.remove('show')">取消</button>
+      <button class="btn btn-secondary">保存为草稿</button>
+      <button class="btn btn-primary">创建并启用</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function updateTime() {
+    const now = new Date(); const pad = n => String(n).padStart(2, '0');
+    document.getElementById('time-display').textContent = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  }
+  updateTime(); setInterval(updateTime, 1000);
+
+  // ===== 权限项定义（列） =====
+  const PERMS = [
+    { code: 'gate',    name: '进校权限',  sub: '门禁/车闸' },
+    { code: 'net',     name: '校园网',    sub: 'WIFI / 上网认证' },
+    { code: 'card',    name: '校园卡',    sub: '消费/通行' },
+    { code: 'library', name: '图书馆',    sub: '借阅/入馆' },
+    { code: 'lab',     name: '实验室',    sub: '实验室门禁' },
+    { code: 'class',   name: '教学楼',    sub: '教室/自习室' },
+    { code: 'dorm',    name: '宿舍楼',    sub: '宿舍门禁' },
+    { code: 'finance', name: '财务系统',  sub: '报销/查询' },
+  ];
+
+  // ===== 人员分类（行）=====
+  const CATEGORIES = [
+    { code: '0101', name: '教职工 · 校本部全职', count: 6234, parent: '01', root: '01' },
+    { code: '0102', name: '教职工 · 校本部非全职', count: 412, parent: '01', root: '01' },
+    { code: '0103', name: '教职工 · 附属医院全职', count: 1854, parent: '01', root: '01' },
+    { code: '0105', name: '教职工 · 博士后', count: 188, parent: '01', root: '01' },
+    { code: '0201', name: '学生 · 学籍生', count: 65820, parent: '02', root: '02' },
+    { code: '0202', name: '学生 · 非学籍生', count: 1608, parent: '02', root: '02' },
+    { code: '0301', name: '外协 · 安保人员', count: 1820, parent: '03', root: '03' },
+    { code: '0302', name: '外协 · 物业服务人员', count: 4250, parent: '03', root: '03' },
+    { code: '0303', name: '外协 · 驻场服务人员', count: 3120, parent: '03', root: '03' },
+    { code: '0401', name: '校友', count: 3672, parent: '04', root: '04' },
+    { code: '0501', name: '校外 · 访客', count: 980, parent: '05', root: '05' },
+    { code: '0502', name: '校外 · 校外住户', count: 432, parent: '05', root: '05' },
+  ];
+
+  // 矩阵授权策略 (类别 × 权限 → 'granted' | 'apply' | 'denied')
+  const GRANTS = {
+    '0101': { gate:'granted', net:'granted',  card:'granted', library:'granted', lab:'granted', class:'granted', dorm:'apply',   finance:'apply'   },
+    '0102': { gate:'granted', net:'granted',  card:'granted', library:'granted', lab:'apply',   class:'granted', dorm:'denied',  finance:'denied'  },
+    '0103': { gate:'granted', net:'apply',    card:'granted', library:'apply',   lab:'apply',   class:'apply',   dorm:'denied',  finance:'apply'   },
+    '0105': { gate:'granted', net:'granted',  card:'granted', library:'granted', lab:'granted', class:'granted', dorm:'granted', finance:'denied'  },
+    '0201': { gate:'granted', net:'granted',  card:'granted', library:'granted', lab:'apply',   class:'granted', dorm:'granted', finance:'denied'  },
+    '0202': { gate:'granted', net:'apply',    card:'apply',   library:'apply',   lab:'denied',  class:'apply',   dorm:'apply',   finance:'denied'  },
+    '0301': { gate:'granted', net:'denied',   card:'granted', library:'denied',  lab:'denied',  class:'apply',   dorm:'denied',  finance:'denied'  },
+    '0302': { gate:'granted', net:'denied',   card:'apply',   library:'denied',  lab:'denied',  class:'denied',  dorm:'denied',  finance:'denied'  },
+    '0303': { gate:'granted', net:'denied',   card:'apply',   library:'denied',  lab:'apply',   class:'denied',  dorm:'denied',  finance:'denied'  },
+    '0401': { gate:'apply',   net:'denied',   card:'apply',   library:'apply',   lab:'denied',  class:'denied',  dorm:'denied',  finance:'denied'  },
+    '0501': { gate:'apply',   net:'denied',   card:'denied',  library:'denied',  lab:'denied',  class:'denied',  dorm:'denied',  finance:'denied'  },
+    '0502': { gate:'granted', net:'denied',   card:'apply',   library:'apply',   lab:'denied',  class:'denied',  dorm:'denied',  finance:'denied'  },
+  };
+
+  const GRANT_TEXT = { granted: '默认授予', apply: '可申请', denied: '不予授权' };
+  const GRANT_SUB  = { granted: '自动开通', apply: '需审批', denied: '策略禁止' };
+  const GRANT_ICON = { granted: '✓', apply: '!', denied: '×' };
+
+  // ===== 该分类下的人员明细 mock =====
+  function mockPersonsByCat(cat) {
+    const samplesAll = [
+      { uid: 'NP00000001', name: '张明远', org: '计算机科学与技术学院', orgCode: 'C01', xgh: 'T2018001', status: '在职' },
+      { uid: 'NP00000002', name: '李雪琴', org: '校长办公室', orgCode: 'A01', xgh: 'A2019003', status: '在职' },
+      { uid: 'NP00000003', name: '陈志强', org: '计算机科学与技术学院', orgCode: 'C01', xgh: 'T2020055', status: '在职' },
+      { uid: 'NP00000007', name: '黄敏君', org: '后勤管理处', orgCode: 'B08', xgh: 'S2015008', status: '在职' },
+      { uid: 'NP00000050', name: '吴志强', org: '数学学院', orgCode: 'C02', xgh: 'T2015042', status: '在职' },
+      { uid: 'NP00000088', name: '陈伟杰', org: '化学学院（已离职）', orgCode: 'C04', xgh: 'T2010088', status: '已离职' },
+
+      { uid: 'NP00000004', name: '王慧颖', org: '本科招生办公室', orgCode: 'B03', xgh: 'U2021103', status: '在籍' },
+      { uid: 'NP00000010', name: '田静怡', org: '数学学院', orgCode: 'C02', xgh: 'U2022087', status: '在籍' },
+      { uid: 'NP00000005', name: '刘建华', org: '研究生院', orgCode: 'B05', xgh: 'I2023012', status: '在籍' },
+      { uid: 'NP00000088', name: '李晓涵', org: '物理与天文学院（已毕业）', orgCode: 'C03', xgh: 'U2019088', status: '已毕业' },
+
+      { uid: 'NP00000009', name: '赵磊', org: '保卫处', orgCode: 'B07', xgh: 'S2020042', status: '在职' },
+      { uid: 'NP00000156', name: '黄敏君', org: '后勤管理处', orgCode: 'B08', xgh: 'A2012045', status: '在职' },
+
+      { uid: 'NP00000011', name: '周文博', org: '校友会', orgCode: 'B06-AL', xgh: 'AL2018001', status: '校友' },
+
+      { uid: 'NP00000099', name: 'Sarah Johnson', org: '国际合作办公室（已离校）', orgCode: 'B06', xgh: 'V2024088', status: '已离校' },
+    ];
+    const map = {
+      '0101': samplesAll.slice(0, 6),
+      '0102': samplesAll.slice(1, 4),
+      '0103': samplesAll.slice(2, 5),
+      '0105': samplesAll.slice(0, 2),
+      '0201': samplesAll.slice(6, 10),
+      '0202': samplesAll.slice(7, 9),
+      '0301': samplesAll.slice(10, 12),
+      '0302': samplesAll.slice(10, 12),
+      '0303': samplesAll.slice(10, 12),
+      '0401': samplesAll.slice(12, 13),
+      '0501': samplesAll.slice(13, 14),
+      '0502': samplesAll.slice(13, 14),
+    };
+    return map[cat] || samplesAll.slice(0, 4);
+  }
+
+  // 个人实际授权状态：对账后的结果
+  // 'granted'  : 规则允许 + 实际有效 (合规)
+  // 'expected_none': 规则允许 + 实际未生效 (一卡通故障 / 未激活等)
+  // 'denied'   : 规则禁止 + 实际无 (合规)
+  // 'violation': 规则禁止 + 实际有 (越权使用 - 红色异常)
+  // 'zombie'   : 人员已失效 + 实际仍有权限 (僵尸账号 - 橙色异常)
+  function personGrants(cat, uid) {
+    const policy = GRANTS[cat];
+    const out = {};
+    const seed = parseInt(uid.slice(-2)) || 1;
+    // 模拟一小部分人员是"僵尸账号"（已离校但权限未回收）
+    const isZombie = (seed === 88 || seed === 99);
+    PERMS.forEach((p, i) => {
+      const base = policy[p.code];
+      if (isZombie && base !== 'denied') {
+        out[p.code] = 'zombie';   // 僵尸账号仍持有
+      } else if (base === 'granted') {
+        // 默认授予下，大部分实际有效，少数对账失败
+        out[p.code] = ((seed + i) % 17 === 0) ? 'expected_none' : 'granted';
+      } else if (base === 'denied') {
+        // 禁止情况下，少数出现"越权"异常
+        out[p.code] = ((seed + i * 3) % 23 === 0) ? 'violation' : 'denied';
+      } else {
+        // 可申请：一部分实际拿到 (granted), 一部分未走流程 (none)
+        out[p.code] = ((seed + i) % 3 === 0) ? 'expected_none' : 'granted';
+      }
+    });
+    return out;
+  }
+
+  // ===== 当前展开的分类 set =====
+  const expandedCats = new Set();
+
+  // ===== 筛选 =====
+  function getFiltered() {
+    const cat = document.getElementById('filter-cat').value;
+    if (!cat) return CATEGORIES;
+    // 精确匹配或前缀匹配
+    return CATEGORIES.filter(c => c.code === cat || c.code.startsWith(cat));
+  }
+
+  // ===== 渲染矩阵 =====
+  function renderMatrix() {
+    // 列头
+    const head = document.getElementById('matrix-head');
+    head.innerHTML = `
+      <th class="corner">
+        <div style="font-size:13px;font-weight:500;color:var(--text-primary)">人员分类</div>
+        <div style="font-size:11px;color:var(--text-disabled);margin-top:2px">↓ 行 · 列 →</div>
+      </th>
+      ${PERMS.map(p => `
+        <th>
+          <div class="col-head-name">${p.name}</div>
+          <div class="col-head-sub">${p.sub}</div>
+        </th>
+      `).join('')}
+    `;
+
+    // 行
+    const list = getFiltered();
+    const body = document.getElementById('matrix-body');
+    if (list.length === 0) {
+      body.innerHTML = `<tr><td colspan="${PERMS.length+1}" style="padding:40px;text-align:center;color:var(--text-disabled)">暂无匹配数据</td></tr>`;
+      return;
+    }
+
+    body.innerHTML = list.map(c => {
+      const policy = GRANTS[c.code] || {};
+      const expanded = expandedCats.has(c.code);
+      return `
+        <tr class="${expanded ? 'expanded' : ''}" data-cat="${c.code}">
+          <td class="row-head">
+            <div class="row-head-top">
+              <span class="row-head-name">${c.name}</span>
+              <span class="row-head-code">${c.code}</span>
+            </div>
+            <div class="row-head-meta">
+              <span>挂载人数</span>
+              <span class="row-head-count">${c.count.toLocaleString()}</span>
+            </div>
+            <div class="row-head-actions">
+              <button class="detail-toggle-btn ${expanded ? 'active' : ''}" onclick="toggleDetail('${c.code}')">
+                <span class="caret">▶</span>
+                <span>${expanded ? '收起明细' : '详情'}</span>
+              </button>
+            </div>
+          </td>
+          ${PERMS.map(p => {
+            const v = policy[p.code] || 'denied';
+            return `
+              <td class="cell">
+                <div class="grant-chip ${v}" title="${c.name} → ${p.name}：${GRANT_TEXT[v]}（${GRANT_SUB[v]}）">
+                  <div class="chip-text"><span class="chip-icon">${GRANT_ICON[v]}</span>${GRANT_TEXT[v]}</div>
+                  <div class="chip-sub">${GRANT_SUB[v]}</div>
+                </div>
+              </td>
+            `;
+          }).join('')}
+        </tr>
+        ${expanded ? renderDetailRow(c) : ''}
+      `;
+    }).join('');
+  }
+
+  // 展开/收起 同行下方明细
+  function toggleDetail(cat) {
+    if (expandedCats.has(cat)) expandedCats.delete(cat);
+    else expandedCats.add(cat);
+    renderMatrix();
+  }
+
+  // 明细行（紧跟在分类行下方，占满整个表格宽度）
+  function renderDetailRow(cat) {
+    const policy = GRANTS[cat.code] || {};
+    const persons = mockPersonsByCat(cat.code);
+
+    // 该分类下每个权限的统计 - 对账维度
+    const stats = PERMS.map(p => {
+      const status = policy[p.code];
+      let actualGranted = 0, violation = 0, zombie = 0, expectedNone = 0;
+      const total = persons.length;
+      persons.forEach(person => {
+        const pg = personGrants(cat.code, person.uid);
+        const g = pg[p.code];
+        if (g === 'granted') actualGranted++;
+        else if (g === 'violation') violation++;
+        else if (g === 'zombie') zombie++;
+        else if (g === 'expected_none') expectedNone++;
+      });
+      return { perm: p, status, actualGranted, violation, zombie, expectedNone, total };
+    });
+
+    // 该分类下对账总异常
+    const totalViolation = stats.reduce((s, x) => s + x.violation, 0);
+    const totalZombie = stats.reduce((s, x) => s + x.zombie, 0);
+    const totalExpectedNone = stats.reduce((s, x) => s + x.expectedNone, 0);
+    const totalGranted = stats.reduce((s, x) => s + x.actualGranted, 0);
+
+    return `
+      <tr class="detail-row">
+        <td colspan="${PERMS.length + 1}">
+          <div class="detail-content">
+            <div class="detail-head">
+              <div class="detail-head-left">
+                <span class="detail-head-title">${cat.name}</span>
+                <span class="tag tag-blue">${cat.code}</span>
+                <span class="detail-head-meta">挂载人数 <strong style="color:var(--text-primary)">${cat.count.toLocaleString()}</strong></span>
+                <span class="detail-head-meta">显示样本 <strong style="color:var(--text-primary)">${persons.length}</strong> 人</span>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-secondary btn-sm">导出明细</button>
+                <button class="btn btn-text" onclick="toggleDetail('${cat.code}')">× 收起</button>
+              </div>
+            </div>
+
+            <!-- 对账概览（4 张异常类型卡） -->
+            <div style="font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:10px">对账概览 <span style="font-size:11.5px;font-weight:400;color:var(--text-disabled);margin-left:6px">基线规则 vs 实际数据比对结果</span></div>
+            <div class="recon-grid">
+              <div class="recon-card ok">
+                <div class="recon-card-num">${totalGranted}</div>
+                <div class="recon-card-label">合规授权</div>
+                <div class="recon-card-desc">规则允许 + 实际有效</div>
+              </div>
+              <div class="recon-card warn-mild">
+                <div class="recon-card-num">${totalExpectedNone}</div>
+                <div class="recon-card-label">应有未生效</div>
+                <div class="recon-card-desc">需查源头：卡未激活/账号未开</div>
+              </div>
+              <div class="recon-card ${totalViolation > 0 ? 'error' : 'idle'}">
+                <div class="recon-card-num">${totalViolation}</div>
+                <div class="recon-card-label">⚠ 越权使用</div>
+                <div class="recon-card-desc">规则禁止但实际持有 · 风险</div>
+              </div>
+              <div class="recon-card ${totalZombie > 0 ? 'warn' : 'idle'}">
+                <div class="recon-card-num">${totalZombie}</div>
+                <div class="recon-card-label">⊙ 僵尸账号</div>
+                <div class="recon-card-desc">人员已失效但权限未回收</div>
+              </div>
+            </div>
+
+            <!-- 该分类的 8 个权限统计卡 -->
+            <div style="font-size:13px;font-weight:500;color:var(--text-primary);margin:16px 0 10px">各权限对账明细 <span style="font-size:11.5px;font-weight:400;color:var(--text-disabled);margin-left:6px">点击异常数 → 跳转处置</span></div>
+            <div class="perm-summary">
+              ${stats.map(s => {
+                const hasIssue = s.violation > 0 || s.zombie > 0;
+                return `
+                <div class="perm-summary-card ${hasIssue ? 'has-issue' : ''}">
+                  <div class="perm-summary-name">${s.perm.name}</div>
+                  <div class="perm-summary-stat">
+                    <span class="perm-summary-num" style="color:var(--grant-default)">${s.actualGranted}</span>
+                    <span class="perm-summary-total">/ ${s.total} 合规</span>
+                  </div>
+                  <div class="perm-summary-issues">
+                    ${s.violation > 0 ? `<span class="issue-tag violation" title="越权使用 ${s.violation} 人">⚠ ${s.violation}</span>` : ''}
+                    ${s.zombie > 0 ? `<span class="issue-tag zombie" title="僵尸账号 ${s.zombie} 人">⊙ ${s.zombie}</span>` : ''}
+                    ${s.expectedNone > 0 ? `<span class="issue-tag none-tag" title="应有未生效 ${s.expectedNone} 人">· ${s.expectedNone}</span>` : ''}
+                    ${(!s.violation && !s.zombie && !s.expectedNone) ? '<span class="issue-tag ok">✓ 无异常</span>' : ''}
+                  </div>
+                  <span class="perm-summary-status ${s.status}">基线：${GRANT_TEXT[s.status]}</span>
+                </div>
+              `; }).join('')}
+            </div>
+
+            <!-- 人员明细表 -->
+            <div style="font-size:13px;font-weight:500;color:var(--text-primary);margin:16px 0 10px">人员授权明细</div>
+            <div class="detail-toolbar">
+              <div class="search-wrap">
+                <span class="search-icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg>
+                </span>
+                <input class="filter-input search" placeholder="搜索姓名 / UID" style="height:32px;min-width:180px;padding-left:32px;font-size:13px">
+              </div>
+              <select class="filter-select" style="height:32px;font-size:13px">
+                <option>全部组织</option>
+                <option>计算机学院</option>
+                <option>数学学院</option>
+              </select>
+              <div style="flex:1"></div>
+              <span style="font-size:11.5px;color:var(--text-disabled)">符号说明：<span style="color:var(--grant-default)">✓ 合规</span> · <span style="color:var(--text-disabled)">· 未生效</span> · <span style="color:var(--color-error)">⚠ 越权</span> · <span style="color:var(--color-warning)">⊙ 僵尸</span></span>
+            </div>
+            <div class="detail-table-wrap">
+              <table class="detail-table">
+                <thead>
+                  <tr>
+                    <th style="width:110px">UID</th>
+                    <th style="width:90px">学工号</th>
+                    <th style="width:80px">姓名</th>
+                    <th>所在单位</th>
+                    <th style="width:60px">状态</th>
+                    ${PERMS.map(p => `<th style="width:50px;text-align:center" title="${p.name}">${p.name.slice(0,2)}</th>`).join('')}
+                  </tr>
+                </thead>
+                <tbody>
+                  ${persons.map(person => {
+                    const grants = personGrants(cat.code, person.uid);
+                    const isInactive = /已离职|已毕业|已离校/.test(person.status);
+                    return `
+                      <tr ${isInactive ? 'style="background:rgba(255,125,0,0.04)"' : ''}>
+                        <td class="mono">${person.uid}</td>
+                        <td class="mono">${person.xgh}</td>
+                        <td><strong style="color:var(--text-primary)">${person.name}</strong></td>
+                        <td><span style="font-size:11.5px;color:var(--text-disabled);font-family:'DIN Alternate',monospace;margin-right:4px">${person.orgCode}</span>${person.org}</td>
+                        <td>${isInactive
+                          ? `<span class="tag" style="background:rgba(245,63,63,0.1);color:var(--color-error)">${person.status}</span>`
+                          : `<span class="tag tag-green">${person.status}</span>`}</td>
+                        ${PERMS.map(p => {
+                          const g = grants[p.code];
+                          if (g === 'granted') return `<td style="text-align:center"><span class="mini-grant granted" title="${p.name}：合规·实际有效">✓</span></td>`;
+                          if (g === 'denied') return `<td style="text-align:center"><span class="mini-grant denied" title="${p.name}：合规·实际无">×</span></td>`;
+                          if (g === 'expected_none') return `<td style="text-align:center"><span class="mini-grant none" title="${p.name}：规则允许但实际未生效">·</span></td>`;
+                          if (g === 'violation') return `<td style="text-align:center"><span class="mini-grant violation" title="${p.name}：⚠ 越权 - 规则禁止但实际持有">⚠</span></td>`;
+                          if (g === 'zombie') return `<td style="text-align:center"><span class="mini-grant zombie" title="${p.name}：⊙ 僵尸账号 - 已失效但权限未回收">⊙</span></td>`;
+                          return `<td>—</td>`;
+                        }).join('')}
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+            <div style="margin-top:10px;font-size:12px;color:var(--text-disabled);text-align:right">
+              示例展示前 ${persons.length} 条 · 完整 ${cat.count.toLocaleString()} 人请使用「导出明细」
+            </div>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  // 视图切换
+  document.querySelectorAll('.sidebar-item[data-view]').forEach(el => {
+    el.addEventListener('click', () => {
+      const v = el.dataset.view;
+      document.querySelectorAll('.sidebar-item[data-view]').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+      document.getElementById('view-' + v).classList.add('active');
+      const labels = {
+        catalog: '公共权限维护',
+        matrix: '授权矩阵', reconcile: '对账异常', zombie: '僵尸账号',
+        tasks: '检查任务', rules: '检查规则', runs: '任务执行情况',
+        sources: '数据源对接'
+      };
+      document.getElementById('crumb-last').textContent = '身份权限管理 · ' + labels[v];
+    });
+  });
+
+  document.getElementById('filter-cat').addEventListener('change', () => {
+    expandedCats.clear();
+    renderMatrix();
+  });
+  document.getElementById('filter-org').addEventListener('change', () => {
+    // 组织筛选目前不改矩阵结构（矩阵以"人员分类"为行），但实际项目中会影响明细人数
+    renderMatrix();
+  });
+
+  // 暴露给 inline onclick
+  window.toggleDetail = toggleDetail;
+
+  // ========= 对账异常清单 mock =========
+  const RECONCILE_DATA = [
+    { uid: 'NP00012453', name: '林浩然', cat: '安保人员 (0301)', perm: '校园网', actual: '一卡通系统 / 网络中心', last: '2026-05-14 08:20', severity: 'high' },
+    { uid: 'NP00018702', name: '王梅芳', cat: '物业服务人员 (0302)', perm: '校园网 + 图书馆借阅', actual: '网络中心 / 图书馆', last: '2026-05-13 14:36', severity: 'high' },
+    { uid: 'NP00024018', name: '陈晓刚', cat: '物业服务人员 (0302)', perm: '会议室预订', actual: '会议室系统', last: '2026-05-12 10:18', severity: 'high' },
+    { uid: 'NP00031567', name: '赵建强', cat: '驻场服务人员 (0303)', perm: '实验室门禁 (化学楼)', actual: '门禁系统', last: '2026-05-14 22:05', severity: 'high' },
+    { uid: 'NP00037829', name: '刘思敏', cat: '校友 (0401)', perm: '校园网', actual: '网络中心', last: '2026-05-13 19:42', severity: 'mid' },
+    { uid: 'NP00041236', name: '李志远', cat: '访客一般来访 (0501)', perm: '宿舍门禁', actual: '门禁系统', last: '2026-05-12 23:48', severity: 'high' },
+    { uid: 'NP00045820', name: '张文博', cat: '访客一般来访 (0501)', perm: '图书馆借阅', actual: '图书馆', last: '2026-05-10 16:30', severity: 'mid' },
+  ];
+
+  function renderReconcile() {
+    const tbody = document.getElementById('reconcile-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = RECONCILE_DATA.map(r => `
+      <tr class="${r.severity === 'high' ? 'severe' : 'warn'}">
+        <td class="mono">${r.uid}</td>
+        <td><strong>${r.name}</strong></td>
+        <td><span style="color:var(--text-secondary)">${r.cat}</span></td>
+        <td><span class="tag" style="background:rgba(245,63,63,0.1);color:var(--color-error);font-weight:500">⚠ ${r.perm}</span></td>
+        <td style="color:var(--text-secondary);font-size:12px">${r.actual}</td>
+        <td class="mono" style="font-size:12px">${r.last}</td>
+        <td><button class="btn btn-text" style="color:var(--color-error);font-size:13px">推送处置 →</button></td>
+      </tr>
+    `).join('');
+  }
+
+  // ========= 僵尸账号 mock =========
+  const ZOMBIE_DATA = [
+    { uid: 'NP00009876', name: '陈伟杰', reason: '已离职', date: '2025-12-31', days: 135, perms: ['校园网', '校园卡', '图书馆', '会议室预订'], last: '2026-04-12 09:15' },
+    { uid: 'NP00010234', name: '李晓涵', reason: '已毕业', date: '2025-07-01', days: 318, perms: ['校园网', '校园卡', '图书馆', '宿舍门禁'], last: '2026-03-18 18:42' },
+    { uid: 'NP00012567', name: 'Sarah Johnson', reason: '已离校', date: '2024-09-30', days: 593, perms: ['校园网', '图书馆', '体育场馆'], last: '2025-11-22 14:08' },
+    { uid: 'NP00018905', name: '吴志强', reason: '已离职', date: '2025-08-15', days: 274, perms: ['校园网', '校园卡', '实验室门禁'], last: '2026-02-10 11:30' },
+    { uid: 'NP00023401', name: '黄雅婷', reason: '已毕业', date: '2025-07-01', days: 318, perms: ['校园网', '校园卡', '体育场馆'], last: '2026-04-30 20:15' },
+    { uid: 'NP00029384', name: '周建军', reason: '访客超期', date: '2026-04-15', days: 30, perms: ['校园网'], last: '2026-05-10 17:22' },
+  ];
+
+  function renderZombie() {
+    const tbody = document.getElementById('zombie-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = ZOMBIE_DATA.map(z => {
+      const severeDay = z.days > 180;
+      return `
+      <tr class="${severeDay ? 'severe' : 'warn'}">
+        <td class="mono">${z.uid}</td>
+        <td><strong>${z.name}</strong></td>
+        <td><span class="tag" style="background:rgba(255,125,0,0.1);color:var(--color-warning)">${z.reason}</span></td>
+        <td class="mono" style="font-size:12px">${z.date}</td>
+        <td><span class="tag" style="background:${severeDay ? 'rgba(245,63,63,0.1)' : 'rgba(255,125,0,0.1)'};color:${severeDay ? 'var(--color-error)' : 'var(--color-warning)'};font-family:'DIN Alternate',monospace;font-weight:500">${z.days} 天</span></td>
+        <td>${z.perms.map(p => `<span class="tag tag-gray" style="margin-right:4px">${p}</span>`).join('')}</td>
+        <td class="mono" style="font-size:12px">${z.last}</td>
+        <td><button class="btn btn-text" style="color:var(--color-warning);font-size:13px">推送回收 →</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ========= 数据源对接 mock =========
+  const SOURCE_LIST = [
+    { name: '一卡通系统', code: 'CARD', icon: '💳', system: '校园卡管理平台 V3.2', records: '94,128', sync: '每日 02:00', last: '2026-05-15 02:14', status: 'ok' },
+    { name: '门禁系统', code: 'GATE', icon: '🚪', system: '智慧校园门禁平台', records: '188,242', sync: '每日 02:00', last: '2026-05-15 02:21', status: 'ok' },
+    { name: '校园网认证', code: 'NET', icon: '📶', system: '网络中心 Radius', records: '76,340', sync: '每日 02:00', last: '2026-05-15 02:35', status: 'ok' },
+    { name: '访客系统', code: 'VISIT', icon: '🪪', system: '访客预约平台', records: '1,236', sync: '每小时', last: '2026-05-15 11:00', status: 'ok' },
+    { name: '图书馆系统', code: 'LIB', icon: '📚', system: '汇文图书管理系统', records: '80,204', sync: '每日 02:00', last: '2026-05-15 02:42', status: 'ok' },
+    { name: '会议室预订', code: 'MEET', icon: '📅', system: '智慧会议室预订平台', records: '52,108', sync: '每日 02:00', last: '2026-05-15 02:50', status: 'ok' },
+    { name: '体育场馆系统', code: 'GYM', icon: '⚽', system: '体育场馆预约平台', records: '38,712', sync: '每日 02:00', last: '2026-05-15 02:55', status: 'ok' },
+    { name: '宿舍门禁', code: 'DORM', icon: '🏠', system: '宿管系统', records: '68,920', sync: '每日 02:00', last: '2026-05-15 03:02', status: 'ok' },
+  ];
+
+  function renderSources() {
+    const wrap = document.getElementById('source-grid');
+    if (!wrap) return;
+    wrap.innerHTML = SOURCE_LIST.map(s => `
+      <div class="source-card">
+        <div class="source-card-head">
+          <div class="source-card-name">
+            <span class="source-card-icon">${s.icon}</span>
+            <span>${s.name}</span>
+          </div>
+          <span class="tag tag-green">已对接</span>
+        </div>
+        <div class="source-rows">
+          <div class="row"><span>对接系统</span><strong style="font-family:inherit">${s.system}</strong></div>
+          <div class="row"><span>系统编码</span><strong>${s.code}</strong></div>
+          <div class="row"><span>权限记录</span><strong>${s.records}</strong></div>
+          <div class="row"><span>同步频率</span><strong style="font-family:inherit">${s.sync}</strong></div>
+          <div class="row"><span>最近同步</span><strong>${s.last}</strong></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ========= 公共权限维护 (主数据) =========
+  const PERM_CATALOG = [
+    { code: 'gate', name: '进校权限', source: '门禁系统', desc: '校园进出门禁/车闸通行权限', users: 76340, enabled: true },
+    { code: 'net', name: '校园网', source: '网络中心 Radius', desc: 'WIFI/有线 802.1X 上网认证', users: 76340, enabled: true },
+    { code: 'card', name: '校园卡', source: '一卡通系统', desc: '消费 / 食堂 / 商超 / 部分通行', users: 88150, enabled: true },
+    { code: 'library', name: '图书馆', source: '图书馆系统', desc: '入馆 / 借阅 / 数据库远程访问', users: 80204, enabled: true },
+    { code: 'lab', name: '实验室', source: '门禁系统', desc: '公共/实验楼实验室门禁', users: 12450, enabled: true },
+    { code: 'class', name: '教学楼', source: '门禁系统', desc: '教学楼/教室/自习室门禁', users: 67428, enabled: true },
+    { code: 'dorm', name: '宿舍楼', source: '宿管系统', desc: '宿舍楼门禁 / 公寓', users: 68920, enabled: true },
+    { code: 'finance', name: '财务系统', source: '财务系统', desc: '报销 / 查询 / 在线申请', users: 8956, enabled: true },
+    { code: 'meet', name: '会议室预订', source: '会议室系统', desc: '智慧会议室在线预订', users: 9128, enabled: false },
+    { code: 'gym', name: '体育场馆', source: '体育馆系统', desc: '体育场馆预约 / 进入', users: 38712, enabled: true },
+  ];
+
+  function renderCatalog() {
+    const tbody = document.getElementById('catalog-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = PERM_CATALOG.map(p => `
+      <tr class="${p.enabled ? '' : 'row-disabled'}">
+        <td class="mono" style="padding:12px 16px;font-family:'DIN Alternate',monospace;color:var(--text-secondary)"><strong style="color:var(--text-primary)">${p.code}</strong></td>
+        <td style="padding:12px 16px"><strong>${p.name}</strong></td>
+        <td style="padding:12px 16px"><span class="tag tag-blue">${p.source}</span></td>
+        <td style="padding:12px 16px;color:var(--text-secondary);font-size:13px">${p.desc}</td>
+        <td style="padding:12px 16px;font-family:'DIN Alternate',monospace">${p.users.toLocaleString()}</td>
+        <td style="padding:12px 16px">
+          <label class="toggle-switch">
+            <input type="checkbox" ${p.enabled ? 'checked' : ''}>
+            <span class="toggle-track"></span>
+            <span class="toggle-label">${p.enabled ? '启用' : '停用'}</span>
+          </label>
+        </td>
+        <td style="padding:12px 16px">
+          <button class="btn btn-text btn-sm">编辑</button>
+          <button class="btn btn-text btn-sm">查看历史</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // ========= 检查任务 =========
+  const TASKS = [
+    {
+      code: 'TASK-CARD-001', name: '一卡通对账任务',
+      source: '一卡通系统', rules: ['越权', '僵尸账号', '应有未生效'],
+      cron: '0 0 2 * * ?', cronDesc: '每日 02:00',
+      lastRun: '2026-05-15 02:14', nextRun: '2026-05-16 02:00',
+      lastDuration: '4 分 12 秒', lastIssues: 18,
+      running: true,
+    },
+    {
+      code: 'TASK-GATE-001', name: '门禁对账任务',
+      source: '门禁系统', rules: ['越权', '僵尸账号'],
+      cron: '0 0 2 * * ?', cronDesc: '每日 02:00',
+      lastRun: '2026-05-15 02:21', nextRun: '2026-05-16 02:00',
+      lastDuration: '6 分 35 秒', lastIssues: 12,
+      running: true,
+    },
+    {
+      code: 'TASK-NET-001', name: '校园网对账任务',
+      source: '校园网认证', rules: ['越权', '僵尸账号'],
+      cron: '0 0 2 * * ?', cronDesc: '每日 02:00',
+      lastRun: '2026-05-15 02:35', nextRun: '2026-05-16 02:00',
+      lastDuration: '3 分 48 秒', lastIssues: 8,
+      running: true,
+    },
+    {
+      code: 'TASK-ZOMBIE-001', name: '全量僵尸账号扫描',
+      source: '全部源头（聚合）', rules: ['僵尸账号', '访客超期'],
+      cron: '0 0 3 1 * ?', cronDesc: '每月 1 日 03:00',
+      lastRun: '2026-05-01 03:00', nextRun: '2026-06-01 03:00',
+      lastDuration: '28 分 16 秒', lastIssues: 18,
+      running: true,
+    },
+    {
+      code: 'TASK-VISIT-001', name: '访客超期检查',
+      source: '访客系统', rules: ['访客超期'],
+      cron: '0 0 * * * ?', cronDesc: '每小时',
+      lastRun: '2026-05-16 06:00', nextRun: '2026-05-16 07:00',
+      lastDuration: '12 秒', lastIssues: 1,
+      running: false,
+    },
+  ];
+
+  function renderTasks() {
+    const grid = document.getElementById('task-grid');
+    if (!grid) return;
+    grid.innerHTML = TASKS.map(t => `
+      <div class="task-card ${t.running ? '' : 'paused'}">
+        <div class="task-card-head">
+          <div class="task-card-info">
+            <div class="task-card-name">${t.name}</div>
+            <div class="task-card-code">${t.code}</div>
+          </div>
+          <span class="task-card-status ${t.running ? 'running' : 'paused'}">${t.running ? '运行中' : '已暂停'}</span>
+        </div>
+        <div class="task-card-meta">
+          <div class="task-meta-item">
+            <div class="task-meta-label">数据源</div>
+            <div class="task-meta-value">${t.source}</div>
+          </div>
+          <div class="task-meta-item">
+            <div class="task-meta-label">执行计划</div>
+            <div class="task-meta-value">${t.cronDesc}</div>
+          </div>
+          <div class="task-meta-item">
+            <div class="task-meta-label">最近执行</div>
+            <div class="task-meta-value mono">${t.lastRun}</div>
+          </div>
+          <div class="task-meta-item">
+            <div class="task-meta-label">下次执行</div>
+            <div class="task-meta-value mono">${t.nextRun}</div>
+          </div>
+          <div class="task-meta-item">
+            <div class="task-meta-label">最近耗时</div>
+            <div class="task-meta-value mono">${t.lastDuration}</div>
+          </div>
+          <div class="task-meta-item">
+            <div class="task-meta-label">最近发现异常</div>
+            <div class="task-meta-value ${t.lastIssues > 10 ? 'warning' : 'success'}">${t.lastIssues}</div>
+          </div>
+          <div class="task-meta-item" style="grid-column: 1 / -1">
+            <div class="task-meta-label">启用规则</div>
+            <div class="task-meta-value">${t.rules.map(r => `<span class="tag tag-blue" style="margin-right:4px;font-weight:400">${r}</span>`).join('')}</div>
+          </div>
+        </div>
+        <div class="task-card-foot">
+          <label class="toggle-switch">
+            <input type="checkbox" ${t.running ? 'checked' : ''}>
+            <span class="toggle-track"></span>
+            <span class="toggle-label">${t.running ? '启用' : '停用'}</span>
+          </label>
+          <div class="spacer"></div>
+          <button class="btn btn-text btn-sm">立即执行</button>
+          <button class="btn btn-text btn-sm">编辑</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ========= 检查规则库 =========
+  const RULES = [
+    {
+      code: 'R-VIOLATION-01', name: '越权使用检查', type: 'violation',
+      desc: '规则禁止 + 实际数据持有 → 标记为越权（核心合规检查）',
+      enabled: true, lastUpdate: '2025-09-12', usedBy: 4, hits: 42,
+    },
+    {
+      code: 'R-ZOMBIE-01', name: '僵尸账号扫描', type: 'zombie',
+      desc: '人员状态 = 已离职/已毕业/已离校，但实际数据中权限仍有效',
+      enabled: true, lastUpdate: '2025-10-08', usedBy: 5, hits: 18,
+    },
+    {
+      code: 'R-VISITOR-01', name: '访客超期检查', type: 'zombie',
+      desc: '访客实际离校后 N 天权限未回收（默认 N=7 天）',
+      enabled: true, lastUpdate: '2025-11-20', usedBy: 2, hits: 6,
+    },
+    {
+      code: 'R-INTEGRITY-01', name: '应有未生效检查', type: 'integrity',
+      desc: '规则默认授予 + 实际数据无 → 提示源头同步可能失败',
+      enabled: true, lastUpdate: '2026-01-15', usedBy: 3, hits: 12,
+    },
+    {
+      code: 'R-INTEGRITY-02', name: '人员归属一致性', type: 'integrity',
+      desc: '人员所在分类 vs 源头系统中的归属部门必须一致',
+      enabled: true, lastUpdate: '2026-02-08', usedBy: 1, hits: 3,
+    },
+    {
+      code: 'R-VIOLATION-02', name: '跨学院实验室门禁越权', type: 'violation',
+      desc: '学生在非本学院实验室出现门禁记录（涉及隐私安全场景）',
+      enabled: true, lastUpdate: '2026-03-01', usedBy: 1, hits: 0,
+    },
+    {
+      code: 'R-SECURITY-01', name: '异地登录检查', type: 'security',
+      desc: '同账号短时间内多 IP/地理位置登录（防盗用）',
+      enabled: false, lastUpdate: '2025-08-20', usedBy: 0, hits: 0,
+    },
+    {
+      code: 'R-SECURITY-02', name: '夜间异常通行', type: 'security',
+      desc: '深夜 0:00-5:00 的非常规门禁通行（学生公寓除外）',
+      enabled: false, lastUpdate: '2025-06-10', usedBy: 0, hits: 0,
+    },
+  ];
+
+  function renderRules() {
+    const list = document.getElementById('rule-list');
+    if (!list) return;
+    const ICONS = {
+      violation: '<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+      zombie: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 9h.01M15 9h.01M9 16c.5-1 1.5-2 3-2s2.5 1 3 2"/></svg>',
+      integrity: '<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+      security: '<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+    };
+    const TYPE_LABEL = {
+      violation: '越权检查', zombie: '失效检查',
+      integrity: '完整性', security: '安全检查',
+    };
+    list.innerHTML = RULES.map(r => `
+      <div class="rule-item ${r.enabled ? '' : 'disabled'}">
+        <div class="rule-icon ${r.type}">${ICONS[r.type]}</div>
+        <div class="rule-info">
+          <div class="rule-name">
+            ${r.name}
+            <span class="tag tag-gray">${TYPE_LABEL[r.type]}</span>
+            <span class="tag tag-gray" style="font-family:'DIN Alternate',monospace;font-size:11px">${r.code}</span>
+          </div>
+          <div class="rule-desc">${r.desc}</div>
+        </div>
+        <div class="rule-meta">
+          <div>引用任务 <strong>${r.usedBy}</strong></div>
+          <div>本期命中 <strong style="${r.hits>0?'color:var(--color-error)':'color:var(--text-disabled)'}">${r.hits}</strong></div>
+          <div>更新 <strong style="font-family:inherit">${r.lastUpdate}</strong></div>
+        </div>
+        <div class="rule-actions">
+          <label class="toggle-switch">
+            <input type="checkbox" ${r.enabled ? 'checked' : ''}>
+            <span class="toggle-track"></span>
+            <span class="toggle-label">${r.enabled ? '启用' : '停用'}</span>
+          </label>
+          <button class="btn btn-text btn-sm">编辑</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ========= 任务执行情况 =========
+  const RUNS = [
+    { time: '2026-05-16 06:00:00', task: '访客超期检查', status: 'ok',     duration: '12 秒',    records: 1236,   issues: 1,  trigger: '定时' },
+    { time: '2026-05-16 05:00:00', task: '访客超期检查', status: 'ok',     duration: '14 秒',    records: 1234,   issues: 1,  trigger: '定时' },
+    { time: '2026-05-16 04:00:00', task: '访客超期检查', status: 'ok',     duration: '11 秒',    records: 1233,   issues: 0,  trigger: '定时' },
+    { time: '2026-05-15 02:50:00', task: '会议室预订对账', status: 'ok',   duration: '2 分 12 秒', records: 52108,  issues: 4,  trigger: '定时' },
+    { time: '2026-05-15 02:35:00', task: '校园网对账任务', status: 'ok',   duration: '3 分 48 秒', records: 76340,  issues: 8,  trigger: '定时' },
+    { time: '2026-05-15 02:21:00', task: '门禁对账任务',  status: 'ok',   duration: '6 分 35 秒', records: 188242, issues: 12, trigger: '定时' },
+    { time: '2026-05-15 02:14:00', task: '一卡通对账任务', status: 'ok',  duration: '4 分 12 秒', records: 94128,  issues: 18, trigger: '定时' },
+    { time: '2026-05-14 14:23:00', task: '一卡通对账任务', status: 'fail', duration: '38 秒',     records: 0,      issues: 0,  trigger: '手动 · 张治理', err: '数据源连接超时' },
+    { time: '2026-05-14 02:14:00', task: '一卡通对账任务', status: 'ok',  duration: '4 分 06 秒', records: 94028,  issues: 16, trigger: '定时' },
+    { time: '2026-05-13 02:14:00', task: '一卡通对账任务', status: 'ok',  duration: '4 分 02 秒', records: 94018,  issues: 14, trigger: '定时' },
+  ];
+
+  function renderRuns() {
+    const tbody = document.getElementById('runs-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = RUNS.map(r => {
+      const statusEl = r.status === 'ok'
+        ? '<span class="tag tag-green">成功</span>'
+        : '<span class="tag" style="background:rgba(245,63,63,0.1);color:var(--color-error)">失败</span>';
+      return `
+        <tr ${r.status === 'fail' ? 'class="severe"' : ''}>
+          <td class="mono" style="padding:12px 16px;font-family:'DIN Alternate',monospace;font-size:12.5px">${r.time}</td>
+          <td style="padding:12px 16px"><strong>${r.task}</strong>${r.err ? `<div style="font-size:11.5px;color:var(--color-error);margin-top:2px">⚠ ${r.err}</div>` : ''}</td>
+          <td style="padding:12px 16px">${statusEl}</td>
+          <td class="mono" style="padding:12px 16px;font-family:'DIN Alternate',monospace;font-size:13px">${r.duration}</td>
+          <td style="padding:12px 16px;text-align:right;font-family:'DIN Alternate',monospace">${r.records ? r.records.toLocaleString() : '—'}</td>
+          <td style="padding:12px 16px;text-align:right;font-family:'DIN Alternate',monospace;color:${r.issues > 10 ? 'var(--color-error)' : r.issues > 0 ? 'var(--color-warning)' : 'var(--text-disabled)'}">${r.issues || 0}</td>
+          <td style="padding:12px 16px;font-size:12.5px;color:var(--text-secondary)">${r.trigger}</td>
+          <td style="padding:12px 16px">
+            <button class="btn btn-text btn-sm">查看日志</button>
+            ${r.status === 'fail' ? '<button class="btn btn-text btn-sm" style="color:var(--color-error)">重试</button>' : ''}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  renderMatrix();
+  renderReconcile();
+  renderZombie();
+  renderSources();
+  renderCatalog();
+  renderTasks();
+  renderRules();
+  renderRuns();
+</script>
+</body>
+</html>

@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人员基础身份 · 高校综合身份数据平台</title>
+<style>
+  :root {
+    --color-primary: #2563EB;
+    --color-primary-secondary: #478EF7;
+    --color-success: #00B42A;
+    --color-warning: #FF7D00;
+    --color-error: #F53F3F;
+    --color-info: #165DFF;
+    --text-primary: #1D2129;
+    --text-secondary: #4E5969;
+    --text-disabled: #86909C;
+    --bg-page: #FAFAFB;
+    --bg-card: #FFFFFF;
+    --bg-secondary: #F2F3F5;
+    --border: #E5E6EB;
+    --chart-1: #387EF5;
+    --chart-2: #0FB17B;
+    --chart-3: #F6980D;
+    --chart-4: #A251F6;
+    --shadow-1: 0 1px 2px 0 rgba(0,0,0,.03), 0 1px 6px -1px rgba(0,0,0,.02);
+    --shadow-2: 0 4px 12px 0 rgba(0,0,0,.05), 0 2px 4px 0 rgba(0,0,0,.03);
+    --shadow-3: 0 8px 24px 0 rgba(0,0,0,.08), 0 4px 8px 0 rgba(0,0,0,.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg-page); }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 22px;
+  }
+  a { text-decoration: none; color: inherit; }
+  button, input, select { font: inherit; color: inherit; outline: none; }
+
+  /* ===== 顶部导航 ===== */
+  .topbar {
+    height: 64px;
+    background: var(--bg-card);
+    box-shadow: var(--shadow-1);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo-wrap { display: flex; align-items: center; gap: 12px; margin-right: 32px; }
+  .logo-mark {
+    width: 32px; height: 32px; border-radius: 6px; background: var(--color-primary);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-mark svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; }
+  .logo-text { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+  .topbar nav { display: flex; gap: 32px; flex: 1; height: 100%; align-items: center; }
+  .topbar nav a {
+    color: var(--text-secondary); font-size: 14px;
+    height: 100%; display: flex; align-items: center;
+    position: relative; transition: color 200ms;
+  }
+  .topbar nav a:hover { color: var(--color-primary); }
+  .topbar nav a.active { color: var(--color-primary); font-weight: 500; }
+  .topbar nav a.active::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0;
+    height: 2px; background: var(--color-primary);
+  }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .time-display { font-size: 12px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", monospace; }
+  .user-info {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border);
+  }
+  .user-avatar {
+    width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary);
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500;
+  }
+  .user-name { font-size: 14px; color: var(--text-secondary); }
+
+  /* ===== 主体布局 ===== */
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* 左侧导航 */
+  .sidebar {
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .sidebar-section {
+    padding: 8px 16px;
+    font-size: 12px;
+    color: var(--text-disabled);
+    letter-spacing: 1px;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    margin: 2px 8px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 200ms;
+  }
+  .sidebar-item svg {
+    width: 16px; height: 16px;
+    stroke: currentColor; fill: none; stroke-width: 1.8;
+    flex-shrink: 0;
+  }
+  .sidebar-item:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+  .sidebar-item.active {
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+  .sidebar-item.disabled {
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+  .sidebar-item .badge {
+    margin-left: auto;
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: var(--bg-secondary);
+    color: var(--text-disabled);
+    font-weight: 400;
+  }
+
+  /* 主区域 */
+  .main {
+    padding: 16px 24px 32px;
+    min-width: 0; /* 防止表格撑爆 */
+  }
+  .breadcrumb {
+    font-size: 14px;
+    color: var(--text-disabled);
+    margin-bottom: 12px;
+  }
+  .breadcrumb a { color: var(--text-disabled); }
+  .breadcrumb a:hover { color: var(--color-primary); }
+  .breadcrumb .sep { margin: 0 8px; }
+  .breadcrumb .last { color: var(--text-primary); }
+
+  .page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 28px;
+    margin-bottom: 4px;
+  }
+  .page-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .page-stats {
+    display: flex;
+    gap: 24px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .page-stats strong {
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-left: 4px;
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+
+  /* ===== 视图切换 ===== */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ===== 数据卡片容器 ===== */
+  .panel {
+    background: var(--bg-card);
+    border-radius: 8px;
+    box-shadow: var(--shadow-1);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  /* ===== 筛选条 ===== */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .filter-input {
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-card);
+    font-size: 14px;
+    color: var(--text-primary);
+    transition: all 200ms;
+    min-width: 200px;
+  }
+  .filter-input:focus {
+    border-color: var(--color-info);
+    box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1);
+  }
+  .filter-input.search { padding-left: 36px; }
+  .search-wrap { position: relative; }
+  .search-icon {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-disabled);
+  }
+  .filter-select {
+    height: 40px;
+    padding: 0 32px 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-card) url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2386909C' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") right 12px center no-repeat;
+    font-size: 14px;
+    cursor: pointer;
+    appearance: none;
+    min-width: 140px;
+  }
+  .filter-spacer { flex: 1; }
+
+  /* 按钮 */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 200ms;
+  }
+  .btn-primary {
+    background: var(--color-primary);
+    color: white;
+  }
+  .btn-primary:hover { background: #1d4fc7; }
+  .btn-secondary {
+    background: var(--bg-card);
+    color: var(--color-info);
+    border: 1px solid var(--color-info);
+  }
+  .btn-secondary:hover { background: rgba(22, 93, 255, 0.04); }
+  .btn-text {
+    background: transparent;
+    color: var(--color-info);
+    padding: 0 8px;
+    height: 32px;
+  }
+  .btn-text:hover { color: var(--color-primary); }
+  .btn-sm {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  /* ===== 表格 ===== */
+  .table-wrap {
+    background: var(--bg-card);
+    border-radius: 8px;
+    box-shadow: var(--shadow-1);
+    overflow: hidden;
+  }
+  .table-scroll {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  thead {
+    background: var(--bg-secondary);
+  }
+  thead th {
+    height: 48px;
+    padding: 0 16px;
+    text-align: left;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    font-size: 14px;
+  }
+  tbody td {
+    height: 48px;
+    padding: 0 16px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody tr { transition: background 200ms; }
+  tbody tr:hover { background: var(--bg-secondary); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono { font-family: "DIN Alternate", "Roboto", inherit; color: var(--text-secondary); }
+
+  /* 标签 */
+  .tag {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 20px;
+    font-weight: 400;
+  }
+  .tag-blue { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); }
+  .tag-green { background: rgba(0, 180, 42, 0.08); color: var(--color-success); }
+  .tag-orange { background: rgba(255, 125, 0, 0.08); color: var(--color-warning); }
+  .tag-purple { background: rgba(162, 81, 246, 0.08); color: var(--chart-4); }
+  .tag-gray { background: var(--bg-secondary); color: var(--text-secondary); }
+
+  /* 分页 */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .page-controls { display: flex; gap: 8px; align-items: center; }
+  .page-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 200ms;
+  }
+  .page-btn:hover:not(.disabled) {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+  .page-btn.active {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+  }
+  .page-btn.disabled {
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+
+  /* ===== 抽屉（详情） ===== */
+  .drawer-mask {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 200;
+    display: none;
+    opacity: 0;
+    transition: opacity 300ms;
+  }
+  .drawer-mask.show { display: block; opacity: 1; }
+  .drawer {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 720px;
+    max-width: 90vw;
+    background: var(--bg-card);
+    z-index: 201;
+    transform: translateX(100%);
+    transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-3);
+  }
+  .drawer.show { transform: translateX(0); }
+  .drawer-head {
+    height: 64px;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .drawer-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .drawer-close {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 20px;
+    transition: all 200ms;
+  }
+  .drawer-close:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+  .drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+  .drawer-foot {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    background: var(--bg-page);
+  }
+
+  /* 详情字段网格 */
+  .detail-section {
+    margin-bottom: 24px;
+  }
+  .detail-section:last-child { margin-bottom: 0; }
+  .detail-section-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    padding-left: 12px;
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .detail-section-title::before {
+    content: '';
+    position: absolute; left: 0; top: 4px;
+    width: 3px; height: 14px;
+    background: var(--color-primary);
+    border-radius: 2px;
+  }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 24px;
+  }
+  .detail-item {
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .detail-item.full { grid-column: 1 / -1; }
+  .detail-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+  .detail-value {
+    font-size: 14px;
+    color: var(--text-primary);
+    word-break: break-all;
+  }
+  .detail-value.empty { color: var(--text-disabled); font-style: italic; }
+  .detail-value.mono { font-family: "DIN Alternate", "Roboto", inherit; }
+
+  /* ===== 变更时间轴 ===== */
+  .timeline {
+    position: relative;
+    padding-left: 24px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 8px; bottom: 8px;
+    width: 1px;
+    background: var(--border);
+  }
+  .timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+  }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-dot {
+    position: absolute;
+    left: -22px; top: 6px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid var(--color-primary);
+  }
+  .timeline-item.create .timeline-dot { background: var(--color-success); border-color: var(--color-success); }
+  .timeline-item.update .timeline-dot { background: var(--color-primary); border-color: var(--color-primary); }
+  .timeline-item.conflict .timeline-dot { background: var(--color-warning); border-color: var(--color-warning); }
+  .timeline-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .timeline-ver {
+    font-size: 12px;
+    font-family: "DIN Alternate", "Roboto", inherit;
+    padding: 1px 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    color: var(--text-secondary);
+  }
+  .timeline-time {
+    font-size: 12px;
+    color: var(--text-disabled);
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+  .timeline-action {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .timeline-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+  .timeline-changes {
+    background: var(--bg-page);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .change-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 12px;
+    padding: 4px 0;
+  }
+  .change-field { color: var(--text-secondary); font-size: 12px; }
+  .change-diff { font-size: 13px; }
+  .change-diff .from {
+    color: var(--text-disabled);
+    text-decoration: line-through;
+    margin-right: 8px;
+  }
+  .change-diff .arrow {
+    color: var(--text-disabled);
+    margin: 0 4px;
+  }
+  .change-diff .to {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  /* ===== 数据采集 / 提示框 ===== */
+  .info-box {
+    background: rgba(22, 93, 255, 0.04);
+    border: 1px solid rgba(22, 93, 255, 0.16);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .info-box-icon {
+    width: 20px; height: 20px;
+    color: var(--color-info);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .info-box-icon svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 2; }
+  .info-box-content {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 22px;
+  }
+  .info-box-content strong { color: var(--text-primary); font-weight: 500; }
+  .info-box-content a {
+    color: var(--color-info);
+    margin-left: 8px;
+    cursor: pointer;
+  }
+  .info-box-content a:hover { text-decoration: underline; }
+
+  /* 采集任务卡 */
+  .collect-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .collect-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 200ms;
+  }
+  .collect-card:hover {
+    box-shadow: var(--shadow-2);
+    border-color: var(--color-primary);
+  }
+  .collect-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .collect-card-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  .collect-card-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  .collect-stat {
+    flex: 1;
+  }
+  .collect-stat-num {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--color-primary);
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+  .collect-stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .collect-card-meta {
+    font-size: 12px;
+    color: var(--text-disabled);
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ===== 顶导下拉菜单 ===== */
+  .nav-dropdown {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .nav-dropdown-trigger {
+    color: var(--text-secondary);
+    font-size: 14px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: color 200ms;
+  }
+  .nav-dropdown-trigger::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    margin-left: 4px;
+    margin-bottom: 3px;
+    transition: transform 200ms;
+    opacity: 0.6;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger {
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 16px;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger {
+    color: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger::after {
+    transform: rotate(-135deg);
+    margin-bottom: -3px;
+    opacity: 1;
+  }
+  .nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-2);
+    min-width: 220px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 200ms;
+    z-index: 200;
+  }
+  .nav-dropdown:hover .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+  .nav-dropdown-menu a {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    height: auto !important;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 150ms;
+  }
+  .nav-dropdown-menu a::after { display: none !important; }
+  .nav-dropdown-menu a:hover {
+    background: rgba(37, 99, 235, 0.06);
+    color: var(--color-primary);
+  }
+  .nav-dropdown-menu a svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+  .nav-dropdown-menu a:hover svg { opacity: 1; }
+  .nav-dropdown-menu .menu-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .nav-dropdown-menu .menu-label {
+    font-size: 14px;
+    line-height: 18px;
+  }
+  .nav-dropdown-menu .menu-desc {
+    font-size: 11px;
+    color: var(--text-disabled);
+    margin-top: 2px;
+    line-height: 14px;
+  }
+  .nav-dropdown-menu a:hover .menu-desc { color: var(--color-primary-secondary); }
+  .nav-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 0;
+    right: 0;
+    height: 8px;
+  }
+
+  /* ===== 来源 / 同步卡片（沿用 M3 source-card 规范） ===== */
+  .source-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+  .source-card { background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; transition: all 200ms; position: relative; }
+  .source-card:hover { box-shadow: var(--shadow-2); border-color: var(--color-primary); }
+  .source-card.syncing { border-color: var(--color-info); }
+  .source-card-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
+  .source-card-titlewrap { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .source-card-icon { width: 36px; height: 36px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0; }
+  .source-card-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .source-card-name { font-size: 15px; font-weight: 500; color: var(--text-primary); }
+  .source-card-sub { font-size: 11.5px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", monospace; margin-top: 2px; }
+  .source-rows { display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; color: var(--text-secondary); }
+  .source-rows .row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border); }
+  .source-rows .row:last-child { border-bottom: none; }
+  .source-rows strong { color: var(--text-primary); font-weight: 500; font-size: 13px; }
+  .source-rows .mono-v { font-family: "DIN Alternate", "Roboto", monospace; font-size: 12px; }
+  .source-card-foot { display: flex; align-items: center; justify-content: space-between;
+    margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .source-card-foot .sync-time { font-size: 11.5px; color: var(--text-disabled); }
+
+  /* 状态点 */
+  .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .dot.ok { background: var(--color-success); }
+  .dot.run { background: var(--color-info); animation: dotpulse 1.2s infinite; }
+  .dot.warn { background: var(--color-warning); }
+  @keyframes dotpulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+  /* 进度条（同步进度） */
+  .progress { height: 6px; border-radius: 3px; background: var(--bg-secondary); overflow: hidden; margin-top: 8px; }
+  .progress > i { display: block; height: 100%; border-radius: 3px; background: var(--color-info); transition: width 400ms; }
+
+  /* 唯一性约束提示条 */
+  .constraint-note { display: flex; align-items: center; gap: 8px; font-size: 12px;
+    color: var(--color-success); background: rgba(0,180,42,.06); border: 1px solid rgba(0,180,42,.18);
+    border-radius: 6px; padding: 8px 12px; margin-bottom: 16px; }
+  .constraint-note svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+
+  /* 汇总统计条 */
+  .sync-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .sync-summary-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 16px; position: relative; overflow: hidden; }
+  .sync-summary-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--color-primary); }
+  .sync-summary-num { font-size: 24px; font-weight: 700; color: var(--text-primary); line-height: 30px; font-family: "DIN Alternate", "Roboto", inherit; }
+  .sync-summary-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* 源头维护：字段映射表 */
+  .field-map-table td, .field-map-table th { font-size: 13px; }
+  .field-map-table .src-field { font-family: "DIN Alternate", "Roboto", monospace; color: var(--text-secondary); }
+  .map-arrow { color: var(--text-disabled); }
+
+  /* 弹窗（编辑源头配置） */
+  .modal-mask { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 300;
+    opacity: 0; visibility: hidden; transition: all 200ms; }
+  .modal-mask.show { opacity: 1; visibility: visible; }
+  .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-48%);
+    width: 560px; max-width: calc(100vw - 48px); max-height: calc(100vh - 80px); overflow-y: auto;
+    background: var(--bg-card); border-radius: 12px; box-shadow: var(--shadow-3); z-index: 301;
+    opacity: 0; visibility: hidden; transition: all 200ms; }
+  .modal.show { opacity: 1; visibility: visible; transform: translate(-50%,-50%); }
+  .modal-head { display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px; border-bottom: 1px solid var(--border); }
+  .modal-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+  .modal-close { width: 28px; height: 28px; border: none; background: transparent;
+    font-size: 22px; color: var(--text-disabled); cursor: pointer; border-radius: 6px; line-height: 1; }
+  .modal-close:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .modal-body { padding: 20px 24px; }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px; border-top: 1px solid var(--border); }
+  .form-row { margin-bottom: 16px; }
+  .form-row:last-child { margin-bottom: 0; }
+  .form-label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+  .form-label .req { color: var(--color-error); margin-left: 2px; }
+  .form-control { width: 100%; height: 40px; padding: 0 12px; border: 1px solid var(--border);
+    border-radius: 6px; background: var(--bg-card); font-size: 14px; color: var(--text-primary); transition: all 200ms; }
+  .form-control:focus { border-color: var(--color-info); box-shadow: 0 0 0 2px rgba(22,93,255,.1); }
+  select.form-control { appearance: none; cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2386909C' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+  .form-hint { font-size: 11.5px; color: var(--text-disabled); margin-top: 4px; }
+  .form-readonly { height: 40px; display: flex; align-items: center; padding: 0 12px;
+    background: var(--bg-secondary); border-radius: 6px; font-size: 14px; color: var(--text-secondary); }
+
+</style>
+</head>
+<body>
+
+<!-- ===== 顶部导航 ===== -->
+<header class="topbar">
+  <div class="logo-wrap">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>
+    </div>
+    <div class="logo-text">身份数据平台</div>
+  </div>
+  <nav>
+    <a href="页面主页.html">主页</a>
+    <div class="nav-dropdown active">
+      <a href="m1-basic-identity.html" class="nav-dropdown-trigger" style="text-decoration:none;color:inherit">身份管理</a>
+      <div class="nav-dropdown-menu">
+        <a href="m1-basic-identity.html">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员基础身份</div>
+            <div class="menu-desc">人员进档 · 一人一ID · 多源头采集</div>
+          </div>
+        </a>
+        <a href="m2-classification.html">
+          <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员分类身份</div>
+            <div class="menu-desc">树形分类 · 标准属性 · 实例挂载</div>
+          </div>
+        </a>
+        <a href="m3-position.html">
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员岗位身份</div>
+            <div class="menu-desc">广义岗位 · 一人多身份</div>
+          </div>
+        </a>
+        <a href="m7-custom-tags.html">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员自定义标签管理</div>
+            <div class="menu-desc">自定义群组 · 灵活标注 · 便捷查询</div>
+          </div>
+        </a>
+        <a href="m4-org.html">
+          <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">组织机构体系</div>
+            <div class="menu-desc">院系树 · 强绑定身份</div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <a href="m5-identity-permission.html">身份权限管理</a>
+    <a href="m6-data-query.html">数据查询</a>
+  </nav>
+  <div class="topbar-right">
+    <span class="time-display" id="time-display"></span>
+    <div class="user-info">
+      <div class="user-avatar">管</div>
+      <span class="user-name">管理员 · 数据治理岗</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ===== 左侧导航 ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-section">人员管理</div>
+    <div class="sidebar-item active">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+      <span>人员基础身份</span>
+    </div>
+    <a href="m2-classification.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+      <span>人员分类身份</span>
+    </div></a>
+    <a href="m3-position.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+      <span>人员岗位身份</span>
+    </div></a>
+    <a href="m7-custom-tags.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      <span>自定义标签身份</span>
+    </div></a>
+    <a href="m4-org.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+      <span>组织机构体系</span>
+    </div></a>
+
+    <div class="sidebar-section" style="margin-top:8px">人员基础身份管理</div>
+    <div class="sidebar-item active" data-view="data">
+      <svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      <span>基础数据</span>
+      <span class="badge" id="sb-data-count">94,283</span>
+    </div>
+    <a href="etl-monitor.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M21 21v-5h-5"/></svg>
+      <span>更新同步人员（ETL任务执行）</span>
+    </div></a>
+    <div class="sidebar-item" data-view="changes">
+      <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+      <span>变更记录</span>
+      <span class="badge">v</span>
+    </div>
+  </aside>
+
+  <!-- ===== 主区域 ===== -->
+  <main class="main">
+
+    <!-- 面包屑 -->
+    <div class="breadcrumb">
+      <a href="页面主页.html">平台总览</a>
+      <span class="sep">/</span>
+      <span class="last" id="crumb-last">人员基础身份</span>
+    </div>
+
+    <!-- 页面标题 -->
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">人员基础身份</h1>
+        <p class="page-desc">自然人主档管理 · 唯一ID · 多源头采集 · 全量变更追溯</p>
+      </div>
+      <div class="page-stats">
+        <span>在档人数 <strong>94,283</strong></span>
+        <span>权威来源 <strong>5</strong></span>
+        <span>今日同步新增 <strong>23</strong></span>
+        <span>近7日变更 <strong>156</strong></span>
+      </div>
+    </div>
+
+    <!-- ============ 视图：基础数据展示 ============ -->
+    <section class="view active" id="view-data">
+
+      <!-- 筛选条 -->
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <input class="filter-input search" placeholder="搜索姓名 / 唯一ID / 身份证号" id="search-input">
+        </div>
+        <select class="filter-select" id="filter-source">
+          <option value="">全部数据源</option>
+          <option>人事系统</option>
+          <option>教务系统</option>
+          <option>研究生系统</option>
+          <option>访客系统</option>
+          <option>校友系统</option>
+          <option>协同人员管理</option>
+          <option>线下采集</option>
+        </select>
+        <select class="filter-select">
+          <option>全部国籍</option>
+          <option>中国</option>
+          <option>外国(港澳台)</option>
+        </select>
+        <select class="filter-select">
+          <option>全部证件类型</option>
+          <option>居民身份证</option>
+          <option>港澳台居民居住证</option>
+          <option>护照</option>
+          <option>军官证</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2"/></svg>
+          导出
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="location.href='etl-monitor.html'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16M21 21v-5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          更新同步人员（ETL任务执行）
+        </button>
+      </div>
+
+      <!-- 表格 -->
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table id="data-table">
+            <thead>
+              <tr>
+                <th style="width:130px">人员唯一标识</th>
+                <th style="width:90px">姓名</th>
+                <th style="width:60px">性别</th>
+                <th style="width:80px">民族</th>
+                <th style="width:100px">证件类型</th>
+                <th style="width:180px">身份证件号</th>
+                <th style="width:100px">国籍</th>
+                <th>曾用证件号</th>
+                <th style="width:130px">数据源</th>
+                <th style="width:140px">最后更新</th>
+                <th style="width:140px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="data-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span>共 <strong id="pg-total">94,283</strong> 条 · 第 <strong id="pg-cur">1</strong> / <strong id="pg-max">9,429</strong> 页</span>
+          <div class="page-controls">
+            <button class="page-btn disabled">‹</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">4</button>
+            <button class="page-btn">5</button>
+            <span style="padding:0 4px;color:var(--text-disabled)">···</span>
+            <button class="page-btn">9429</button>
+            <button class="page-btn">›</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============ 视图：更新同步人员 ============ -->
+    <section class="view" id="view-sync">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="10"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>更新同步人员</strong>：人员基础身份库由各类人员的<strong>权威来源系统</strong>同步形成，本平台不手工新增自然人。每一<strong>来源人员大类</strong>（学生、教职工、外协及服务人员、外部人员、校友）只允许对接<strong>唯一一个权威来源系统</strong>，从源头保证自然人主档不重不漏。
+        </div>
+      </div>
+
+      <div class="constraint-note">
+        <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+        唯一性约束已生效：5 个来源人员大类 ↔ 5 个权威来源系统，一对一绑定，不存在一类多源。
+      </div>
+
+      <!-- 同步汇总 -->
+      <div class="sync-summary" id="sync-summary"></div>
+
+      <!-- 操作条 -->
+      <div class="filter-bar">
+        <div style="font-size:16px;font-weight:500;color:var(--text-primary);padding-left:12px;position:relative">
+          <span style="position:absolute;left:0;top:4px;width:4px;height:16px;background:var(--color-primary);border-radius:2px"></span>
+          各大类权威来源同步看板
+        </div>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm" onclick="syncAll()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          全部立即同步
+        </button>
+      </div>
+
+      <div class="source-grid" id="sync-grid"></div>
+
+    </section>
+
+    <!-- ============ 视图：源头维护 ============ -->
+    <section class="view" id="view-source">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="10"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>源头维护</strong>：维护各来源人员大类对应权威来源系统的源头对接配置——接口地址、同步策略、字段映射与唯一性主键。<strong>每个大类仅可绑定一个来源系统</strong>，新增或更换来源需提交审批。源头采集的人员明细数据以源头为准，平台侧不直接修改。
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div style="font-size:16px;font-weight:500;color:var(--text-primary);padding-left:12px;position:relative">
+          <span style="position:absolute;left:0;top:4px;width:4px;height:16px;background:var(--color-primary);border-radius:2px"></span>
+          来源人员大类 · 源头对接配置
+        </div>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm" onclick="openSourceModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/></svg>
+          新增来源大类
+        </button>
+      </div>
+
+      <div class="table-wrap" style="margin-bottom:16px">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:160px">来源人员大类</th>
+                <th style="width:90px">大类编码</th>
+                <th>权威来源系统</th>
+                <th style="width:120px">对接方式</th>
+                <th style="width:140px">唯一性主键</th>
+                <th style="width:110px">同步策略</th>
+                <th style="width:90px">状态</th>
+                <th style="width:120px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="source-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 选中大类的字段映射 -->
+      <div class="panel" id="field-map-panel" style="display:none">
+        <div class="panel-title" id="field-map-title">字段映射 <span class="sub">源头字段 → 标准主档字段</span></div>
+        <div class="table-wrap">
+          <table class="field-map-table">
+            <thead>
+              <tr>
+                <th style="width:200px">源头字段</th>
+                <th style="width:60px"></th>
+                <th>标准主档字段</th>
+                <th style="width:120px">是否主键</th>
+                <th style="width:100px">必填</th>
+              </tr>
+            </thead>
+            <tbody id="field-map-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============ 视图：变更记录 ============ -->
+    <section class="view" id="view-changes">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="10"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>变更追溯</strong>：每次人员基础数据的修改都会生成一个新版本，旧版本永久保留，支持任意时点回溯。
+          变更触发方包括：上游系统同步、管理员修改、采集任务回填、批量导入。
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <input class="filter-input search" placeholder="搜索人员姓名 / 唯一ID">
+        </div>
+        <select class="filter-select">
+          <option>全部变更类型</option>
+          <option>新建</option>
+          <option>修改</option>
+          <option>合并</option>
+          <option>冲突裁定</option>
+        </select>
+        <select class="filter-select">
+          <option>全部触发方</option>
+          <option>人事系统同步</option>
+          <option>教务系统同步</option>
+          <option>管理员修改</option>
+          <option>采集任务回填</option>
+          <option>批量导入</option>
+        </select>
+        <select class="filter-select">
+          <option>近 7 天</option>
+          <option>近 30 天</option>
+          <option>近 90 天</option>
+          <option>全部</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm">导出</button>
+      </div>
+
+      <div class="panel">
+        <div style="font-size:16px;font-weight:500;color:var(--text-primary);padding-left:12px;position:relative;margin-bottom:20px">
+          <span style="position:absolute;left:0;top:4px;width:4px;height:16px;background:var(--color-primary);border-radius:2px"></span>
+          全局变更时间轴 <span style="font-size:12px;color:var(--text-disabled);font-weight:400;margin-left:8px">最近 30 条</span>
+        </div>
+
+        <div class="timeline" id="global-timeline"></div>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<!-- ===== 详情抽屉 ===== -->
+<div class="drawer-mask" id="drawer-mask"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-title" id="drawer-title">人员详情</div>
+    <button class="drawer-close" onclick="closeDrawer()">×</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-foot">
+    <button class="btn btn-secondary btn-sm" onclick="closeDrawer()">关闭</button>
+    <button class="btn btn-primary btn-sm">编辑</button>
+  </div>
+</div>
+
+<!-- ===== 源头配置弹窗 ===== -->
+<div class="modal-mask" id="modal-mask" onclick="closeSourceModal()"></div>
+<div class="modal" id="source-modal">
+  <div class="modal-head">
+    <div class="modal-title" id="source-modal-title">编辑源头对接配置</div>
+    <button class="modal-close" onclick="closeSourceModal()">×</button>
+  </div>
+  <div class="modal-body">
+    <div class="constraint-note" style="margin-bottom:16px">
+      <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+      唯一性约束：每个来源人员大类只能绑定一个权威来源系统。
+    </div>
+    <div class="form-row">
+      <label class="form-label">来源人员大类 <span class="req">*</span></label>
+      <div class="form-readonly" id="f-cat-readonly"></div>
+      <input type="hidden" id="f-cat">
+    </div>
+    <div class="form-row">
+      <label class="form-label">权威来源系统 <span class="req">*</span></label>
+      <select class="form-control" id="f-system">
+        <option>人事管理系统 (HR)</option>
+        <option>教务管理系统</option>
+        <option>研究生管理系统</option>
+        <option>协同人员管理服务平台</option>
+        <option>校友管理系统</option>
+        <option>访客系统</option>
+      </select>
+      <div class="form-hint">该大类下全部自然人主档均以此系统为权威来源。</div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">对接方式 <span class="req">*</span></label>
+      <select class="form-control" id="f-protocol">
+        <option>REST API（T+1 增量）</option>
+        <option>数据库视图（实时读取）</option>
+        <option>Kafka 消息（准实时）</option>
+        <option>文件导入（Excel/CSV）</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">接口地址 / 数据源</label>
+      <input class="form-control" id="f-endpoint" placeholder="https://hr.sysu.edu.cn/api/v1/persons">
+    </div>
+    <div class="form-row">
+      <label class="form-label">同步策略 <span class="req">*</span></label>
+      <select class="form-control" id="f-sync">
+        <option>T+1 凌晨全量</option>
+        <option>T+1 凌晨增量</option>
+        <option>准实时（30 分钟）</option>
+        <option>实时</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">唯一性主键 <span class="req">*</span></label>
+      <select class="form-control" id="f-pk">
+        <option>身份证件号</option>
+        <option>身份证件号 + 证件类型</option>
+        <option>学号 / 工号</option>
+        <option>源系统人员ID</option>
+      </select>
+      <div class="form-hint">用于自然人去重归集，生成全局唯一 ID (NP 开头)。</div>
+    </div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-secondary btn-sm" onclick="closeSourceModal()">取消</button>
+    <button class="btn btn-primary btn-sm" onclick="saveSourceModal()">保存配置</button>
+  </div>
+</div>
+
+<script>
+  // ===== 时间 =====
+  function updateTime() {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    document.getElementById('time-display').textContent = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  }
+  updateTime(); setInterval(updateTime, 1000);
+
+  // ===== Mock 数据 =====
+  const SOURCE_COLORS = {
+    '人事系统': 'tag-blue',
+    '教务系统': 'tag-green',
+    '研究生系统': 'tag-purple',
+    '访客系统': 'tag-orange',
+    '校友系统': 'tag-blue',
+    '协同人员管理': 'tag-gray',
+    '线下采集': 'tag-gray',
+  };
+
+  const PERSONS = [
+    { uid: 'NP00000001', name: '张明远', gender: '男', nation: '汉族', idType: '居民身份证', idNo: '440103198506121234', country: '中国', oldIdNo: '', source: '人事系统', updatedAt: '2026-05-10 14:23', deptCode: 'A01', deptName: '计算机学院' },
+    { uid: 'NP00000002', name: '李雪琴', gender: '女', nation: '汉族', idType: '居民身份证', idNo: '110108197812157890', country: '中国', oldIdNo: '11010819781215789X', source: '人事系统', updatedAt: '2026-05-10 11:15', deptCode: 'A02', deptName: '校办公室' },
+    { uid: 'NP00000003', name: '陈志强', gender: '男', nation: '回族', idType: '居民身份证', idNo: '610104199003156789', country: '中国', oldIdNo: '', source: '人事系统', updatedAt: '2026-05-09 16:48', deptCode: 'A01', deptName: '计算机学院' },
+    { uid: 'NP00000004', name: '王慧颖', gender: '女', nation: '汉族', idType: '居民身份证', idNo: '320106200201124567', country: '中国', oldIdNo: '', source: '教务系统', updatedAt: '2026-05-09 09:30', deptCode: 'C01', deptName: '本科招生' },
+    { uid: 'NP00000005', name: '刘建华', gender: '男', nation: '汉族', idType: '居民身份证', idNo: '450107200103098765', country: '中国', oldIdNo: '', source: '研究生系统', updatedAt: '2026-05-08 17:22', deptCode: 'B02', deptName: '研究生院' },
+    { uid: 'NP00000006', name: 'Sarah Johnson', gender: '女', nation: '—', idType: '护照', idNo: 'US-AB9876543', country: '美国', oldIdNo: '', source: '访客系统', updatedAt: '2026-05-08 10:11', deptCode: 'D01', deptName: '国际合作办' },
+    { uid: 'NP00000007', name: '黄敏君', gender: '女', nation: '壮族', idType: '居民身份证', idNo: '450503198808234567', country: '中国', oldIdNo: '', source: '人事系统', updatedAt: '2026-05-07 15:55', deptCode: 'A05', deptName: '后勤管理处' },
+    { uid: 'NP00000008', name: '林晓东', gender: '男', nation: '汉族', idType: '港澳台居民居住证', idNo: '830000198501123456', country: '中国(台湾)', oldIdNo: '', source: '研究生系统', updatedAt: '2026-05-07 14:08', deptCode: 'B02', deptName: '研究生院' },
+    { uid: 'NP00000009', name: '赵磊', gender: '男', nation: '汉族', idType: '居民身份证', idNo: '370103199512046789', country: '中国', oldIdNo: '', source: '协同人员管理', updatedAt: '2026-05-07 09:24', deptCode: 'E01', deptName: '物业服务' },
+    { uid: 'NP00000010', name: '田静怡', gender: '女', nation: '汉族', idType: '居民身份证', idNo: '510106200008156543', country: '中国', oldIdNo: '', source: '教务系统', updatedAt: '2026-05-06 16:30', deptCode: 'C03', deptName: '数学学院' },
+    { uid: 'NP00000011', name: '周文博', gender: '男', nation: '满族', idType: '居民身份证', idNo: '210104199907282345', country: '中国', oldIdNo: '', source: '校友系统', updatedAt: '2026-05-06 14:12', deptCode: 'F01', deptName: '校友会' },
+    { uid: 'NP00000012', name: '孙雅丽', gender: '女', nation: '汉族', idType: '居民身份证', idNo: '440112197911053456', country: '中国', oldIdNo: '', source: '人事系统', updatedAt: '2026-05-05 11:00', deptCode: 'A03', deptName: '财务处' },
+  ];
+
+  // 全局变更记录 mock
+  const GLOBAL_CHANGES = [
+    {
+      type: 'update', ver: 'v3', time: '2026-05-10 14:23:18',
+      person: '张明远 · NP00000001', action: '修改基础信息',
+      operator: '系统 · 人事系统同步', source: '人事系统', reason: '员工本人在 HR 系统更新了通讯地址相关字段',
+      changes: [
+        { field: '联系电话', from: '138****5612', to: '138****8888' },
+        { field: '通讯地址', from: '广东省广州市天河区...', to: '广东省广州市海珠区...' },
+      ]
+    },
+    {
+      type: 'update', ver: 'v2', time: '2026-05-10 11:15:42',
+      person: '李雪琴 · NP00000002', action: '身份证件变更',
+      operator: '管理员 · 张治理', source: '管理员修改', reason: '身份证号末位 X→0，归集到正确版本',
+      changes: [
+        { field: '身份证号', from: '11010819781215789X', to: '110108197812157890' },
+        { field: '曾用证件号', from: '(空)', to: '11010819781215789X' },
+      ]
+    },
+    {
+      type: 'create', ver: 'v1', time: '2026-05-10 09:00:01',
+      person: '王俊宇 · NP00000156', action: '新建自然人档案',
+      operator: '系统 · 教务系统同步', source: '教务系统', reason: '2026 级本科新生录取数据导入',
+      changes: [
+        { field: '姓名', from: '(空)', to: '王俊宇' },
+        { field: '身份证号', from: '(空)', to: '32010620030218****' },
+        { field: '国籍', from: '(空)', to: '中国' },
+      ]
+    },
+    {
+      type: 'conflict', ver: 'v4', time: '2026-05-09 16:48:30',
+      person: '陈志强 · NP00000003', action: '冲突裁定 · 民族字段',
+      operator: '管理员 · 张治理', source: '管理员修改', reason: '人事系统记"汉族"，教务系统记"回族"，经核对身份证以"回族"为准',
+      changes: [
+        { field: '民族', from: '汉族 (人事系统)', to: '回族 (确认)' },
+      ]
+    },
+    {
+      type: 'update', ver: 'v2', time: '2026-05-09 09:30:11',
+      person: '王慧颖 · NP00000004', action: '采集任务回填',
+      operator: '系统 · 采集任务 T-025', source: '采集任务回填', reason: '2026 级本科新生信息补录',
+      changes: [
+        { field: '民族', from: '(空)', to: '汉族' },
+        { field: '紧急联系人', from: '(空)', to: '王建国 (父亲)' },
+      ]
+    },
+    {
+      type: 'create', ver: 'v1', time: '2026-05-08 10:11:23',
+      person: 'Sarah Johnson · NP00000006', action: '新建自然人档案',
+      operator: '管理员 · 国际办 王老师', source: '访客系统', reason: '短期访问学者入校登记',
+      changes: [
+        { field: '姓名', from: '(空)', to: 'Sarah Johnson' },
+        { field: '证件类型', from: '(空)', to: '护照' },
+        { field: '国籍', from: '(空)', to: '美国' },
+      ]
+    },
+  ];
+
+  // ===== 渲染：人员列表 =====
+  function renderPersons() {
+    const tbody = document.getElementById('data-tbody');
+    const q = (document.getElementById('search-input').value || '').trim();
+    const src = document.getElementById('filter-source').value;
+    const list = PERSONS.filter(p => {
+      if (q && !p.name.includes(q) && !p.uid.includes(q) && !p.idNo.includes(q)) return false;
+      if (src && p.source !== src) return false;
+      return true;
+    });
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--text-disabled)">暂无匹配数据</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(p => `
+      <tr onclick="openDetail('${p.uid}')" style="cursor:pointer">
+        <td class="mono">${p.uid}</td>
+        <td><strong>${p.name}</strong></td>
+        <td>${p.gender}</td>
+        <td>${p.nation}</td>
+        <td>${p.idType}</td>
+        <td class="mono">${maskId(p.idNo)}</td>
+        <td>${p.country}</td>
+        <td class="mono" style="color:var(--text-disabled)">${p.oldIdNo ? maskId(p.oldIdNo) : '—'}</td>
+        <td><span class="tag ${SOURCE_COLORS[p.source] || 'tag-gray'}">${p.source}</span></td>
+        <td class="mono" style="color:var(--text-secondary)">${p.updatedAt}</td>
+        <td>
+          <button class="btn btn-text btn-sm" onclick="event.stopPropagation();openDetail('${p.uid}')">详情</button>
+          <button class="btn btn-text btn-sm" onclick="event.stopPropagation();openDetail('${p.uid}','changes')">变更</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function maskId(s) {
+    if (!s) return '';
+    if (s.length <= 6) return s;
+    return s.slice(0, 6) + '*'.repeat(Math.max(s.length - 10, 0)) + s.slice(-4);
+  }
+
+  // ===== 详情抽屉 =====
+  function openDetail(uid, scrollTo) {
+    const p = PERSONS.find(x => x.uid === uid);
+    if (!p) return;
+    document.getElementById('drawer-title').textContent = `${p.name} · 人员详情`;
+
+    // mock 该人员变更
+    const versions = mockVersions(p);
+    document.getElementById('drawer-body').innerHTML = `
+      <div class="detail-section">
+        <div class="detail-section-title">基础信息</div>
+        <div class="detail-grid">
+          <div class="detail-item"><div class="detail-label">人员唯一标识</div><div class="detail-value mono">${p.uid}</div></div>
+          <div class="detail-item"><div class="detail-label">姓名</div><div class="detail-value">${p.name}</div></div>
+          <div class="detail-item"><div class="detail-label">性别</div><div class="detail-value">${p.gender}</div></div>
+          <div class="detail-item"><div class="detail-label">民族</div><div class="detail-value">${p.nation}</div></div>
+          <div class="detail-item"><div class="detail-label">国籍</div><div class="detail-value">${p.country}</div></div>
+          <div class="detail-item"><div class="detail-label">证件类型</div><div class="detail-value">${p.idType}</div></div>
+          <div class="detail-item full"><div class="detail-label">身份证件号</div><div class="detail-value mono">${p.idNo}</div></div>
+          <div class="detail-item full"><div class="detail-label">曾用身份证件号</div><div class="detail-value mono ${p.oldIdNo ? '' : 'empty'}">${p.oldIdNo || '无'}</div></div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-title">来源与归属</div>
+        <div class="detail-grid">
+          <div class="detail-item"><div class="detail-label">主要数据源</div><div class="detail-value"><span class="tag ${SOURCE_COLORS[p.source] || 'tag-gray'}">${p.source}</span></div></div>
+          <div class="detail-item"><div class="detail-label">归属部门</div><div class="detail-value">${p.deptName} <span style="color:var(--text-disabled);font-size:12px">(${p.deptCode})</span></div></div>
+          <div class="detail-item"><div class="detail-label">建档时间</div><div class="detail-value mono">${versions[versions.length-1].time}</div></div>
+          <div class="detail-item"><div class="detail-label">最后更新</div><div class="detail-value mono">${p.updatedAt}</div></div>
+        </div>
+      </div>
+
+      <div class="detail-section" id="ds-changes">
+        <div class="detail-section-title">变更记录 <span style="font-size:12px;color:var(--text-disabled);font-weight:400;margin-left:8px">共 ${versions.length} 个版本</span></div>
+        <div class="timeline">
+          ${versions.map(v => `
+            <div class="timeline-item ${v.type}">
+              <div class="timeline-dot"></div>
+              <div class="timeline-head">
+                <span class="timeline-action">${v.action}</span>
+                <span class="timeline-ver">${v.ver}</span>
+                <span class="timeline-time">${v.time}</span>
+              </div>
+              <div class="timeline-meta">操作方：${v.operator}</div>
+              ${v.changes.length ? `
+                <div class="timeline-changes">
+                  ${v.changes.map(c => `
+                    <div class="change-row">
+                      <div class="change-field">${c.field}</div>
+                      <div class="change-diff"><span class="from">${c.from}</span><span class="arrow">→</span><span class="to">${c.to}</span></div>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    document.getElementById('drawer-mask').classList.add('show');
+    document.getElementById('drawer').classList.add('show');
+    if (scrollTo === 'changes') {
+      setTimeout(() => {
+        document.getElementById('ds-changes').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 320);
+    }
+  }
+  function closeDrawer() {
+    document.getElementById('drawer-mask').classList.remove('show');
+    document.getElementById('drawer').classList.remove('show');
+  }
+  document.getElementById('drawer-mask').addEventListener('click', closeDrawer);
+
+  // Mock 版本
+  function mockVersions(p) {
+    // 张明远3版,李雪琴2版,陈志强4版,其他默认2版
+    const seed = (p.uid.charCodeAt(p.uid.length - 1)) % 4 + 2;
+    const versions = [];
+    versions.push({
+      ver: 'v' + seed, time: p.updatedAt + ':18', type: 'update', action: '修改基础信息',
+      operator: '系统 · 人事系统同步',
+      changes: [
+        { field: '联系电话', from: '138****5612', to: '138****8888' },
+      ]
+    });
+    if (seed >= 3) {
+      versions.push({
+        ver: 'v' + (seed - 1), time: '2025-12-15 10:24:11', type: 'update', action: '采集任务回填',
+        operator: '系统 · 采集任务 T-024',
+        changes: [
+          { field: '紧急联系人', from: '(空)', to: '王建国' },
+          { field: '紧急联系电话', from: '(空)', to: '139****6788' },
+        ]
+      });
+    }
+    if (seed >= 4) {
+      versions.push({
+        ver: 'v2', time: '2025-09-10 16:08:54', type: 'conflict', action: '冲突裁定 · 民族字段',
+        operator: '管理员 · 张治理',
+        changes: [
+          { field: '民族', from: '汉族 (人事系统)', to: p.nation + ' (确认)' },
+        ]
+      });
+    }
+    versions.push({
+      ver: 'v1', time: '2024-08-20 09:00:01', type: 'create', action: '新建自然人档案',
+      operator: '系统 · ' + p.source + ' 初始化',
+      changes: [
+        { field: '姓名', from: '(空)', to: p.name },
+        { field: '身份证号', from: '(空)', to: maskId(p.idNo) },
+      ]
+    });
+    return versions;
+  }
+
+  // ===== 全局变更时间轴 =====
+  function renderGlobalTimeline() {
+    document.getElementById('global-timeline').innerHTML = GLOBAL_CHANGES.map(v => `
+      <div class="timeline-item ${v.type}">
+        <div class="timeline-dot"></div>
+        <div class="timeline-head">
+          <span class="timeline-action">${v.action}</span>
+          <span class="timeline-ver">${v.ver}</span>
+          <span class="timeline-time">${v.time}</span>
+          <span class="tag tag-gray" style="margin-left:auto">${v.person}</span>
+        </div>
+        <div class="timeline-meta">操作方：${v.operator} · 触发：${v.source}${v.reason ? ' · ' + v.reason : ''}</div>
+        ${v.changes.length ? `
+          <div class="timeline-changes">
+            ${v.changes.map(c => `
+              <div class="change-row">
+                <div class="change-field">${c.field}</div>
+                <div class="change-diff"><span class="from">${c.from}</span><span class="arrow">→</span><span class="to">${c.to}</span></div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `).join('');
+  }
+
+  // ===== 视图切换 =====
+  function activateView(v) {
+    document.querySelectorAll('.sidebar-item[data-view]').forEach(x => x.classList.remove('active'));
+    const tab = document.querySelector('.sidebar-item[data-view="' + v + '"]');
+    if (tab) tab.classList.add('active');
+    document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+    document.getElementById('view-' + v).classList.add('active');
+    const labels = { data: '基础数据', sync: '更新同步人员', source: '源头维护', changes: '变更记录' };
+    document.getElementById('crumb-last').textContent = '人员基础身份 · ' + labels[v];
+  }
+  function gotoView(v) { activateView(v); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+  document.querySelectorAll('.sidebar-item[data-view]').forEach(el => {
+    el.addEventListener('click', () => {
+      if (el.classList.contains('disabled')) return;
+      activateView(el.dataset.view);
+    });
+  });
+
+  // ===== 来源人员大类 ↔ 权威来源系统（一对一） =====
+  const SOURCE_CATEGORIES = [
+    {
+      cat: '学生', code: 'CAT-STU', system: '教务系统 / 研究生系统', protocol: 'REST API',
+      endpoint: 'https://edu.sysu.edu.cn/api/v1/students', pk: '学号',
+      sync: 'T+1 凌晨增量', total: 67428, today: 12, last: '2026-05-12 02:30', status: 'ok',
+      iconBg: 'rgba(15,177,123,.1)', iconColor: '#0FB17B',
+      icon: '<svg viewBox="0 0 24 24"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg>',
+      mapping: [
+        { src: 'xh', std: '学号/工号', pk: true, req: true },
+        { src: 'xm', std: '姓名', pk: false, req: true },
+        { src: 'sfzjh', std: '身份证件号', pk: true, req: true },
+        { src: 'xbm', std: '性别', pk: false, req: true },
+        { src: 'mzm', std: '民族', pk: false, req: false },
+      ]
+    },
+    {
+      cat: '教职工', code: 'CAT-STAFF', system: '人事管理系统 (HR)', protocol: 'REST API',
+      endpoint: 'https://hr.sysu.edu.cn/api/v1/employees', pk: '身份证件号',
+      sync: 'T+1 凌晨全量', total: 8956, today: 3, last: '2026-05-12 02:15', status: 'ok',
+      iconBg: 'rgba(56,126,245,.1)', iconColor: '#387EF5',
+      icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>',
+      mapping: [
+        { src: 'gh', std: '学号/工号', pk: true, req: true },
+        { src: 'name', std: '姓名', pk: false, req: true },
+        { src: 'id_card', std: '身份证件号', pk: true, req: true },
+        { src: 'sex', std: '性别', pk: false, req: true },
+        { src: 'nation', std: '民族', pk: false, req: false },
+      ]
+    },
+    {
+      cat: '外协及服务人员', code: 'CAT-SRV', system: '协同人员管理服务平台', protocol: '数据库视图',
+      endpoint: 'jdbc:co-mgmt/view_service_persons', pk: '源系统人员ID',
+      sync: '准实时（30 分钟）', total: 12384, today: 5, last: '2026-05-12 12:00', status: 'ok',
+      iconBg: 'rgba(246,152,13,.1)', iconColor: '#F6980D',
+      icon: '<svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6 3 3 6-6a4 4 0 0 0 5.4-5.4l-2 2-2-2 2-2z"/></svg>',
+      mapping: [
+        { src: 'person_id', std: '源系统人员ID', pk: true, req: true },
+        { src: 'real_name', std: '姓名', pk: false, req: true },
+        { src: 'cert_no', std: '身份证件号', pk: true, req: true },
+        { src: 'gender', std: '性别', pk: false, req: false },
+      ]
+    },
+    {
+      cat: '外部人员', code: 'CAT-EXT', system: '访客系统', protocol: 'Kafka 消息',
+      endpoint: 'kafka://visitor.sysu/topic.persons', pk: '身份证件号 + 证件类型',
+      sync: '准实时（30 分钟）', total: 5515, today: 2, last: '2026-05-12 11:48', status: 'warn',
+      iconBg: 'rgba(162,81,246,.1)', iconColor: '#A251F6',
+      icon: '<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-3 3-2-2"/></svg>',
+      mapping: [
+        { src: 'cert_no', std: '身份证件号', pk: true, req: true },
+        { src: 'cert_type', std: '证件类型', pk: true, req: true },
+        { src: 'visitor_name', std: '姓名', pk: false, req: true },
+        { src: 'country', std: '国籍', pk: false, req: false },
+      ]
+    },
+    {
+      cat: '校友', code: 'CAT-ALU', system: '校友管理系统', protocol: 'REST API',
+      endpoint: 'https://alumni.sysu.edu.cn/api/persons', pk: '身份证件号',
+      sync: 'T+1 凌晨增量', total: 38200, today: 1, last: '2026-05-12 03:00', status: 'ok',
+      iconBg: 'rgba(22,93,255,.1)', iconColor: '#165DFF',
+      icon: '<svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4 2 7L12 17l-6.5 3 2-7L2 9h7z"/></svg>',
+      mapping: [
+        { src: 'idcard', std: '身份证件号', pk: true, req: true },
+        { src: 'alumni_name', std: '姓名', pk: false, req: true },
+        { src: 'grad_year', std: '毕业年份', pk: false, req: false },
+      ]
+    },
+  ];
+
+  let syncState = {}; // code -> {syncing, progress}
+
+  // ===== 渲染：同步汇总 =====
+  function renderSyncSummary() {
+    const totalPersons = SOURCE_CATEGORIES.reduce((s, c) => s + c.total, 0);
+    const okCount = SOURCE_CATEGORIES.filter(c => c.status === 'ok').length;
+    const todayNew = SOURCE_CATEGORIES.reduce((s, c) => s + c.today, 0);
+    document.getElementById('sync-summary').innerHTML = `
+      <div class="sync-summary-item"><div class="sync-summary-num">5</div><div class="sync-summary-label">来源人员大类</div></div>
+      <div class="sync-summary-item"><div class="sync-summary-num">5</div><div class="sync-summary-label">权威来源系统</div></div>
+      <div class="sync-summary-item"><div class="sync-summary-num">${totalPersons.toLocaleString()}</div><div class="sync-summary-label">已同步自然人</div></div>
+      <div class="sync-summary-item"><div class="sync-summary-num" style="color:var(--color-success)">${okCount}/5</div><div class="sync-summary-label">对接正常</div></div>
+      <div class="sync-summary-item"><div class="sync-summary-num" style="color:var(--color-info)">+${todayNew}</div><div class="sync-summary-label">今日新增</div></div>
+    `;
+  }
+
+  // ===== 渲染：同步看板卡片 =====
+  function renderSyncGrid() {
+    document.getElementById('sync-grid').innerHTML = SOURCE_CATEGORIES.map(c => {
+      const st = syncState[c.code] || {};
+      const statusTag = st.syncing
+        ? '<span class="tag tag-blue"><span class="dot run"></span>同步中</span>'
+        : (c.status === 'ok'
+            ? '<span class="tag tag-green"><span class="dot ok"></span>正常</span>'
+            : '<span class="tag tag-orange"><span class="dot warn"></span>待核查</span>');
+      return `
+      <div class="source-card ${st.syncing ? 'syncing' : ''}">
+        <div class="source-card-head">
+          <div class="source-card-titlewrap">
+            <div class="source-card-icon" style="background:${c.iconBg};color:${c.iconColor}">${c.icon}</div>
+            <div>
+              <div class="source-card-name">${c.cat}</div>
+              <div class="source-card-sub">${c.code}</div>
+            </div>
+          </div>
+          ${statusTag}
+        </div>
+        <div class="source-rows">
+          <div class="row"><span>权威来源</span><strong>${c.system}</strong></div>
+          <div class="row"><span>对接方式</span><strong>${c.protocol}</strong></div>
+          <div class="row"><span>唯一性主键</span><strong>${c.pk}</strong></div>
+          <div class="row"><span>已同步人数</span><strong style="color:var(--color-success)">${c.total.toLocaleString()}</strong></div>
+          <div class="row"><span>同步策略</span><strong>${c.sync}</strong></div>
+        </div>
+        ${st.syncing ? `<div class="progress"><i style="width:${st.progress}%"></i></div>` : ''}
+        <div class="source-card-foot">
+          <span class="sync-time">最后同步 ${c.last}</span>
+          <button class="btn btn-text btn-sm" ${st.syncing ? 'disabled' : ''} onclick="syncOne('${c.code}')">${st.syncing ? '同步中…' : '立即同步'}</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function syncOne(code) {
+    const c = SOURCE_CATEGORIES.find(x => x.code === code);
+    if (!c) return;
+    syncState[code] = { syncing: true, progress: 8 };
+    renderSyncGrid();
+    const timer = setInterval(() => {
+      const st = syncState[code];
+      st.progress += Math.random() * 22 + 8;
+      if (st.progress >= 100) {
+        clearInterval(timer);
+        syncState[code] = { syncing: false, progress: 100 };
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        c.last = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+        c.status = 'ok';
+      }
+      renderSyncGrid();
+    }, 320);
+  }
+  function syncAll() { SOURCE_CATEGORIES.forEach(c => { if (!(syncState[c.code] && syncState[c.code].syncing)) syncOne(c.code); }); }
+
+  // ===== 渲染：源头维护表 =====
+  let selectedCatCode = null;
+  function renderSourceTable() {
+    document.getElementById('source-tbody').innerHTML = SOURCE_CATEGORIES.map(c => `
+      <tr style="cursor:pointer" onclick="showFieldMap('${c.code}')">
+        <td><strong>${c.cat}</strong></td>
+        <td class="mono">${c.code}</td>
+        <td>${c.system}</td>
+        <td>${c.protocol}</td>
+        <td style="font-size:12.5px">${c.pk}</td>
+        <td style="font-size:12.5px">${c.sync}</td>
+        <td>${c.status === 'ok' ? '<span class="tag tag-green">已对接</span>' : '<span class="tag tag-orange">待核查</span>'}</td>
+        <td>
+          <button class="btn btn-text btn-sm" onclick="event.stopPropagation();openSourceModal('${c.code}')">编辑</button>
+          <button class="btn btn-text btn-sm" onclick="event.stopPropagation();showFieldMap('${c.code}')">字段映射</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+  function showFieldMap(code) {
+    const c = SOURCE_CATEGORIES.find(x => x.code === code);
+    if (!c) return;
+    selectedCatCode = code;
+    document.getElementById('field-map-panel').style.display = 'block';
+    document.getElementById('field-map-title').innerHTML = `字段映射 · ${c.cat} <span class="sub">${c.system} 源头字段 → 标准主档字段</span>`;
+    document.getElementById('field-map-body').innerHTML = c.mapping.map(m => `
+      <tr>
+        <td class="src-field">${m.src}</td>
+        <td class="map-arrow">→</td>
+        <td><strong>${m.std}</strong></td>
+        <td>${m.pk ? '<span class="tag tag-blue">主键</span>' : '<span style="color:var(--text-disabled)">—</span>'}</td>
+        <td>${m.req ? '<span class="tag tag-green">必填</span>' : '<span class="tag tag-gray">选填</span>'}</td>
+      </tr>
+    `).join('');
+    document.getElementById('field-map-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ===== 源头配置弹窗 =====
+  function openSourceModal(code) {
+    const isNew = !code;
+    const c = isNew ? null : SOURCE_CATEGORIES.find(x => x.code === code);
+    document.getElementById('source-modal-title').textContent = isNew ? '新增来源人员大类' : '编辑源头对接配置 · ' + c.cat;
+    document.getElementById('f-cat-readonly').textContent = isNew ? '（请在下方填写新大类名称）' : c.cat;
+    document.getElementById('f-cat').value = isNew ? '' : c.code;
+    if (!isNew) {
+      const setSel = (id, val) => { const el = document.getElementById(id); [...el.options].forEach(o => { if (o.value === val || o.text === val || o.text.startsWith(val)) el.value = o.value; }); };
+      document.getElementById('f-endpoint').value = c.endpoint;
+      setSel('f-pk', c.pk);
+    } else {
+      document.getElementById('f-cat-readonly').innerHTML = '<input class="form-control" id="f-cat-new" placeholder="如：进修人员" style="height:auto;background:transparent;border:none;padding:0">';
+      document.getElementById('f-endpoint').value = '';
+    }
+    document.getElementById('modal-mask').classList.add('show');
+    document.getElementById('source-modal').classList.add('show');
+  }
+  function closeSourceModal() {
+    document.getElementById('modal-mask').classList.remove('show');
+    document.getElementById('source-modal').classList.remove('show');
+  }
+  function saveSourceModal() {
+    closeSourceModal();
+    // demo：仅提示，不持久化
+    renderSourceTable();
+  }
+
+  // 搜索
+  document.getElementById('search-input').addEventListener('input', renderPersons);
+  document.getElementById('filter-source').addEventListener('change', renderPersons);
+
+  renderPersons();
+  renderGlobalTimeline();
+  renderSyncSummary();
+  renderSyncGrid();
+  renderSourceTable();
+</script>
+</body>
+</html>

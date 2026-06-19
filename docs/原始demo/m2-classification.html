@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人员分类身份 · 高校综合身份数据平台</title>
+<style>
+  :root {
+    --color-primary: #2563EB;
+    --color-primary-secondary: #478EF7;
+    --color-success: #00B42A;
+    --color-warning: #FF7D00;
+    --color-error: #F53F3F;
+    --color-info: #165DFF;
+    --text-primary: #1D2129;
+    --text-secondary: #4E5969;
+    --text-disabled: #86909C;
+    --bg-page: #FAFAFB;
+    --bg-card: #FFFFFF;
+    --bg-secondary: #F2F3F5;
+    --border: #E5E6EB;
+    --chart-1: #387EF5;
+    --chart-2: #0FB17B;
+    --chart-3: #F6980D;
+    --chart-4: #A251F6;
+    --shadow-1: 0 1px 2px 0 rgba(0,0,0,.03), 0 1px 6px -1px rgba(0,0,0,.02);
+    --shadow-2: 0 4px 12px 0 rgba(0,0,0,.05), 0 2px 4px 0 rgba(0,0,0,.03);
+    --shadow-3: 0 8px 24px 0 rgba(0,0,0,.08), 0 4px 8px 0 rgba(0,0,0,.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg-page); }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+    color: var(--text-primary); font-size: 14px; line-height: 22px;
+  }
+  a { text-decoration: none; color: inherit; }
+  button, input, select { font: inherit; color: inherit; outline: none; }
+
+  /* ===== 顶部导航 ===== */
+  .topbar { height: 64px; background: var(--bg-card); box-shadow: var(--shadow-1);
+    display: flex; align-items: center; padding: 0 24px; position: sticky; top: 0; z-index: 100; }
+  .logo-wrap { display: flex; align-items: center; gap: 12px; margin-right: 32px; }
+  .logo-mark { width: 32px; height: 32px; border-radius: 6px; background: var(--color-primary);
+    display: flex; align-items: center; justify-content: center; }
+  .logo-mark svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; }
+  .logo-text { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+  .topbar nav { display: flex; gap: 32px; flex: 1; height: 100%; align-items: center; }
+  .topbar nav a { color: var(--text-secondary); font-size: 14px; height: 100%;
+    display: flex; align-items: center; position: relative; transition: color 200ms; }
+  .topbar nav a:hover { color: var(--color-primary); }
+  .topbar nav a.active { color: var(--color-primary); font-weight: 500; }
+  .topbar nav a.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--color-primary); }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .time-display { font-size: 12px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", monospace; }
+  .user-info { display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border); }
+  .user-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary);
+    color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; }
+  .user-name { font-size: 14px; color: var(--text-secondary); }
+
+  /* ===== 布局 ===== */
+  .layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 64px); }
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 16px 0; }
+  .sidebar-section { padding: 8px 16px; font-size: 12px; color: var(--text-disabled); letter-spacing: 1px; }
+  .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+    margin: 2px 8px; font-size: 14px; color: var(--text-secondary); cursor: pointer;
+    border-radius: 6px; transition: all 200ms; }
+  .sidebar-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; }
+  .sidebar-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .sidebar-item.active { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); font-weight: 500; }
+  .sidebar-item.disabled { color: var(--text-disabled); cursor: not-allowed; }
+  .sidebar-item .badge { margin-left: auto; font-size: 11px; padding: 1px 6px;
+    border-radius: 3px; background: var(--bg-secondary); color: var(--text-disabled); font-weight: 400; }
+  .sidebar-item .badge.warn { background: rgba(255, 125, 0, 0.1); color: var(--color-warning); }
+
+  .main { padding: 16px 24px 32px; min-width: 0; }
+  .breadcrumb { font-size: 14px; color: var(--text-disabled); margin-bottom: 12px; }
+  .breadcrumb a { color: var(--text-disabled); }
+  .breadcrumb a:hover { color: var(--color-primary); }
+  .breadcrumb .sep { margin: 0 8px; }
+  .breadcrumb .last { color: var(--text-primary); }
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .page-title { font-size: 20px; font-weight: 600; color: var(--text-primary); line-height: 28px; margin-bottom: 4px; }
+  .page-desc { font-size: 14px; color: var(--text-secondary); }
+  .page-stats { display: flex; gap: 24px; font-size: 12px; color: var(--text-secondary); }
+  .page-stats strong { font-size: 16px; color: var(--text-primary); margin-left: 4px; font-family: "DIN Alternate", "Roboto", inherit; }
+  .page-stats .warn strong { color: var(--color-warning); }
+
+  /* 视图切换 */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ===== 通用组件 ===== */
+  .panel { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); padding: 16px; margin-bottom: 16px; }
+  .panel-title { font-size: 16px; font-weight: 500; color: var(--text-primary);
+    padding-left: 12px; position: relative; margin-bottom: 16px; }
+  .panel-title::before { content: ''; position: absolute; left: 0; top: 4px;
+    width: 4px; height: 16px; background: var(--color-primary); border-radius: 2px; }
+  .panel-title .sub { font-size: 12px; color: var(--text-disabled); font-weight: 400; margin-left: 8px; }
+
+  /* 筛选条 */
+  .filter-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-input { height: 40px; padding: 0 12px; border: 1px solid var(--border);
+    border-radius: 6px; background: var(--bg-card); font-size: 14px; color: var(--text-primary);
+    transition: all 200ms; min-width: 200px; }
+  .filter-input:focus { border-color: var(--color-info); box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1); }
+  .filter-input.search { padding-left: 36px; }
+  .search-wrap { position: relative; }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-disabled); }
+  .filter-select { height: 40px; padding: 0 32px 0 12px; border: 1px solid var(--border);
+    border-radius: 6px; background: var(--bg-card) url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2386909C' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") right 12px center no-repeat;
+    font-size: 14px; cursor: pointer; appearance: none; min-width: 140px; }
+  .filter-spacer { flex: 1; }
+
+  /* 按钮 */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    height: 40px; padding: 0 16px; border-radius: 6px; font-size: 14px; font-weight: 500;
+    border: none; cursor: pointer; transition: all 200ms; }
+  .btn-primary { background: var(--color-primary); color: white; }
+  .btn-primary:hover { background: #1d4fc7; }
+  .btn-secondary { background: var(--bg-card); color: var(--color-info); border: 1px solid var(--color-info); }
+  .btn-secondary:hover { background: rgba(22, 93, 255, 0.04); }
+  .btn-text { background: transparent; color: var(--color-info); padding: 0 8px; height: 32px; }
+  .btn-text:hover { color: var(--color-primary); }
+  .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+
+  /* 表格 */
+  .table-wrap { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead { background: var(--bg-secondary); }
+  thead th { height: 48px; padding: 0 16px; text-align: left; font-weight: 500;
+    color: var(--text-secondary); white-space: nowrap; font-size: 14px; }
+  tbody td { height: 48px; padding: 0 16px; color: var(--text-primary); border-bottom: 1px solid var(--border); white-space: nowrap; vertical-align: middle; }
+  tbody tr { transition: background 200ms; }
+  tbody tr:hover { background: var(--bg-secondary); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono { font-family: "DIN Alternate", "Roboto", inherit; color: var(--text-secondary); }
+  tr.unmapped { background: rgba(255, 125, 0, 0.04); }
+  tr.unmapped:hover { background: rgba(255, 125, 0, 0.1); }
+  tr.unmapped td:first-child { box-shadow: inset 3px 0 0 var(--color-warning); }
+
+  /* 标签 */
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 12px; line-height: 20px; font-weight: 400; }
+  .tag-blue { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); }
+  .tag-green { background: rgba(0, 180, 42, 0.08); color: var(--color-success); }
+  .tag-orange { background: rgba(255, 125, 0, 0.08); color: var(--color-warning); }
+  .tag-red { background: rgba(245, 63, 63, 0.08); color: var(--color-error); }
+  .tag-purple { background: rgba(162, 81, 246, 0.08); color: var(--chart-4); }
+  .tag-gray { background: var(--bg-secondary); color: var(--text-secondary); }
+
+  /* 多类型徽章组 */
+  .type-group { display: flex; flex-direction: column; gap: 4px; padding: 4px 0; }
+  .type-row { display: flex; align-items: center; gap: 6px; }
+  .type-code { font-family: "DIN Alternate", "Roboto", inherit; font-size: 11px; color: var(--text-disabled); }
+  .multi-flag { display: inline-block; padding: 0 6px; border-radius: 3px;
+    background: rgba(162, 81, 246, 0.08); color: var(--chart-4); font-size: 10px; line-height: 16px; margin-left: 6px; }
+  .unmapped-flag { display: inline-flex; align-items: center; gap: 4px;
+    padding: 0 6px; border-radius: 3px; background: rgba(255, 125, 0, 0.1);
+    color: var(--color-warning); font-size: 11px; line-height: 18px; font-weight: 500; }
+  .unmapped-flag::before { content: '!'; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--color-warning); color: white; display: inline-flex;
+    align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+
+  /* 分页 */
+  .pagination { display: flex; align-items: center; justify-content: space-between;
+    padding: 16px; background: var(--bg-card); border-top: 1px solid var(--border);
+    font-size: 14px; color: var(--text-secondary); }
+  .page-controls { display: flex; gap: 8px; align-items: center; }
+  .page-btn { min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid var(--border);
+    border-radius: 6px; background: var(--bg-card); color: var(--text-secondary);
+    cursor: pointer; font-size: 14px; transition: all 200ms; }
+  .page-btn:hover:not(.disabled) { border-color: var(--color-primary); color: var(--color-primary); }
+  .page-btn.active { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+  .page-btn.disabled { color: var(--text-disabled); cursor: not-allowed; }
+
+  /* 信息提示框 */
+  .info-box { background: rgba(22, 93, 255, 0.04); border: 1px solid rgba(22, 93, 255, 0.16);
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;
+    display: flex; align-items: flex-start; gap: 12px; }
+  .info-box.warn { background: rgba(255, 125, 0, 0.04); border-color: rgba(255, 125, 0, 0.2); }
+  .info-box-icon { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; color: var(--color-info); }
+  .info-box.warn .info-box-icon { color: var(--color-warning); }
+  .info-box-icon svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 2; }
+  .info-box-content { flex: 1; font-size: 13px; color: var(--text-secondary); line-height: 22px; }
+  .info-box-content strong { color: var(--text-primary); font-weight: 500; }
+  .info-box-content a { color: var(--color-info); margin-left: 8px; cursor: pointer; }
+
+  /* ===== 分类树视图 ===== */
+  .tree-layout { display: grid; grid-template-columns: 1fr 1.4fr; gap: 16px; min-height: 500px; }
+  @media (max-width: 1200px) { .tree-layout { grid-template-columns: 1fr; } }
+
+  .tree-wrap { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); overflow: hidden; }
+  .tree-head { padding: 12px 16px; border-bottom: 1px solid var(--border);
+    background: var(--bg-secondary); display: flex; align-items: center; justify-content: space-between; }
+  .tree-head-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .tree-toolbar { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
+  .tree-search { flex: 1; height: 32px; padding: 0 10px; border: 1px solid var(--border);
+    border-radius: 6px; font-size: 13px; }
+  .tree-body { padding: 8px; max-height: 640px; overflow: auto; }
+  .tree-node { display: flex; align-items: center; gap: 6px; padding: 6px 8px;
+    border-radius: 4px; cursor: pointer; transition: background 150ms; font-size: 13px; }
+  .tree-node:hover { background: var(--bg-secondary); }
+  .tree-node.selected { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); font-weight: 500; }
+  .tree-caret { width: 14px; height: 14px; display: inline-flex; align-items: center;
+    justify-content: center; color: var(--text-disabled); font-size: 10px; flex-shrink: 0;
+    transition: transform 200ms; }
+  .tree-caret.empty { visibility: hidden; }
+  .tree-caret.expanded { transform: rotate(90deg); }
+  .tree-children { padding-left: 18px; }
+  .tree-children.collapsed { display: none; }
+  .tree-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tree-code { font-family: "DIN Alternate", "Roboto", inherit; font-size: 11px; color: var(--text-disabled); }
+  .tree-node.selected .tree-code { color: var(--color-primary); }
+  .tree-count { font-size: 11px; color: var(--text-disabled); padding: 0 6px;
+    border-radius: 3px; background: var(--bg-secondary); margin-left: 4px; }
+
+  /* 节点详情 */
+  .detail-panel { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); padding: 20px; }
+  .detail-head { padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .detail-path { font-size: 12px; color: var(--text-disabled); margin-bottom: 6px; }
+  .detail-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .detail-name { font-size: 18px; font-weight: 600; color: var(--text-primary); }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; margin-bottom: 16px; }
+  .detail-item { padding: 8px 0; border-bottom: 1px dashed var(--border); }
+  .detail-item.full { grid-column: 1 / -1; }
+  .detail-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+  .detail-value { font-size: 14px; color: var(--text-primary); word-break: break-all; }
+  .detail-value.mono { font-family: "DIN Alternate", "Roboto", inherit; }
+  .detail-value.empty { color: var(--text-disabled); font-style: italic; }
+
+  .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .stat-card {
+    background: var(--bg-page); border-radius: 6px; padding: 12px; text-align: center;
+    cursor: pointer; transition: all 200ms; border: 1.5px solid transparent;
+    position: relative;
+  }
+  .stat-card:hover { background: var(--bg-card); box-shadow: var(--shadow-1); transform: translateY(-1px); }
+  .stat-card.active {
+    background: rgba(37, 99, 235, 0.06);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+  }
+  .stat-card.active[data-pane="problem"] {
+    background: rgba(255, 125, 0, 0.06);
+    border-color: var(--color-warning);
+    box-shadow: 0 0 0 3px rgba(255, 125, 0, 0.08);
+  }
+  .stat-card.active[data-pane="persons"] {
+    background: rgba(15, 177, 123, 0.06);
+    border-color: var(--color-success);
+    box-shadow: 0 0 0 3px rgba(15, 177, 123, 0.08);
+  }
+  .stat-num { font-family: "DIN Alternate", "Roboto", inherit; font-size: 22px; font-weight: 600; color: var(--color-primary); line-height: 30px; }
+  .stat-label { font-size: 12px; color: var(--text-secondary); }
+  .stat-hint { font-size: 10.5px; color: var(--text-disabled); margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .stat-card.active .stat-hint { color: var(--color-primary); font-weight: 500; }
+  .stat-card.active[data-pane="problem"] .stat-hint { color: var(--color-warning); }
+  .stat-card.active[data-pane="persons"] .stat-hint { color: var(--color-success); }
+
+  /* 钻取明细区 */
+  .node-drill {
+    margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+  }
+  .node-drill-title {
+    font-size: 13px; font-weight: 500; color: var(--text-primary);
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .node-drill-title .tag { font-size: 11px; }
+
+  /* 层级人数统计 */
+  .level-stats { display: flex; flex-direction: column; gap: 6px; }
+  .level-row {
+    display: grid; grid-template-columns: 60px 1fr 80px;
+    align-items: center; gap: 10px;
+    padding: 8px 10px;
+    background: var(--bg-page); border-radius: 6px;
+    font-size: 12.5px;
+  }
+  .level-row:hover { background: var(--bg-card); box-shadow: var(--shadow-1); }
+  .level-tag {
+    font-size: 11px; padding: 1px 6px; border-radius: 3px;
+    background: rgba(37, 99, 235, 0.08); color: var(--color-primary);
+    text-align: center;
+  }
+  .level-bar-wrap { position: relative; height: 22px; display: flex; align-items: center; }
+  .level-bar-bg {
+    position: absolute; left: 0; right: 0; height: 6px;
+    background: var(--bg-secondary); border-radius: 3px;
+  }
+  .level-bar-fill {
+    position: absolute; left: 0; height: 6px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-secondary));
+    border-radius: 3px;
+    transition: width 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .level-name {
+    z-index: 1; position: relative; padding-left: 8px;
+    color: var(--text-primary); font-weight: 500;
+  }
+  .level-num {
+    text-align: right; font-family: "DIN Alternate", "Roboto", inherit;
+    font-weight: 600; color: var(--color-primary);
+  }
+
+  /* 人员清单（紧凑表格） */
+  .mini-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .mini-table thead { background: var(--bg-secondary); }
+  .mini-table th {
+    padding: 8px 10px; text-align: left; font-weight: 500;
+    color: var(--text-secondary); font-size: 11.5px;
+  }
+  .mini-table td {
+    padding: 8px 10px; border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+  }
+  .mini-table tbody tr:hover { background: var(--bg-page); }
+  .mini-table tbody tr.warn { background: rgba(255, 125, 0, 0.04); }
+  .mini-table tbody tr.warn:hover { background: rgba(255, 125, 0, 0.08); }
+  .mini-table tbody tr.warn td:first-child { box-shadow: inset 3px 0 0 var(--color-warning); }
+  .mini-empty {
+    padding: 32px; text-align: center; color: var(--text-disabled); font-size: 12.5px;
+  }
+
+  /* 时间轴 */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 1px; background: var(--border); }
+  .timeline-item { position: relative; padding-bottom: 20px; }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-dot { position: absolute; left: -22px; top: 6px; width: 12px; height: 12px;
+    border-radius: 50%; background: var(--bg-card); border: 2px solid var(--color-primary); }
+  .timeline-item.create .timeline-dot { background: var(--color-success); border-color: var(--color-success); }
+  .timeline-item.update .timeline-dot { background: var(--color-primary); border-color: var(--color-primary); }
+  .timeline-item.conflict .timeline-dot { background: var(--color-warning); border-color: var(--color-warning); }
+  .timeline-item.tree .timeline-dot { background: var(--chart-4); border-color: var(--chart-4); }
+  .timeline-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .timeline-ver { font-size: 12px; font-family: "DIN Alternate", "Roboto", inherit;
+    padding: 1px 8px; background: var(--bg-secondary); border-radius: 4px; color: var(--text-secondary); }
+  .timeline-time { font-size: 12px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", inherit; }
+  .timeline-action { font-size: 14px; color: var(--text-primary); font-weight: 500; }
+  .timeline-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+  .timeline-changes { background: var(--bg-page); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px 12px; font-size: 13px; }
+  .change-row { display: grid; grid-template-columns: 120px 1fr; gap: 12px; padding: 4px 0; }
+  .change-field { color: var(--text-secondary); font-size: 12px; }
+  .change-diff { font-size: 13px; }
+  .change-diff .from { color: var(--text-disabled); text-decoration: line-through; margin-right: 8px; }
+  .change-diff .arrow { color: var(--text-disabled); margin: 0 4px; }
+  .change-diff .to { color: var(--text-primary); font-weight: 500; }
+
+  /* ===== 顶导下拉菜单 ===== */
+  .nav-dropdown {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .nav-dropdown-trigger {
+    color: var(--text-secondary);
+    font-size: 14px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: color 200ms;
+  }
+  .nav-dropdown-trigger::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    margin-left: 4px;
+    margin-bottom: 3px;
+    transition: transform 200ms;
+    opacity: 0.6;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger {
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 16px;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger {
+    color: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger::after {
+    transform: rotate(-135deg);
+    margin-bottom: -3px;
+    opacity: 1;
+  }
+  .nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-2);
+    min-width: 220px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 200ms;
+    z-index: 200;
+  }
+  .nav-dropdown:hover .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+  .nav-dropdown-menu a {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    height: auto !important;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 150ms;
+  }
+  .nav-dropdown-menu a::after { display: none !important; }
+  .nav-dropdown-menu a:hover {
+    background: rgba(37, 99, 235, 0.06);
+    color: var(--color-primary);
+  }
+  .nav-dropdown-menu a svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+  .nav-dropdown-menu a:hover svg { opacity: 1; }
+  .nav-dropdown-menu .menu-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .nav-dropdown-menu .menu-label {
+    font-size: 14px;
+    line-height: 18px;
+  }
+  .nav-dropdown-menu .menu-desc {
+    font-size: 11px;
+    color: var(--text-disabled);
+    margin-top: 2px;
+    line-height: 14px;
+  }
+  .nav-dropdown-menu a:hover .menu-desc { color: var(--color-primary-secondary); }
+  .nav-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 0;
+    right: 0;
+    height: 8px;
+  }
+
+  /* 下拉菜单（导入/导出） */
+  .dropdown-wrap { position: relative; display: inline-block; }
+  .dropdown-menu { position: absolute; top: calc(100% + 6px); right: 0; min-width: 220px;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: var(--shadow-3); padding: 6px; z-index: 50; display: none; }
+  .dropdown-menu.show { display: block; }
+  .dropdown-menu a { display: block; padding: 8px 12px; border-radius: 6px; cursor: pointer; text-decoration: none; }
+  .dropdown-menu a:hover { background: var(--bg-secondary); }
+  .dropdown-menu .dd-title { font-size: 13px; color: var(--text-primary); font-weight: 500; }
+  .dropdown-menu .dd-desc { font-size: 11px; color: var(--text-disabled); margin-top: 2px; }
+  .dropdown-menu .dd-group { font-size: 11px; color: var(--text-disabled); padding: 6px 12px 2px; font-weight: 500; }
+  .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: rgba(0,0,0,.82); color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px;
+    z-index: 999; opacity: 0; transition: all 240ms; pointer-events: none; max-width: 80vw; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<header class="topbar">
+  <div class="logo-wrap">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>
+    </div>
+    <div class="logo-text">身份数据平台</div>
+  </div>
+  <nav>
+    <a href="页面主页.html">主页</a>
+    <div class="nav-dropdown active">
+      <a href="m1-basic-identity.html" class="nav-dropdown-trigger" style="text-decoration:none;color:inherit">身份管理</a>
+      <div class="nav-dropdown-menu">
+        <a href="m1-basic-identity.html">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员基础身份</div>
+            <div class="menu-desc">人员进档 · 一人一ID · 多源头采集</div>
+          </div>
+        </a>
+        <a href="m2-classification.html">
+          <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员分类身份</div>
+            <div class="menu-desc">树形分类 · 标准属性 · 实例挂载</div>
+          </div>
+        </a>
+        <a href="m3-position.html">
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员岗位身份</div>
+            <div class="menu-desc">广义岗位 · 一人多身份</div>
+          </div>
+        </a>
+        <a href="m7-custom-tags.html">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员自定义标签管理</div>
+            <div class="menu-desc">自定义群组 · 灵活标注 · 便捷查询</div>
+          </div>
+        </a>
+        <a href="m4-org.html">
+          <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">组织机构体系</div>
+            <div class="menu-desc">院系树 · 强绑定身份</div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <a href="m5-identity-permission.html">身份权限管理</a>
+    <a href="m6-data-query.html">数据查询</a>
+  </nav>
+  <div class="topbar-right">
+    <span class="time-display" id="time-display"></span>
+    <div class="user-info">
+      <div class="user-avatar">管</div>
+      <span class="user-name">管理员 · 数据治理岗</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- 左侧导航 -->
+  <aside class="sidebar">
+    <div class="sidebar-section">人员管理</div>
+    <a href="m1-basic-identity.html" style="display:block">
+      <div class="sidebar-item">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+        <span>人员基础身份</span>
+      </div>
+    </a>
+    <div class="sidebar-item active" style="color:var(--color-primary);background:rgba(37, 99, 235, 0.08);font-weight:500">
+      <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+      <span>人员分类身份</span>
+    </div>
+    <a href="m3-position.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+      <span>人员岗位身份</span>
+    </div></a>
+    <a href="m7-custom-tags.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      <span>自定义标签身份</span>
+    </div></a>
+    <a href="m4-org.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+      <span>组织机构体系</span>
+    </div></a>
+
+    <div class="sidebar-section" style="margin-top:8px">分类管理</div>
+    <a href="m2-classification-admin.html#tree" style="display:block;text-decoration:none"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M12 2v6m0 0a3 3 0 1 0 0 6m0-6a3 3 0 1 1 0 6m0 0v6m-7-7h14"/></svg>
+      <span>分类树维护</span>
+      <span class="badge" id="sb-nodes">141</span>
+    </div></a>
+    <a href="m2-classification-admin.html#mapping" style="display:block;text-decoration:none"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+      <span>分类映射管理</span>
+      <span class="badge" id="sb-maps">15</span>
+    </div></a>
+    <a href="m2-classification-admin.html#roster" style="display:block;text-decoration:none"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M4 5h16M4 10h16M4 15h10M4 20h10"/></svg>
+      <span>人员分类详细清单</span>
+      <span class="badge" id="sb-roster">12</span>
+    </div></a>
+    <a href="m2-classification-admin.html#changes" style="display:block;text-decoration:none"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+      <span>变更记录</span>
+    </div></a>
+  </aside>
+
+  <!-- 主区域 -->
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="页面主页.html">平台总览</a>
+      <span class="sep">/</span>
+      <span class="last" id="crumb-last">人员分类身份 · 分类体系框架</span>
+    </div>
+
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">人员分类身份</h1>
+        <p class="page-desc">学校统一分类体系治理 · 多源映射 · 一人多类型 · 全量变更追溯</p>
+      </div>
+      <div class="page-stats">
+        <span>分类节点 <strong id="ps-nodes">141</strong></span>
+        <span>已映射人员 <strong id="ps-mapped">93,955</strong></span>
+        <span class="warn">待映射 <strong id="ps-unmapped">328</strong></span>
+        <span>已映射分类 <strong id="ps-mappedcls">—</strong></span>
+      </div>
+    </div>
+
+    <!-- ============ 视图1：分类体系框架 ============ -->
+    <section class="view active" id="view-tree">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>校级人员分类框架</strong>：基于中山大学官方分类体系（共 5 大根类型、141 个分类节点、最深 5 级），用于规范所有来源系统的人员分类。每个分类节点声明了归属来源系统、管理单位、HR 编码等元数据，作为多源映射的目标基线。
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <input class="filter-input search" placeholder="搜索分类名称 / 编码" id="tree-search-input">
+        </div>
+        <select class="filter-select" id="tree-root-filter">
+          <option value="">全部根类型</option>
+          <option value="01">教职工</option>
+          <option value="02">学生</option>
+          <option value="03">外协人员</option>
+          <option value="04">校友</option>
+          <option value="05">校外人员</option>
+        </select>
+        <div class="filter-spacer"></div>
+
+        <!-- 分类导入 -->
+        <div class="dropdown-wrap">
+          <button class="btn btn-secondary btn-sm" onclick="toggleMenu('menu-import', event)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="margin-right:4px"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            分类导入 ▾
+          </button>
+          <div class="dropdown-menu" id="menu-import">
+            <a onclick="doImportExcel()">
+              <div class="dd-title">EXCEL 导入</div>
+              <div class="dd-desc">按模板批量导入分类节点（.xlsx）</div>
+            </a>
+            <a onclick="exportTemplate()">
+              <div class="dd-title">导入模板导出</div>
+              <div class="dd-desc">下载 EXCEL 导入模板（仅 .xlsx）</div>
+            </a>
+          </div>
+        </div>
+
+        <!-- 分类导出 -->
+        <div class="dropdown-wrap">
+          <button class="btn btn-secondary btn-sm" onclick="toggleMenu('menu-export', event)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="margin-right:4px"><path d="M12 21V9M7 14l5-5 5 5M5 3h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            分类导出 ▾
+          </button>
+          <div class="dropdown-menu" id="menu-export">
+            <div class="dd-group">分类内容导出</div>
+            <a onclick="exportContent('excel')"><div class="dd-title">导出为 EXCEL</div><div class="dd-desc">.xlsx 表格</div></a>
+            <a onclick="exportContent('word')"><div class="dd-title">导出为 WORD</div><div class="dd-desc">.doc 文档</div></a>
+            <a onclick="exportContent('pdf')"><div class="dd-title">导出为 PDF</div><div class="dd-desc">.pdf 文档</div></a>
+          </div>
+        </div>
+
+        <a href="m2-classification-admin.html"><button class="btn btn-primary btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="margin-right:4px"><path d="M3 6h18M3 12h18M3 18h12M19 15v6M16 18h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          分类管理
+        </button></a>
+      </div>
+
+      <div class="tree-layout">
+
+        <div class="tree-wrap">
+          <div class="tree-head">
+            <span class="tree-head-title">分类体系树</span>
+            <span style="font-size:12px;color:var(--text-disabled);font-family:'DIN Alternate',monospace" id="tree-stats">141 项</span>
+          </div>
+          <div class="tree-body" id="tree-body"></div>
+        </div>
+
+        <div class="detail-panel" id="detail-panel"></div>
+
+      </div>
+
+    </section>
+
+    <!-- ============ 视图2：人员分类基础数据 ============ -->
+    <section class="view" id="view-data">
+
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <input class="filter-input search" placeholder="搜索 UID / 学工号 / 姓名" id="data-search">
+        </div>
+        <select class="filter-select" id="data-root">
+          <option value="">全部一级分类</option>
+          <option value="01">教职工</option>
+          <option value="02">学生</option>
+          <option value="03">外协人员</option>
+          <option value="04">校友</option>
+          <option value="05">校外人员</option>
+        </select>
+        <select class="filter-select" id="data-status">
+          <option value="">全部状态</option>
+          <option value="active">在职/在籍</option>
+          <option value="paused">暂停</option>
+          <option value="ended">已结束</option>
+        </select>
+        <select class="filter-select" id="data-flag">
+          <option value="">全部人员</option>
+          <option value="unmapped">⚠ 仅看未映射</option>
+          <option value="multi">仅看一人多类型</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm">导出</button>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:120px">人员唯一标识</th>
+                <th style="width:110px">学工号</th>
+                <th style="width:100px">姓名</th>
+                <th style="width:90px">单位号</th>
+                <th>单位名称</th>
+                <th>人员分类身份</th>
+                <th style="width:100px">人员分类状态</th>
+                <th style="width:110px">是否有效授权状态</th>
+                <th style="width:90px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="data-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span>共 <strong id="data-total">—</strong> 条 · 当前显示 <strong id="data-cur">—</strong> 条</span>
+          <div class="page-controls">
+            <button class="page-btn disabled">‹</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">›</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============ 视图3：未映射人员 ============ -->
+    <section class="view" id="view-unmapped">
+
+      <div class="info-box warn">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>未映射告警</strong>：以下人员在来源系统中存在但未能成功映射到校级统一分类。可能原因：来源系统类型未在映射规则中登记、HR 代码缺失、人员状态异常等。请数据治理岗及时处理，避免影响后续权限发放与统计口径。
+          <a>前往映射规则配置 →</a>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <input class="filter-input search" placeholder="搜索 UID / 学工号 / 姓名" id="unm-search">
+        </div>
+        <select class="filter-select">
+          <option>全部来源系统</option>
+          <option>人力资源管理系统</option>
+          <option>教务系统</option>
+          <option>研究生系统</option>
+          <option>访客系统</option>
+          <option>协同人员管理服务平台</option>
+        </select>
+        <select class="filter-select">
+          <option>全部异常原因</option>
+          <option>来源类型未登记</option>
+          <option>HR代码缺失</option>
+          <option>多规则冲突</option>
+          <option>状态异常</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm">批量重新映射</button>
+        <button class="btn btn-primary btn-sm">一键映射建议</button>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:120px">人员唯一标识</th>
+                <th style="width:110px">学工号</th>
+                <th style="width:100px">姓名</th>
+                <th>单位名称</th>
+                <th>来源系统</th>
+                <th>来源系统原始类型</th>
+                <th>异常原因</th>
+                <th style="width:140px">建议映射</th>
+                <th style="width:90px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="unm-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span>共 <strong>328</strong> 人未映射 · 当前显示 <strong id="unm-cur">—</strong> 条</span>
+          <div class="page-controls">
+            <button class="page-btn disabled">‹</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">›</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============ 视图4：变更记录 ============ -->
+    <section class="view" id="view-changes">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="10"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>分类变更追溯</strong>：记录两类变更——
+          <strong style="color:var(--color-primary)">①人员分类映射变更</strong>（某人从类型A调整到类型B）、
+          <strong style="color:var(--chart-4)">②分类树结构变更</strong>（新增/合并/废弃分类节点）。
+          所有变更含字段级 diff，可追溯到操作方与触发源。
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <input class="filter-input search" placeholder="搜索人员 / 分类编码">
+        </div>
+        <select class="filter-select">
+          <option>全部变更类型</option>
+          <option>映射建立</option>
+          <option>映射调整</option>
+          <option>冲突裁定</option>
+          <option>分类树新增</option>
+          <option>分类树废弃</option>
+        </select>
+        <select class="filter-select">
+          <option>全部触发源</option>
+          <option>HR系统同步</option>
+          <option>教务系统同步</option>
+          <option>研究生系统同步</option>
+          <option>管理员修改</option>
+          <option>映射规则匹配</option>
+        </select>
+        <select class="filter-select">
+          <option>近 7 天</option>
+          <option>近 30 天</option>
+          <option>近 90 天</option>
+          <option>全部</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm">导出</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">
+          全局变更时间轴
+          <span class="sub">最近 30 条</span>
+        </div>
+        <div class="timeline" id="changes-timeline"></div>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<script src="sysu-cls.js"></script>
+<script>
+  // ===== 时间 =====
+  function updateTime() {
+    const now = new Date(); const pad = n => String(n).padStart(2, '0');
+    document.getElementById('time-display').textContent = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  }
+  updateTime(); setInterval(updateTime, 1000);
+
+  // ===== 分类树渲染 =====
+  const expandedNodes = new Set(['01', '02', '0101', '0201', '0202', '03', '05']);
+  let selectedCode = '01';
+
+  // 每个节点统计挂载人数（mock）
+  const NODE_COUNTS = {};
+  SYSU_CLASSIFICATION.forEach(n => {
+    // 给叶子节点 mock 一些人数
+    const seed = parseInt(n.code.slice(-2)) || 1;
+    NODE_COUNTS[n.code] = Math.floor(Math.random() * 800) + seed * 30;
+  });
+
+  // ===== 与「分类管理」联动：读取持久化的映射数据，使统计与映射一致 =====
+  // 若分类管理已保存映射，则"实际分类"只认被映射的分类（其余视为 0 人 / 未映射）
+  let ADMIN_MAPPINGS = null, ADMIN_SUMMARY = null;
+  function loadAdminLink() {
+    // 1) 分类树联动：分类管理维护的体系树（sysu_cls_tree2）作为准，原地覆盖 SYSU_CLASSIFICATION
+    try {
+      const t = localStorage.getItem('sysu_cls_tree2');
+      if (t) {
+        const arr = JSON.parse(t);
+        if (Array.isArray(arr) && arr.length) {
+          SYSU_CLASSIFICATION.length = 0;
+          arr.forEach(n => SYSU_CLASSIFICATION.push(n));
+          // 补齐 NODE_COUNTS 中新出现的节点
+          SYSU_CLASSIFICATION.forEach(n => { if (!(n.code in NODE_COUNTS)) { const seed = parseInt(n.code.slice(-2)) || 1; NODE_COUNTS[n.code] = Math.floor(Math.random() * 800) + seed * 30; } });
+        }
+      }
+    } catch (e) {}
+    // 2) 映射联动
+    try { const m = localStorage.getItem('sysu_cls_mappings2'); if (m) ADMIN_MAPPINGS = JSON.parse(m); } catch (e) {}
+    try { const s = localStorage.getItem('sysu_cls_summary'); if (s) ADMIN_SUMMARY = JSON.parse(s); } catch (e) {}
+    if (ADMIN_MAPPINGS) {
+      // 重置：只有被映射到的分类才计入"已映射"
+      Object.keys(NODE_COUNTS).forEach(c => { NODE_COUNTS[c] = 0; });
+      ADMIN_MAPPINGS.forEach(m => { NODE_COUNTS[m.code] = (NODE_COUNTS[m.code] || 0) + (m.count || 0); });
+    }
+  }
+  loadAdminLink();
+  function applyAdminStats() {
+    if (!ADMIN_SUMMARY) return;
+    const s = ADMIN_SUMMARY;
+    const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    set('ps-nodes', s.totalNodes);
+    set('ps-mapped', (s.mappedPeople || 0).toLocaleString());
+    set('ps-unmapped', s.unmapped || 0);
+    const totalMappedCls = Object.values(s.perRel || {}).reduce((a, r) => a + r.mapped, 0);
+    const totalSub = Object.values(s.perRel || {}).reduce((a, r) => a + r.total, 0);
+    set('ps-mappedcls', totalMappedCls + ' / ' + totalSub);
+    // 左栏「分类管理」四个子功能入口的徽标
+    set('sb-nodes', s.totalNodes);
+    set('sb-maps', s.mappingCount || 0);
+    try { const r = localStorage.getItem('sysu_cls_roster'); if (r) { const arr = JSON.parse(r); if (Array.isArray(arr)) set('sb-roster', arr.length); } } catch (e) {}
+  }
+
+  // 顶级用累加
+  function calcSum(code) {
+    const direct = NODE_COUNTS[code] || 0;
+    const children = SYSU_CLASSIFICATION.filter(n => n.parent === code);
+    const sub = children.reduce((s, c) => s + calcSum(c.code), 0);
+    return direct + sub;
+  }
+
+  function renderTree() {
+    const q = (document.getElementById('tree-search-input').value || '').trim().toLowerCase();
+    const rootFilter = document.getElementById('tree-root-filter').value;
+
+    // 搜索匹配的所有节点（含祖先）
+    let visible = null;
+    if (q) {
+      visible = new Set();
+      SYSU_CLASSIFICATION.forEach(n => {
+        if (n.name.toLowerCase().includes(q) || n.code.includes(q)) {
+          visible.add(n.code);
+          let p = n.parent;
+          while (p) { visible.add(p); const pn = SYSU_CLASSIFICATION.find(x => x.code === p); p = pn ? pn.parent : null; }
+        }
+      });
+    }
+
+    let roots = SYSU_CLASSIFICATION.filter(n => !n.parent);
+    if (rootFilter) roots = roots.filter(n => n.code === rootFilter);
+
+    const container = document.getElementById('tree-body');
+    container.innerHTML = roots.map(r => renderNode(r, visible)).join('');
+
+    document.getElementById('tree-stats').textContent = SYSU_CLASSIFICATION.length + ' 项';
+    renderDetail();
+  }
+  function renderNode(node, visible) {
+    if (visible && !visible.has(node.code)) return '';
+    const children = SYSU_CLASSIFICATION.filter(n => n.parent === node.code);
+    const hasChildren = children.length > 0;
+    const expanded = expandedNodes.has(node.code) || (visible && visible.size > 0);
+    const selected = node.code === selectedCode;
+    const cnt = NODE_COUNTS[node.code] || 0;
+    return `
+      <div class="tree-node ${selected ? 'selected' : ''}" data-code="${node.code}">
+        <span class="tree-caret ${hasChildren ? (expanded ? 'expanded' : '') : 'empty'}" onclick="event.stopPropagation();toggleNode('${node.code}')">▶</span>
+        <span class="tree-name" onclick="selectNode('${node.code}')" title="${node.name}">${node.name}</span>
+        <span class="tree-code">${node.code}</span>
+      </div>
+      ${hasChildren && expanded ? `<div class="tree-children">${children.map(c => renderNode(c, visible)).join('')}</div>` : ''}
+    `;
+  }
+  function toggleNode(code) {
+    if (expandedNodes.has(code)) expandedNodes.delete(code); else expandedNodes.add(code);
+    renderTree();
+  }
+  function selectNode(code) {
+    selectedCode = code;
+    // 自动展开祖先
+    let p = SYSU_CLASSIFICATION.find(n => n.code === code);
+    while (p && p.parent) { expandedNodes.add(p.parent); p = SYSU_CLASSIFICATION.find(n => n.code === p.parent); }
+    renderTree();
+  }
+  // 当前选中的钻取面板（mapped-cls / persons / problem）
+  let selectedDetailPane = 'mapped-cls';
+
+  function renderDetail() {
+    const node = SYSU_CLASSIFICATION.find(n => n.code === selectedCode);
+    const wrap = document.getElementById('detail-panel');
+    if (!node) { wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-disabled)">选择一个分类节点查看详情</div>'; return; }
+    // 路径
+    const path = []; let cur = node;
+    while (cur) { path.unshift(cur); cur = SYSU_CLASSIFICATION.find(n => n.code === cur.parent); }
+    const children = SYSU_CLASSIFICATION.filter(n => n.parent === node.code);
+    const levelLabel = ['', '一级（顶类）', '二级', '三级', '四级', '五级'][node.level];
+
+    // 统计：递归收集所有子分类
+    const descendants = []; // 当前节点 + 所有子孙
+    function collect(code) {
+      descendants.push(code);
+      SYSU_CLASSIFICATION.filter(n => n.parent === code).forEach(c => collect(c.code));
+    }
+    collect(node.code);
+
+    // 映射分类总数 = 当前节点为根的子树中、有人映射的分类数
+    let mappedClassesCount = descendants.filter(c => (NODE_COUNTS[c] || 0) > 0).length;
+    // 分类映射总人数 = 当前节点子树所有人数累加
+    let totalPersons = descendants.reduce((s, c) => s + (NODE_COUNTS[c] || 0), 0);
+    // 映射问题人数（mock - 当前节点子树的待映射人数）
+    let problemCount = Math.max(2, Math.floor(totalPersons * 0.003));
+    let denom = descendants.length;
+
+    // 顶类（一级根类型）：三张卡片优先取「分类管理」联动摘要(sysu_cls_summary)，
+    // 没有联动数据时回退到默认基线（教职工 4/69 · 6,620 · 19）。后续分类管理变更会自动联动。
+    if (node.level === 1) {
+      const REL_BY_ROOT = { '01': '教职工', '02': '学生', '03': '外协人员', '04': '校友', '05': '校外人员' };
+      const rel = REL_BY_ROOT[node.code];
+      const DEFAULTS = {
+        '教职工': { mapped: 4, total: 69, people: 6620, problem: 19 },
+        '学生':   { mapped: 3, total: 24, people: 38920, problem: 5 },
+        '外协人员': { mapped: 3, total: 24, people: 1020, problem: 0 },
+        '校友':   { mapped: 1, total: 1, people: 38000, problem: 0 },
+        '校外人员': { mapped: 4, total: 17, people: 10250, problem: 0 }
+      };
+      const fromSummary = (ADMIN_SUMMARY && ADMIN_SUMMARY.perRel && ADMIN_SUMMARY.perRel[rel]) ? ADMIN_SUMMARY.perRel[rel] : null;
+      const base = fromSummary || DEFAULTS[rel];
+      if (base) {
+        mappedClassesCount = base.mapped;
+        denom = base.total || descendants.length;
+        totalPersons = base.people;
+        problemCount = (base.problem != null) ? base.problem : problemCount;
+      }
+    }
+
+    wrap.innerHTML = `
+      <div class="detail-head">
+        <div class="detail-path">${path.map(p => p.name).join(' / ')}</div>
+        <div class="detail-title-row">
+          <span class="detail-name">${node.name}</span>
+          <span class="tag tag-blue">L${node.level} · ${levelLabel}</span>
+          ${node.level === 1 ? '<span class="tag tag-purple">根类型</span>' : ''}
+        </div>
+        <div style="display:flex;gap:16px;font-size:12px;color:var(--text-secondary)">
+          <span>编码 <strong style="color:var(--text-primary);font-family:'DIN Alternate',monospace;margin-left:4px">${node.code}</strong></span>
+          ${node.parent ? `<span>父级 <strong style="font-family:'DIN Alternate',monospace;margin-left:4px">${node.parent}</strong></span>` : ''}
+          <span>子类数 <strong style="color:var(--text-primary);margin-left:4px">${children.length}</strong></span>
+        </div>
+      </div>
+
+      <div class="stat-cards">
+        <div class="stat-card ${selectedDetailPane === 'mapped-cls' ? 'active' : ''}" data-pane="mapped-cls">
+          <div class="stat-num">${mappedClassesCount}<span style="font-size:14px;font-weight:400;color:var(--text-disabled)"> / ${denom}</span></div>
+          <div class="stat-label">映射分类总数</div>
+          <div class="stat-hint">点击查看各层级 ↓</div>
+        </div>
+        <div class="stat-card ${selectedDetailPane === 'persons' ? 'active' : ''}" data-pane="persons">
+          <div class="stat-num" style="color:var(--chart-2)">${totalPersons.toLocaleString()}</div>
+          <div class="stat-label">分类映射总人数</div>
+          <div class="stat-hint">点击查看人员清单 ↓</div>
+        </div>
+        <div class="stat-card ${selectedDetailPane === 'problem' ? 'active' : ''}" data-pane="problem">
+          <div class="stat-num" style="color:${problemCount > 0 ? 'var(--color-warning)' : 'var(--color-success)'}">${problemCount}</div>
+          <div class="stat-label">映射问题人数</div>
+          <div class="stat-hint">${problemCount > 0 ? '点击查看问题清单 ↓' : '无异常'}</div>
+        </div>
+      </div>
+
+      <!-- 钻取明细区 -->
+      <div class="node-drill" id="node-drill">
+        ${renderNodeDrill(node, descendants, totalPersons, problemCount)}
+      </div>
+
+      <div class="detail-grid" style="margin-top:16px">
+        <div class="detail-item"><div class="detail-label">分类编码</div><div class="detail-value mono">${node.code}</div></div>
+        <div class="detail-item"><div class="detail-label">中文名称</div><div class="detail-value">${node.name}</div></div>
+        <div class="detail-item"><div class="detail-label">来源系统</div><div class="detail-value ${node.source ? '' : 'empty'}">${node.source || '—'}</div></div>
+        <div class="detail-item"><div class="detail-label">管理单位</div><div class="detail-value ${node.unit ? '' : 'empty'}">${node.unit || '—'}</div></div>
+        <div class="detail-item"><div class="detail-label">HR / 来源代码</div><div class="detail-value mono ${node.hr_code ? '' : 'empty'}">${node.hr_code || '—'}</div></div>
+        <div class="detail-item"><div class="detail-label">根类型</div><div class="detail-value">${node.root}</div></div>
+        ${node.note ? `<div class="detail-item full"><div class="detail-label">备注</div><div class="detail-value">${node.note}</div></div>` : ''}
+      </div>
+    `;
+
+    // 绑定 stat-card 点击
+    wrap.querySelectorAll('.stat-card').forEach(el => {
+      el.addEventListener('click', () => {
+        selectedDetailPane = el.dataset.pane;
+        renderDetail();
+      });
+    });
+  }
+
+  // 钻取明细渲染
+  function renderNodeDrill(node, descendants, totalPersons, problemCount) {
+    if (selectedDetailPane === 'mapped-cls') {
+      // 按层级展示：当前节点子树下，各层级分类的人数汇总
+      const byLevel = {};
+      descendants.forEach(c => {
+        const n = SYSU_CLASSIFICATION.find(x => x.code === c);
+        if (!n) return;
+        if (!byLevel[n.level]) byLevel[n.level] = { count: 0, persons: 0, classes: [] };
+        const cnt = NODE_COUNTS[c] || 0;
+        byLevel[n.level].count += 1;
+        byLevel[n.level].persons += cnt;
+        if (cnt > 0) byLevel[n.level].classes.push({ code: c, name: n.name, count: cnt });
+      });
+      const levels = Object.keys(byLevel).map(Number).sort();
+      const maxPersons = Math.max(...levels.map(l => byLevel[l].persons), 1);
+      const lvlLabel = ['', 'L1 一级', 'L2 二级', 'L3 三级', 'L4 四级', 'L5 五级'];
+
+      return `
+        <div class="node-drill-title">
+          各层级分类人数统计
+          <span class="tag tag-gray">${node.name} 下共 ${descendants.length} 个分类</span>
+        </div>
+        <div class="level-stats">
+          ${levels.map(l => {
+            const d = byLevel[l];
+            const pct = d.persons / maxPersons * 100;
+            return `
+              <div class="level-row">
+                <span class="level-tag">${lvlLabel[l]}</span>
+                <div class="level-bar-wrap">
+                  <div class="level-bar-bg"></div>
+                  <div class="level-bar-fill" style="width:${pct}%"></div>
+                  <span class="level-name">${d.count} 个分类 · 含数据 ${d.classes.length} 个</span>
+                </div>
+                <span class="level-num">${d.persons.toLocaleString()}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        ${levels.length > 1 ? `
+          <div style="margin-top:12px;font-size:11.5px;color:var(--text-disabled);padding:0 4px">
+            提示：选择左侧不同分类节点可切换统计范围
+          </div>
+        ` : ''}
+      `;
+    }
+
+    if (selectedDetailPane === 'persons') {
+      // 该分类子树下的人员清单 mock
+      const persons = mockPersons(node.code, descendants).slice(0, 8);
+      return `
+        <div class="node-drill-title">
+          已映射人员清单
+          <span class="tag tag-green">共 ${totalPersons.toLocaleString()} 人</span>
+          <span style="margin-left:auto"><a style="font-size:11.5px;color:var(--color-info);cursor:pointer" onclick="switchToView('data')">查看完整列表 →</a></span>
+        </div>
+        ${persons.length > 0 ? `
+          <table class="mini-table">
+            <thead><tr>
+              <th style="width:110px">UID</th>
+              <th style="width:90px">学工号</th>
+              <th style="width:80px">姓名</th>
+              <th>所在单位</th>
+              <th style="width:110px">人员身份</th>
+            </tr></thead>
+            <tbody>
+              ${persons.map(p => `
+                <tr>
+                  <td class="mono" style="font-family:'DIN Alternate',monospace;color:var(--text-secondary);font-size:11.5px">${p.uid}</td>
+                  <td class="mono" style="font-family:'DIN Alternate',monospace;color:var(--text-secondary);font-size:11.5px">${p.xgh}</td>
+                  <td><strong>${p.name}</strong></td>
+                  <td style="color:var(--text-secondary)">${p.dwmc}</td>
+                  <td><span class="tag tag-blue" style="font-size:10.5px">${p.rysfm}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div style="margin-top:8px;font-size:11.5px;color:var(--text-disabled);padding:0 4px">
+            显示前 ${persons.length} 条，共 ${totalPersons.toLocaleString()} 人
+          </div>
+        ` : '<div class="mini-empty">该分类下暂无人员</div>'}
+      `;
+    }
+
+    if (selectedDetailPane === 'problem') {
+      const problems = mockProblems(node.code, problemCount);
+      return `
+        <div class="node-drill-title" style="color:var(--color-warning)">
+          映射问题人员清单
+          <span class="tag tag-orange">${problemCount} 人待处理</span>
+          <span style="margin-left:auto"><a style="font-size:11.5px;color:var(--color-info);cursor:pointer" onclick="switchToView('unmapped')">前往映射处理 →</a></span>
+        </div>
+        ${problems.length > 0 ? `
+          <table class="mini-table">
+            <thead><tr>
+              <th style="width:110px">UID</th>
+              <th style="width:80px">姓名</th>
+              <th>来源系统/原始类型</th>
+              <th>异常原因</th>
+              <th>建议映射</th>
+            </tr></thead>
+            <tbody>
+              ${problems.map(p => `
+                <tr class="warn">
+                  <td class="mono" style="font-family:'DIN Alternate',monospace;color:var(--text-secondary);font-size:11.5px">${p.uid}</td>
+                  <td><strong>${p.name}</strong></td>
+                  <td style="font-size:11.5px;color:var(--text-secondary)">${p.src} / ${p.srcType}</td>
+                  <td><span class="unmapped-flag">${p.reason}</span></td>
+                  <td style="color:var(--color-success);font-size:11.5px">${p.suggest}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div style="margin-top:8px;font-size:11.5px;color:var(--text-disabled);padding:0 4px">
+            显示前 ${problems.length} 条，共 ${problemCount} 人待处理
+          </div>
+        ` : '<div class="mini-empty" style="color:var(--color-success)">该分类下无映射异常</div>'}
+      `;
+    }
+  }
+
+  // mock：返回该分类子树下的人员
+  function mockPersons(code, descendants) {
+    const pool = [
+      { uid: 'NP00000001', xgh: 'T2018001', name: '张明远', dwmc: '计算机科学与技术学院', rysfm: '010102' },
+      { uid: 'NP00000002', xgh: 'A2019003', name: '李雪琴', dwmc: '校办公室', rysfm: '010103' },
+      { uid: 'NP00000003', xgh: 'T2020055', name: '陈志强', dwmc: '计算机科学与技术学院', rysfm: '010108' },
+      { uid: 'NP00000004', xgh: 'U2021103', name: '王慧颖', dwmc: '本科招生办公室', rysfm: '02010101' },
+      { uid: 'NP00000005', xgh: 'I2023012', name: '刘建华', dwmc: '研究生院', rysfm: '02010201' },
+      { uid: 'NP00000007', xgh: 'S2015008', name: '黄敏君', dwmc: '后勤管理处', rysfm: '0302' },
+      { uid: 'NP00000008', xgh: 'I2024015', name: '林晓东', dwmc: '研究生院', rysfm: '02010202' },
+      { uid: 'NP00000009', xgh: 'S2020042', name: '赵磊', dwmc: '保卫处', rysfm: '0301' },
+      { uid: 'NP00000010', xgh: 'U2022087', name: '田静怡', dwmc: '数学学院', rysfm: '02010101' },
+      { uid: 'NP00000011', xgh: 'AL2018001', name: '周文博', dwmc: '校友会', rysfm: '0401' },
+      { uid: 'NP00000012', xgh: 'A2010012', name: '孙雅丽', dwmc: '财务处', rysfm: '010101' },
+    ];
+    // 过滤：只返回 rysfm 在 descendants 子树下的
+    return pool.filter(p => descendants.some(d => p.rysfm.startsWith(d)));
+  }
+
+  // mock：返回该分类下的问题人员
+  function mockProblems(code, count) {
+    const pool = [
+      { uid: 'NP00045672', name: '吴泽宇', src: '附属医院HR', srcType: '编外合同工', reason: '来源类型未登记', suggest: '0103 附属医院全职人员', root: '01' },
+      { uid: 'NP00046891', name: '佐藤健太', src: '访客系统', srcType: '外宾来访', reason: '映射规则缺失', suggest: '050101 临时进校人员', root: '05' },
+      { uid: 'NP00047023', name: '王明远', src: '协同人员管理服务平台', srcType: '安保实习生', reason: 'HR代码缺失', suggest: '0301 安保人员', root: '03' },
+      { uid: 'NP00047156', name: '陈思颖', src: '继续教育办公室Excel', srcType: '继续教育学员', reason: '来源类型未登记', suggest: '0202 非学籍生·进修生', root: '02' },
+      { uid: 'NP00047234', name: '李婉莹', src: '研究生系统', srcType: '联合培养博士生', reason: '多规则冲突', suggest: '02010201 全日制中国研究生', root: '02' },
+      { uid: 'NP00047458', name: '黄志远', src: '后勤外包系统', srcType: '食堂工作人员', reason: '来源类型未登记', suggest: '0302 物业服务人员', root: '03' },
+      { uid: 'NP00047523', name: '张维新', src: '校友系统', srcType: '荣誉校友', reason: 'HR代码缺失', suggest: '0401 校友', root: '04' },
+    ];
+    // 取当前节点根类型对应的问题
+    const rootCode = code.slice(0, 2);
+    let filtered = pool.filter(p => p.root === rootCode);
+    if (filtered.length === 0) filtered = pool.slice(0, count);
+    return filtered.slice(0, Math.min(count, 6));
+  }
+
+  // 切到指定主视图
+  function switchToView(v) {
+    document.querySelectorAll('.sidebar-item[data-view]').forEach(x => x.classList.remove('active'));
+    const sb = document.querySelector(`.sidebar-item[data-view="${v}"]`);
+    if (sb) sb.classList.add('active');
+    document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+    const vw = document.getElementById('view-' + v);
+    if (vw) vw.classList.add('active');
+    const labels = { tree: '分类体系框架', data: '人员分类数据', unmapped: '未映射人员', changes: '变更记录' };
+    document.getElementById('crumb-last').textContent = '人员分类身份 · ' + labels[v];
+  }
+
+  // 树搜索与筛选
+  document.getElementById('tree-search-input').addEventListener('input', renderTree);
+  document.getElementById('tree-root-filter').addEventListener('change', renderTree);
+
+  // ===== Mock 人员分类数据 =====
+  const PERSON_DATA = [
+    { uid: 'NP00000001', xgh: 'T2018001', name: '张明远', dwh: 'D001', dwmc: '计算机科学与技术学院',
+      identities: [
+        { rysfm: '010102', rysfmc: '研究型教师', status: '在职', isPrimary: true },
+        { rysfm: '0202', rysfmc: '非学籍生 · 博士后', status: '在站', isPrimary: false }
+      ]
+    },
+    { uid: 'NP00000002', xgh: 'A2019003', name: '李雪琴', dwh: 'D000', dwmc: '校办公室',
+      identities: [{ rysfm: '010103', rysfmc: '合同聘用人员（项目制）', status: '在职', isPrimary: true }] },
+    { uid: 'NP00000003', xgh: 'T2020055', name: '陈志强', dwh: 'D001', dwmc: '计算机科学与技术学院',
+      identities: [
+        { rysfm: '010108', rysfmc: '专职科研系列人员', status: '在职', isPrimary: true },
+        { rysfm: '0501', rysfmc: '访客 · 校外兼职导师', status: '在期', isPrimary: false }
+      ]
+    },
+    { uid: 'NP00000004', xgh: 'U2021103', name: '王慧颖', dwh: 'D102', dwmc: '本科招生办公室',
+      identities: [{ rysfm: '02010101', rysfmc: '全日制中国本科生', status: '在籍', isPrimary: true }] },
+    { uid: 'NP00000005', xgh: 'I2023012', name: '刘建华', dwh: 'D201', dwmc: '研究生院',
+      identities: [{ rysfm: '02010201', rysfmc: '全日制中国研究生', status: '在籍', isPrimary: true }] },
+    { uid: 'NP00000006', xgh: 'V2024088', name: 'Sarah Johnson', dwh: 'D801', dwmc: '国际合作办公室',
+      identities: [{ rysfm: '050102', rysfmc: '来校参加活动师生', status: '在期', isPrimary: true }] },
+    { uid: 'NP00000007', xgh: 'S2015008', name: '黄敏君', dwh: 'D902', dwmc: '后勤管理处',
+      identities: [{ rysfm: '0302', rysfmc: '物业服务人员', status: '在职', isPrimary: true }] },
+    { uid: 'NP00000008', xgh: 'I2024015', name: '林晓东', dwh: 'D201', dwmc: '研究生院',
+      identities: [{ rysfm: '02010202', rysfmc: '全日制外国研究生', status: '在籍', isPrimary: true }] },
+    { uid: 'NP00000009', xgh: 'S2020042', name: '赵磊', dwh: 'D903', dwmc: '保卫处',
+      identities: [{ rysfm: '0301', rysfmc: '安保人员', status: '在职', isPrimary: true }] },
+    { uid: 'NP00000010', xgh: 'U2022087', name: '田静怡', dwh: 'D305', dwmc: '数学学院',
+      identities: [{ rysfm: '02010101', rysfmc: '全日制中国本科生', status: '在籍', isPrimary: true }] },
+    { uid: 'NP00000011', xgh: 'AL2018001', name: '周文博', dwh: 'D951', dwmc: '校友会',
+      identities: [{ rysfm: '0401', rysfmc: '校友', status: '在期', isPrimary: true }] },
+    { uid: 'NP00000012', xgh: 'A2010012', name: '孙雅丽', dwh: 'D003', dwmc: '财务处',
+      identities: [{ rysfm: '010101', rysfmc: '事业编制人员', status: '在职', isPrimary: true }] },
+    // 未映射
+    { uid: 'NP00045672', xgh: '—', name: '吴泽宇', dwh: 'D507', dwmc: '医学院附属第三医院',
+      identities: [], unmapped: true, sourceSystem: '附属医院HR', sourceType: '编外合同工',
+      reason: '来源类型未登记 · 附属医院尚未对接' },
+    { uid: 'NP00046891', xgh: 'V2026032', name: '佐藤健太', dwh: 'D801', dwmc: '国际合作办公室',
+      identities: [], unmapped: true, sourceSystem: '访客系统', sourceType: '外宾来访',
+      reason: '来源类型映射规则缺失' },
+  ];
+
+  function renderData() {
+    // 与「分类管理 · 人员分类详细清单」共享同一份数据
+    let DATA = PERSON_DATA;
+    try { const r = localStorage.getItem('sysu_cls_roster'); if (r) { const arr = JSON.parse(r); if (Array.isArray(arr) && arr.length) DATA = arr.concat(PERSON_DATA.filter(p => p.unmapped)); } } catch (e) {}
+    const q = (document.getElementById('data-search').value || '').trim();
+    const root = document.getElementById('data-root').value;
+    const status = document.getElementById('data-status').value;
+    const flag = document.getElementById('data-flag').value;
+
+    const list = DATA.filter(p => {
+      if (q && !p.name.includes(q) && !p.uid.includes(q) && !p.xgh.includes(q)) return false;
+      if (flag === 'unmapped' && !p.unmapped) return false;
+      if (flag === 'multi' && (p.identities.length < 2)) return false;
+      if (root && !p.unmapped && !p.identities.some(i => i.rysfm.startsWith(root))) return false;
+      if (status && !p.unmapped) {
+        const okStatus = { active: ['在职','在籍','在站','在期'], paused: ['暂停','休学'], ended: ['离职','结业','毕业'] }[status] || [];
+        if (!p.identities.some(i => okStatus.includes(i.status))) return false;
+      }
+      return true;
+    });
+
+    const tbody = document.getElementById('data-tbody');
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-disabled)">暂无匹配数据</td></tr>`;
+      document.getElementById('data-total').textContent = '0';
+      document.getElementById('data-cur').textContent = '0';
+      return;
+    }
+
+    tbody.innerHTML = list.map(p => {
+      if (p.unmapped) {
+        return `
+          <tr class="unmapped">
+            <td class="mono">${p.uid}</td>
+            <td class="mono">${p.xgh}</td>
+            <td><strong>${p.name}</strong></td>
+            <td class="mono">${p.dwh}</td>
+            <td>${p.dwmc}</td>
+            <td><span class="unmapped-flag">未映射</span> <span style="font-size:12px;color:var(--text-secondary);margin-left:8px">来源：${p.sourceSystem} / ${p.sourceType}</span></td>
+            <td><span class="tag tag-orange">待处理</span></td>
+            <td><span style="color:var(--text-disabled)">否</span></td>
+            <td><button class="btn btn-text btn-sm" onclick="alert('打开映射处理：${p.uid}')">映射</button></td>
+          </tr>
+        `;
+      }
+      const idCell = p.identities.length === 1
+        ? `<div class="type-row">
+            <span class="type-code">${p.identities[0].rysfm}</span>
+            <span>${p.identities[0].rysfmc}</span>
+          </div>`
+        : `<div class="type-group">
+            ${p.identities.map(i => `
+              <div class="type-row">
+                <span class="type-code">${i.rysfm}</span>
+                <span>${i.rysfmc}</span>
+                ${i.isPrimary ? '<span class="tag tag-blue" style="font-size:10px;line-height:14px;padding:0 5px">主</span>' : ''}
+              </div>
+            `).join('')}
+            <span class="multi-flag">一人 ${p.identities.length} 类型</span>
+           </div>`;
+      const statusCell = p.identities.length === 1
+        ? `<span class="tag tag-green">${p.identities[0].status}</span>`
+        : `<div class="type-group">${p.identities.map(i => `<span class="tag tag-green">${i.status}</span>`).join('')}</div>`;
+      const authCell = p.identities.map(i => (i.auth !== false) ? '<span style="color:var(--color-success);display:block;margin:2px 0">是</span>' : '<span style="color:var(--text-disabled);display:block;margin:2px 0">否</span>').join('');
+
+      return `
+        <tr>
+          <td class="mono">${p.uid}</td>
+          <td class="mono">${p.xgh}</td>
+          <td><strong>${p.name}</strong></td>
+          <td class="mono">${p.dwh}</td>
+          <td>${p.dwmc}</td>
+          <td>${idCell}</td>
+          <td>${statusCell}</td>
+          <td>${authCell}</td>
+          <td><button class="btn btn-text btn-sm">详情</button></td>
+        </tr>
+      `;
+    }).join('');
+    document.getElementById('data-total').textContent = '94,283';
+    document.getElementById('data-cur').textContent = list.length;
+  }
+
+  document.getElementById('data-search').addEventListener('input', renderData);
+  document.getElementById('data-root').addEventListener('change', renderData);
+  document.getElementById('data-status').addEventListener('change', renderData);
+  document.getElementById('data-flag').addEventListener('change', renderData);
+
+  // ===== 未映射视图 =====
+  const UNMAPPED = [
+    { uid: 'NP00045672', xgh: '—', name: '吴泽宇', dwmc: '医学院附属第三医院',
+      src: '附属医院HR', srcType: '编外合同工', reason: '来源类型未登记', suggest: '0103 附属医院全职人员' },
+    { uid: 'NP00046891', xgh: 'V2026032', name: '佐藤健太', dwmc: '国际合作办公室',
+      src: '访客系统', srcType: '外宾来访', reason: '映射规则缺失', suggest: '050101 临时进校人员' },
+    { uid: 'NP00047023', xgh: 'X2025008', name: '王明远', dwmc: '保卫处',
+      src: '协同人员管理服务平台', srcType: '安保实习生', reason: 'HR代码缺失', suggest: '0301 安保人员' },
+    { uid: 'NP00047156', xgh: '—', name: '陈思颖', dwmc: '继续教育学院',
+      src: '继续教育办公室Excel', srcType: '继续教育学员', reason: '来源类型未登记', suggest: '0202 非学籍生 · 进修生' },
+    { uid: 'NP00047234', xgh: 'I2026088', name: '李婉莹', dwmc: '研究生院',
+      src: '研究生系统', srcType: '联合培养博士生', reason: '多规则冲突', suggest: '02010201 全日制中国研究生' },
+    { uid: 'NP00047301', xgh: 'V2026045', name: 'Maria Garcia', dwmc: '国际合作办公室',
+      src: '访客系统', srcType: '访问学者', reason: '映射规则缺失', suggest: '050103 短期学术交流人员' },
+    { uid: 'NP00047458', xgh: '—', name: '黄志远', dwmc: '后勤管理处',
+      src: '后勤外包系统', srcType: '食堂工作人员', reason: '来源类型未登记', suggest: '0302 物业服务人员' },
+    { uid: 'NP00047523', xgh: 'AL2024089', name: '张维新', dwmc: '校友会',
+      src: '校友系统', srcType: '荣誉校友', reason: 'HR代码缺失', suggest: '0401 校友' },
+  ];
+  function renderUnmapped() {
+    const q = (document.getElementById('unm-search').value || '').trim();
+    const list = UNMAPPED.filter(p => !q || p.name.includes(q) || p.uid.includes(q) || p.xgh.includes(q));
+    const tbody = document.getElementById('unm-tbody');
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-disabled)">暂无匹配</td></tr>`;
+      document.getElementById('unm-cur').textContent = '0';
+      return;
+    }
+    tbody.innerHTML = list.map(p => `
+      <tr class="unmapped">
+        <td class="mono">${p.uid}</td>
+        <td class="mono">${p.xgh}</td>
+        <td><strong>${p.name}</strong></td>
+        <td>${p.dwmc}</td>
+        <td><span class="tag tag-gray">${p.src}</span></td>
+        <td style="color:var(--text-secondary)">${p.srcType}</td>
+        <td><span class="unmapped-flag">${p.reason}</span></td>
+        <td style="color:var(--color-success);font-size:12.5px">${p.suggest}</td>
+        <td>
+          <button class="btn btn-text btn-sm" style="color:var(--color-success)">采纳</button>
+          <button class="btn btn-text btn-sm">手动</button>
+        </td>
+      </tr>
+    `).join('');
+    document.getElementById('unm-cur').textContent = list.length;
+  }
+  document.getElementById('unm-search').addEventListener('input', renderUnmapped);
+
+  // ===== 变更时间轴 =====
+  const CHANGES = [
+    {
+      type: 'update', time: '2026-05-12 09:12:08', action: '人员分类映射调整',
+      person: '张明远 · NP00000001', operator: '管理员 · 张治理', source: '管理员修改',
+      reason: '张明远晋升为博士生导师，需要在研究型教师身份外补充博士后管理身份',
+      changes: [
+        { field: '人员身份码', from: '010102 (研究型教师)', to: '010102 (研究型教师) + 0202 (非学籍生·博士后)' },
+        { field: '主身份', from: '010102', to: '010102 (保留主身份)' },
+      ]
+    },
+    {
+      type: 'create', time: '2026-05-12 08:45:23', action: '映射建立 · 自动匹配',
+      person: '王慧颖 · NP00000004', operator: '系统 · 映射规则引擎', source: 'HR系统同步',
+      reason: '教务系统下发新数据，按规则"bksxslxmc=普通本科生 → 02010101"自动映射',
+      changes: [{ field: '人员身份码', from: '(未映射)', to: '02010101 全日制中国本科生' }]
+    },
+    {
+      type: 'conflict', time: '2026-05-11 16:32:11', action: '冲突裁定 · 同名异源',
+      person: '陈志强 · NP00000003', operator: '管理员 · 张治理', source: '管理员修改',
+      reason: 'HR系统记录"研究型教师"，访客系统记录"校外兼职"。经核实，本人既是本校教师，同时受聘为校外单位兼职导师，按一人多类型处理',
+      changes: [
+        { field: '主分类身份', from: '010102 研究型教师 (HR)', to: '010102 (保留为主)' },
+        { field: '附加身份', from: '(无)', to: '0501 访客 (校外兼职)' },
+      ]
+    },
+    {
+      type: 'tree', time: '2026-05-11 14:08:45', action: '分类树新增节点',
+      person: '系统级变更', operator: '管理员 · 李规划', source: '管理员修改',
+      reason: '为支持附属医院新机制岗位，新增三级分类节点',
+      changes: [
+        { field: '编码', from: '(无)', to: '010306 附属医院新机制PI' },
+        { field: '父级', from: '(无)', to: '0103 附属医院全职人员' },
+        { field: '来源系统', from: '(无)', to: '附属医院HR' },
+      ]
+    },
+    {
+      type: 'update', time: '2026-05-11 11:22:30', action: '人员分类批量映射',
+      person: '研究生院 · 158 人', operator: '系统 · 研究生系统同步', source: '研究生系统同步',
+      reason: '2026 春季学期研究生注册数据批量同步',
+      changes: [{ field: '人员身份码', from: '(部分未映射)', to: '02010201 全日制中国研究生 (155人) / 02010202 全日制外国研究生 (3人)' }]
+    },
+    {
+      type: 'conflict', time: '2026-05-10 17:45:12', action: '映射异常告警',
+      person: '吴泽宇 · NP00045672', operator: '系统 · 数据质量监控', source: '映射规则匹配',
+      reason: '附属医院HR下发的"编外合同工"未在校级分类体系登记',
+      changes: [{ field: '映射状态', from: '映射中', to: '映射失败 · 来源类型未登记' }]
+    },
+    {
+      type: 'tree', time: '2026-05-09 10:15:00', action: '分类树废弃',
+      person: '系统级变更', operator: '管理员 · 李规划', source: '管理员修改',
+      reason: '原"短期项目研究员"分类与"专职科研系列"业务上重合，废弃前者',
+      changes: [
+        { field: '废弃节点', from: '010109 短期项目研究员 (在用)', to: '010109 短期项目研究员 (废弃)' },
+        { field: '影响人数', from: '(无)', to: '原 42 人已迁移至 010108 专职科研系列人员' },
+      ]
+    },
+  ];
+  function renderChanges() {
+    document.getElementById('changes-timeline').innerHTML = CHANGES.map(v => `
+      <div class="timeline-item ${v.type}">
+        <div class="timeline-dot"></div>
+        <div class="timeline-head">
+          <span class="timeline-action">${v.action}</span>
+          ${v.type === 'tree' ? '<span class="tag tag-purple">分类树变更</span>' : '<span class="tag tag-blue">人员映射变更</span>'}
+          <span class="timeline-time">${v.time}</span>
+          <span class="tag tag-gray" style="margin-left:auto">${v.person}</span>
+        </div>
+        <div class="timeline-meta">操作方：${v.operator} · 触发源：${v.source}${v.reason ? '<br>原因：' + v.reason : ''}</div>
+        ${v.changes.length ? `
+          <div class="timeline-changes">
+            ${v.changes.map(c => `
+              <div class="change-row">
+                <div class="change-field">${c.field}</div>
+                <div class="change-diff"><span class="from">${c.from}</span><span class="arrow">→</span><span class="to">${c.to}</span></div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `).join('');
+  }
+
+  // ===== 视图切换 =====
+  document.querySelectorAll('.sidebar-item[data-view]').forEach(el => {
+    el.addEventListener('click', () => {
+      if (el.classList.contains('disabled')) return;
+      const v = el.dataset.view;
+      document.querySelectorAll('.sidebar-item[data-view]').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+      document.getElementById('view-' + v).classList.add('active');
+      const labels = { tree: '分类体系框架', data: '人员分类数据', unmapped: '未映射人员', changes: '变更记录' };
+      document.getElementById('crumb-last').textContent = '人员分类身份 · ' + labels[v];
+    });
+  });
+
+  // ===== 导入 / 导出 =====
+  function toast(msg) {
+    let t = document.getElementById('app-toast');
+    if (!t) { t = document.createElement('div'); t.id = 'app-toast'; t.className = 'toast'; document.body.appendChild(t); }
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._timer); t._timer = setTimeout(() => t.classList.remove('show'), 2400);
+  }
+  function toggleMenu(id, ev) {
+    ev.stopPropagation();
+    document.querySelectorAll('.dropdown-menu').forEach(m => { if (m.id !== id) m.classList.remove('show'); });
+    document.getElementById(id).classList.toggle('show');
+  }
+  document.addEventListener('click', () => document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show')));
+
+  function download(filename, content, mime) {
+    const blob = new Blob(['\ufeff' + content], { type: mime });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  function getClsData() {
+    try { const saved = localStorage.getItem('sysu_cls_tree'); if (saved) return JSON.parse(saved); } catch (e) {}
+    return (typeof SYSU_CLASSIFICATION !== 'undefined') ? SYSU_CLASSIFICATION : [];
+  }
+  function exportContent(fmt) {
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+    const data = getClsData();
+    const headers = ['分类编码', '分类名称', '层级', '父级编码', '根类型', '来源系统', '管理单位', 'HR/来源代码', '备注'];
+    const rows = data.map(c => [c.code, c.name, 'L' + c.level, c.parent || '', c.root || '', c.source || '', c.unit || '', c.hr_code || '', (c.note || '').replace(/\s+/g, ' ')]);
+    const esc = s => String(s).replace(/</g, '&lt;');
+    if (fmt === 'excel') {
+      const html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body><table border="1"><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>${rows.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></body></html>`;
+      download('人员分类体系_' + today() + '.xls', html, 'application/vnd.ms-excel');
+      toast('已导出 EXCEL：' + data.length + ' 个分类节点');
+    } else if (fmt === 'word') {
+      const html = `<html xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>人员分类体系</title></head><body><h2>人员分类体系框架</h2><p>导出时间：${today()} · 共 ${data.length} 个分类节点</p><table border="1" cellspacing="0" cellpadding="4" style="border-collapse:collapse;font-size:11px"><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>${rows.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></body></html>`;
+      download('人员分类体系_' + today() + '.doc', html, 'application/msword');
+      toast('已导出 WORD：' + data.length + ' 个分类节点');
+    } else if (fmt === 'pdf') {
+      const w = window.open('', '_blank');
+      w.document.write(`<html><head><meta charset="utf-8"><title>人员分类体系</title><style>body{font-family:'PingFang SC',sans-serif;padding:24px;color:#1d2129}h2{font-size:18px}p{color:#86909c;font-size:12px}table{border-collapse:collapse;width:100%;font-size:10.5px;margin-top:12px}th,td{border:1px solid #ccc;padding:4px 6px;text-align:left}th{background:#f2f3f5}</style></head><body><h2>人员分类体系框架</h2><p>导出时间：${today()} · 共 ${data.length} 个分类节点</p><table><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>${rows.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table><script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>`);
+      w.document.close();
+      toast('已打开 PDF 打印视图，请"另存为 PDF"');
+    }
+  }
+  function exportTemplate() {
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+    const headers = ['分类编码', '分类名称', '层级(1-5)', '父级编码', '根类型', '来源系统', '管理单位', 'HR/来源代码', '备注'];
+    const sample = [['010306', '附属医院新机制PI', '3', '0103', '教职工', '附属医院HR', '附属医院', 'A03', '示例行，导入时删除'], ['', '', '', '', '', '', '', '', '']];
+    const html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body><table border="1"><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>${sample.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</table></body></html>`;
+    download('人员分类导入模板.xls', html, 'application/vnd.ms-excel');
+    toast('已下载 EXCEL 导入模板');
+  }
+  function doImportExcel() {
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.xls,.xlsx,.csv';
+    input.onchange = () => { const f = input.files[0]; if (f) toast('已接收文件「' + f.name + '」，请前往「分类管理」确认导入'); };
+    input.click();
+  }
+  function today() { const d = new Date(), p = n => String(n).padStart(2, '0'); return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()); }
+
+  renderTree();
+  renderData();
+  renderUnmapped();
+  renderChanges();
+  applyAdminStats();
+  // 当从「分类管理」返回本页时，重新读取最新映射并刷新联动统计
+  window.addEventListener('focus', () => { loadAdminLink(); applyAdminStats(); renderTree(); if (typeof renderDetail === 'function') renderDetail(); });
+</script>
+</body>
+</html>

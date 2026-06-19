@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自定义标签身份 · 高校综合身份数据平台</title>
+<style>
+  :root {
+    --color-primary: #2563EB;
+    --color-primary-secondary: #478EF7;
+    --color-success: #00B42A;
+    --color-warning: #FF7D00;
+    --color-error: #F53F3F;
+    --color-info: #165DFF;
+    --text-primary: #1D2129;
+    --text-secondary: #4E5969;
+    --text-disabled: #86909C;
+    --bg-page: #FAFAFB;
+    --bg-card: #FFFFFF;
+    --bg-secondary: #F2F3F5;
+    --border: #E5E6EB;
+    --chart-1: #387EF5; --chart-2: #0FB17B; --chart-3: #F6980D; --chart-4: #A251F6;
+    --shadow-1: 0 1px 2px 0 rgba(0,0,0,.03), 0 1px 6px -1px rgba(0,0,0,.02);
+    --shadow-2: 0 4px 12px 0 rgba(0,0,0,.05), 0 2px 4px 0 rgba(0,0,0,.03);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg-page); }
+  body { font-family: "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+    color: var(--text-primary); font-size: 14px; line-height: 22px; }
+  a { text-decoration: none; color: inherit; }
+  button, input, select { font: inherit; color: inherit; outline: none; }
+
+  /* ===== 顶部导航 ===== */
+  .topbar { height: 64px; background: var(--bg-card); box-shadow: var(--shadow-1);
+    display: flex; align-items: center; padding: 0 24px; position: sticky; top: 0; z-index: 100; }
+  .logo-wrap { display: flex; align-items: center; gap: 12px; margin-right: 32px; }
+  .logo-mark { width: 32px; height: 32px; border-radius: 6px; background: var(--color-primary);
+    display: flex; align-items: center; justify-content: center; }
+  .logo-mark svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; }
+  .logo-text { font-size: 16px; font-weight: 600; }
+  .topbar nav { display: flex; gap: 32px; flex: 1; height: 100%; align-items: center; }
+  .topbar nav a { color: var(--text-secondary); font-size: 14px; height: 100%; display: flex; align-items: center; position: relative; transition: color 200ms; }
+  .topbar nav a:hover { color: var(--color-primary); }
+  .topbar nav a.active { color: var(--color-primary); font-weight: 500; }
+  .topbar nav a.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--color-primary); }
+  .nav-dropdown { position: relative; height: 100%; display: flex; align-items: center; }
+  .nav-dropdown-trigger { color: var(--text-secondary); font-size: 14px; height: 100%; display: flex; align-items: center; gap: 4px; cursor: pointer; position: relative; transition: color 200ms; }
+  .nav-dropdown-trigger::after { content: ''; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); margin-left: 4px; margin-bottom: 3px; transition: transform 200ms; opacity: 0.6; }
+  .nav-dropdown:hover .nav-dropdown-trigger { color: var(--color-primary); }
+  .nav-dropdown:hover .nav-dropdown-trigger::after { transform: rotate(-135deg); margin-bottom: -3px; opacity: 1; }
+  .nav-dropdown-menu { position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(-4px); background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-2); min-width: 240px; padding: 8px; opacity: 0; visibility: hidden; transition: all 200ms; z-index: 200; }
+  .nav-dropdown:hover .nav-dropdown-menu { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+  .nav-dropdown-menu a { display: flex !important; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; height: auto !important; color: var(--text-primary); font-size: 14px; transition: all 150ms; }
+  .nav-dropdown-menu a::after { display: none !important; }
+  .nav-dropdown-menu a:hover { background: rgba(37, 99, 235, 0.06); color: var(--color-primary); }
+  .nav-dropdown-menu a svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; opacity: 0.6; }
+  .nav-dropdown-menu a:hover svg { opacity: 1; }
+  .nav-dropdown-menu .menu-body { flex: 1; display: flex; flex-direction: column; }
+  .nav-dropdown-menu .menu-label { font-size: 14px; line-height: 18px; }
+  .nav-dropdown-menu .menu-desc { font-size: 11px; color: var(--text-disabled); margin-top: 2px; line-height: 14px; }
+  .nav-dropdown-menu a:hover .menu-desc { color: var(--color-primary-secondary); }
+  .nav-dropdown-menu::before { content: ''; position: absolute; top: -8px; left: 0; right: 0; height: 8px; }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .time-display { font-size: 12px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", monospace; }
+  .user-info { display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border); }
+  .user-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary); color: white;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; }
+  .user-name { font-size: 14px; color: var(--text-secondary); }
+
+  /* ===== 布局 ===== */
+  .layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 64px); }
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 16px 0; }
+  .sidebar-section { padding: 8px 16px; font-size: 12px; color: var(--text-disabled); letter-spacing: 1px; }
+  .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+    margin: 2px 8px; font-size: 14px; color: var(--text-secondary); cursor: pointer;
+    border-radius: 6px; transition: all 200ms; }
+  .sidebar-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; }
+  .sidebar-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .sidebar-item.active { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); font-weight: 500; }
+  .sidebar-item .badge { margin-left: auto; font-size: 11px; padding: 1px 6px;
+    border-radius: 3px; background: var(--bg-secondary); color: var(--text-disabled); }
+
+  .main { padding: 16px 24px 32px; min-width: 0; }
+  .breadcrumb { font-size: 14px; color: var(--text-disabled); margin-bottom: 12px; }
+  .breadcrumb a { color: var(--text-disabled); }
+  .breadcrumb a:hover { color: var(--color-primary); }
+  .breadcrumb .sep { margin: 0 8px; }
+  .breadcrumb .last { color: var(--text-primary); }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .page-title { font-size: 20px; font-weight: 600; color: var(--text-primary); line-height: 28px; margin-bottom: 4px; }
+  .page-desc { font-size: 14px; color: var(--text-secondary); }
+  .page-stats { display: flex; gap: 24px; font-size: 12px; color: var(--text-secondary); }
+  .page-stats strong { font-size: 16px; color: var(--text-primary); margin-left: 4px; font-family: "DIN Alternate", "Roboto", inherit; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ===== 面板 ===== */
+  .panel { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); padding: 16px; margin-bottom: 16px; }
+  .panel-title { font-size: 16px; font-weight: 500; color: var(--text-primary);
+    padding-left: 12px; position: relative; margin-bottom: 16px; }
+  .panel-title::before { content: ''; position: absolute; left: 0; top: 4px; width: 4px; height: 16px; background: var(--color-primary); border-radius: 2px; }
+  .panel-title .sub { font-size: 12px; color: var(--text-disabled); font-weight: 400; margin-left: 8px; }
+
+  .info-box { background: rgba(22, 93, 255, 0.04); border: 1px solid rgba(22, 93, 255, 0.15);
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text-secondary); line-height: 22px; }
+  .info-box svg { width: 16px; height: 16px; stroke: var(--color-info); fill: none; stroke-width: 2; flex-shrink: 0; margin-top: 3px; }
+
+  /* ===== 筛选条 ===== */
+  .filter-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-input { height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg-card); font-size: 14px; color: var(--text-primary); transition: all 200ms; min-width: 160px; }
+  .filter-input:focus { border-color: var(--color-info); box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1); }
+  .filter-input.search { padding-left: 36px; }
+  .filter-select { height: 40px; padding: 0 32px 0 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg-card); font-size: 14px; color: var(--text-primary); transition: all 200ms; min-width: 160px;
+    appearance: none; cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386909C' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; }
+  .filter-select:focus { border-color: var(--color-info); box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1); }
+
+  /* ===== 按钮 ===== */
+  .btn { height: 40px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: all 200ms; border: none; display: inline-flex; align-items: center; gap: 6px; padding: 0 16px; }
+  .btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .btn-primary { background: var(--color-primary); color: white; }
+  .btn-primary:hover { background: #1d4fc7; }
+  .btn-secondary { background: var(--bg-card); color: var(--color-info); border: 1px solid var(--color-info); }
+  .btn-secondary:hover { background: rgba(22, 93, 255, 0.04); }
+  .btn-text { background: transparent; color: var(--color-info); padding: 0 8px; }
+  .btn-text:hover { background: rgba(22, 93, 255, 0.06); }
+  .btn-sm { height: 32px; font-size: 13px; padding: 0 12px; }
+  .btn-danger-text { background: transparent; color: var(--color-error); padding: 0 8px; }
+  .btn-danger-text:hover { background: rgba(245, 63, 63, 0.06); }
+
+  /* ===== 表格 ===== */
+  .table-wrap { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: var(--bg-secondary); height: 48px; padding: 0 16px; font-size: 14px; font-weight: 500;
+    color: var(--text-secondary); text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody td { height: 48px; padding: 0 16px; font-size: 14px; color: var(--text-primary);
+    border-bottom: 1px solid var(--border); }
+  tbody tr:hover td { background: var(--bg-secondary); }
+  tbody tr:last-child td { border-bottom: none; }
+  td .mono { font-family: "DIN Alternate", "Roboto", monospace; }
+  td .opts { display: flex; gap: 8px; }
+
+  /* ===== 标签 ===== */
+  .tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+  .tag-blue { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); }
+  .tag-green { background: rgba(0, 180, 42, 0.08); color: var(--color-success); }
+  .tag-orange { background: rgba(255, 125, 0, 0.08); color: var(--color-warning); }
+  .tag-purple { background: rgba(162, 81, 246, 0.08); color: #A251F6; }
+  .tag-cyan { background: rgba(6, 182, 212, 0.08); color: #06B6D4; }
+  .tag-gray { background: var(--bg-secondary); color: var(--text-secondary); }
+
+  /* ===== 分页 ===== */
+  .pager { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 12px 16px; }
+  .pager-btn { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg-card); font-size: 13px; color: var(--text-secondary); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 200ms; }
+  .pager-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+  .pager-btn.active { background: var(--color-primary); border-color: var(--color-primary); color: white; }
+  .pager-btn:disabled { opacity: 0.3; cursor: default; }
+  .pager-info { font-size: 13px; color: var(--text-secondary); margin: 0 8px; }
+
+  /* ===== 群组卡片网格 ===== */
+  .group-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-bottom: 16px; }
+  .group-card { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); padding: 16px;
+    border: 1px solid var(--border); cursor: pointer; transition: all 200ms; }
+  .group-card:hover { box-shadow: var(--shadow-2); border-color: var(--color-primary); }
+  .group-card.selected { border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15); }
+  .group-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .group-card-name { font-size: 15px; font-weight: 500; color: var(--text-primary); }
+  .group-card-desc { font-size: 12px; color: var(--text-secondary); line-height: 18px; margin-bottom: 12px; }
+  .group-card-meta { display: flex; gap: 16px; font-size: 12px; color: var(--text-disabled); }
+  .group-card-meta span { display: flex; align-items: center; gap: 4px; }
+  .group-card-meta strong { color: var(--color-primary); font-weight: 600; font-family: "DIN Alternate", "Roboto", inherit; }
+
+  /* ===== 标签列表 ===== */
+  .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .tag-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; font-size: 13px;
+    color: var(--text-primary); cursor: pointer; transition: all 200ms; }
+  .tag-chip:hover { border-color: var(--color-primary); color: var(--color-primary); background: rgba(37, 99, 235, 0.03); }
+  .tag-chip.active { background: rgba(37, 99, 235, 0.08); border-color: var(--color-primary); color: var(--color-primary); font-weight: 500; }
+  .tag-chip .count { font-size: 11px; color: var(--text-disabled); background: var(--bg-secondary); padding: 1px 6px; border-radius: 10px; }
+  .tag-chip.active .count { background: rgba(37, 99, 235, 0.15); color: var(--color-primary); }
+
+  /* ===== 抽屉 ===== */
+  .drawer-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 500;
+    opacity: 0; visibility: hidden; transition: all 300ms; }
+  .drawer-overlay.show { opacity: 1; visibility: visible; }
+  .drawer { position: fixed; top: 0; right: 0; width: 600px; max-width: 90vw; height: 100vh;
+    background: var(--bg-card); box-shadow: var(--shadow-3); z-index: 600;
+    transform: translateX(100%); transition: transform 300ms cubic-bezier(0.2,0.8,0.2,1);
+    display: flex; flex-direction: column; }
+  .drawer-overlay.show .drawer { transform: translateX(0); }
+  .drawer-head { height: 64px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .drawer-title { font-size: 18px; font-weight: 600; color: var(--text-primary); }
+  .drawer-close { width: 32px; height: 32px; border-radius: 6px; border: none; background: transparent;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px;
+    color: var(--text-secondary); transition: all 200ms; }
+  .drawer-close:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 24px; }
+  .drawer-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; flex-shrink: 0; }
+
+  .form-group { margin-bottom: 20px; }
+  .form-label { display: block; font-size: 14px; font-weight: 500; color: var(--text-primary); margin-bottom: 8px; }
+  .form-label .required { color: var(--color-error); margin-left: 2px; }
+  .form-input { width: 100%; height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 14px; color: var(--text-primary); background: var(--bg-card); transition: all 200ms; }
+  .form-input:focus { border-color: var(--color-info); box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1); }
+  .form-textarea { width: 100%; min-height: 80px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 14px; color: var(--text-primary); background: var(--bg-card); resize: vertical; transition: all 200ms; font-family: inherit; }
+  .form-textarea:focus { border-color: var(--color-info); box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1); }
+  .form-hint { font-size: 12px; color: var(--text-disabled); margin-top: 4px; }
+
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--text-disabled); }
+  .empty-state svg { width: 48px; height: 48px; stroke: var(--text-disabled); opacity: 0.4; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!-- ===== 顶部导航 ===== -->
+<header class="topbar">
+  <div class="logo-wrap">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>
+    </div>
+    <div class="logo-text">身份数据平台</div>
+  </div>
+  <nav>
+    <a href="页面主页.html">主页</a>
+    <div class="nav-dropdown">
+      <a href="m1-basic-identity.html" class="nav-dropdown-trigger" style="text-decoration:none;color:inherit">身份管理</a>
+      <div class="nav-dropdown-menu">
+        <a href="m1-basic-identity.html">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+          <div class="menu-body"><div class="menu-label">人员基础身份</div><div class="menu-desc">人员进档 · 一人一ID · 多源头采集</div></div>
+        </a>
+        <a href="m2-classification.html">
+          <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+          <div class="menu-body"><div class="menu-label">人员分类身份</div><div class="menu-desc">树形分类 · 标准属性 · 实例挂载</div></div>
+        </a>
+        <a href="m3-position.html">
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+          <div class="menu-body"><div class="menu-label">人员岗位身份</div><div class="menu-desc">广义岗位 · 一人多身份</div></div>
+        </a>
+        <a href="m7-custom-tags.html" class="active" style="color:var(--color-primary);background:rgba(37,99,235,.06);">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <div class="menu-body"><div class="menu-label">人员自定义标签管理</div><div class="menu-desc">自定义群组 · 自定义分类标签</div></div>
+        </a>
+        <a href="m4-org.html">
+          <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+          <div class="menu-body"><div class="menu-label">组织机构体系</div><div class="menu-desc">院系树 · 强绑定身份</div></div>
+        </a>
+      </div>
+    </div>
+    <a href="m5-identity-permission.html">身份权限管理</a>
+    <a href="m6-data-query.html">数据查询</a>
+  </nav>
+  <div class="topbar-right">
+    <span class="time-display" id="time-display"></span>
+    <div class="user-info">
+      <div class="user-avatar">管</div>
+      <span class="user-name">管理员 · 数据治理岗</span>
+    </div>
+  </div>
+</header>
+
+<!-- ===== 主体布局 ===== -->
+<div class="layout">
+  <!-- 侧边栏 -->
+  <aside class="sidebar">
+    <div class="sidebar-section">自定义标签</div>
+    <div class="sidebar-item active" data-view="groups">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      群组管理
+      <span class="badge" id="group-count-badge">4</span>
+    </div>
+    <div class="sidebar-item" data-view="people">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      人员标签查询
+      <span class="badge" id="people-count-badge">0</span>
+    </div>
+
+    <div class="sidebar-section" style="margin-top:8px">身份管理</div>
+    <a class="sidebar-item" href="m1-basic-identity.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+      人员基础身份
+    </a>
+    <a class="sidebar-item" href="m2-classification.html">
+      <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+      人员分类身份
+    </a>
+    <a class="sidebar-item" href="m3-position.html">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+      人员岗位身份
+    </a>
+    <a class="sidebar-item" href="m4-org.html">
+      <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+      组织机构体系
+    </a>
+    <div class="sidebar-section" style="margin-top:8px">权限与查询</div>
+    <a class="sidebar-item" href="m5-identity-permission.html">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      身份权限管理
+    </a>
+    <a class="sidebar-item" href="m6-data-query.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c0 .39.23.74.59.91"/></svg>
+      系统服务
+    </a>
+  </aside>
+
+  <!-- 主内容 -->
+  <main class="main">
+    <div class="breadcrumb">
+      <a href="页面主页.html">身份数据平台</a><span class="sep">/</span><span class="last" id="crumb-last">自定义标签身份</span>
+    </div>
+
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">自定义标签身份</h1>
+        <p class="page-desc">基于人员岗位身份数据，自定义群组及身份标签，实现人员的快速分组与便捷查询</p>
+      </div>
+      <div class="page-stats">
+        <span>群组<strong id="stat-groups">4</strong></span>
+        <span>标签<strong id="stat-tags">0</strong></span>
+        <span>已标注<strong id="stat-people">0</strong>人</span>
+      </div>
+    </div>
+
+    <!-- ===== 视图1：群组管理 ===== -->
+    <div class="view active" id="view-groups">
+      <div class="info-box">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <span>群组为标签的主目录，一个群组下可创建多个自定义标签。标签仅用于人员便捷查询与分组，<strong>与权限无关</strong>，权限仅与人员分类身份关联。所有标签定义及人员标注均在平台内完成，不同步外部系统。</span>
+      </div>
+
+      <div class="filter-bar">
+        <button class="btn btn-primary" id="btn-add-group" onclick="openGroupDrawer()">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          新建群组
+        </button>
+        <input class="filter-input search" type="text" placeholder="搜索群组..." id="group-search" oninput="renderGroups()" style="width:260px;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2386909C' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:10px center;">
+      </div>
+
+      <!-- 群组卡片网格 -->
+      <div class="group-grid" id="group-grid"></div>
+
+      <!-- 选中群组的标签详情 -->
+      <div id="tag-detail-panel" style="display:none">
+        <div class="panel">
+          <div class="panel-title" id="tag-detail-title">标签列表</div>
+          <div style="margin-bottom:12px">
+            <button class="btn btn-secondary btn-sm" onclick="openTagDrawer()">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              新建标签
+            </button>
+          </div>
+          <div class="tag-list" id="tag-chip-list"></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>标签名称</th><th>标签定义</th><th>标注人数</th><th>创建时间</th><th style="width:140px">操作</th>
+              </tr></thead>
+              <tbody id="tag-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 标签下的人员列表 -->
+        <div class="panel" id="tag-people-panel" style="display:none">
+          <div class="panel-title" id="tag-people-title">标签人员</div>
+          <div style="margin-bottom:12px">
+            <button class="btn btn-primary btn-sm" id="btn-add-person-to-tag" onclick="openAddPersonDrawer()">
+              <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+              添加人员
+            </button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>学号/工号</th><th>姓名</th><th>证件号</th><th>唯一ID</th><th>所在单位</th><th>分类身份</th><th>岗位身份</th><th>标注时间</th><th style="width:80px">操作</th>
+              </tr></thead>
+              <tbody id="tag-people-body"></tbody>
+            </table>
+          </div>
+          <div class="pager">
+            <span class="pager-info" id="tp-pager-info"></span>
+            <button class="pager-btn" onclick="tpPrev()" id="tp-prev" disabled>‹</button>
+            <button class="pager-btn" onclick="tpNext()" id="tp-next">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 视图2：人员标签查询 ===== -->
+    <div class="view" id="view-people">
+      <div class="info-box">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <span>通过群组和标签快速检索已标注的人员。<strong>分类身份</strong>为人员基础分类（普通本科生/硕士生/博士生），<strong>岗位身份</strong>为该人员在系统内的实际组织岗位身份（团组织/党组织/学生会等），非自定义标签。</span>
+      </div>
+
+      <div class="filter-bar">
+        <select class="filter-select" id="pf-group" onchange="onPeopleFilter()">
+          <option value="">全部群组</option>
+        </select>
+        <select class="filter-select" id="pf-tag" onchange="onPeopleFilter()">
+          <option value="">全部标签</option>
+        </select>
+        <input class="filter-input search" type="text" placeholder="搜索姓名/学号..." id="pf-search" oninput="onPeopleFilter()" style="width:220px;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2386909C' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:10px center;">
+        <span style="font-size:13px;color:var(--text-disabled);margin-left:auto" id="pf-result-info"></span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>学号/工号</th><th>姓名</th><th>证件号</th><th>所在单位</th><th>分类身份</th><th>岗位身份</th><th>所属群组</th><th>标注标签</th><th>标注时间</th>
+          </tr></thead>
+          <tbody id="people-table-body"></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <span class="pager-info" id="pp-pager-info"></span>
+        <button class="pager-btn" id="pp-prev" disabled onclick="ppPage(-1)">‹</button>
+        <span style="font-size:13px;color:var(--text-secondary);margin:0 8px" id="pp-page-num">1</span>
+        <button class="pager-btn" id="pp-next" onclick="ppPage(1)">›</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ===== 新建群组抽屉 ===== -->
+<div class="drawer-overlay" id="group-drawer-overlay">
+  <div class="drawer">
+    <div class="drawer-head">
+      <span class="drawer-title" id="group-drawer-title">新建群组</span>
+      <button class="drawer-close" onclick="closeGroupDrawer()">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div class="form-group">
+        <label class="form-label">群组名称<span class="required">*</span></label>
+        <input class="form-input" id="group-name-input" placeholder="请输入群组名称，如：2026学科竞赛人员" maxlength="50">
+      </div>
+      <div class="form-group">
+        <label class="form-label">群组描述</label>
+        <textarea class="form-textarea" id="group-desc-input" placeholder="请输入群组描述说明..." maxlength="200"></textarea>
+        <div class="form-hint">简要说明该群组的用途和范围，不超过200字</div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-secondary" onclick="closeGroupDrawer()">取消</button>
+      <button class="btn btn-primary" id="group-drawer-confirm" onclick="saveGroup()">确认创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 新建标签抽屉 ===== -->
+<div class="drawer-overlay" id="tag-drawer-overlay">
+  <div class="drawer">
+    <div class="drawer-head">
+      <span class="drawer-title">新建标签</span>
+      <button class="drawer-close" onclick="closeTagDrawer()">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div class="form-group">
+        <label class="form-label">所属群组</label>
+        <input class="form-input" id="tag-group-display" readonly style="background:var(--bg-secondary);color:var(--text-secondary)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">标签名称<span class="required">*</span></label>
+        <input class="form-input" id="tag-name-input" placeholder="请输入标签名称，如：计算机学科参赛人员" maxlength="30">
+      </div>
+      <div class="form-group">
+        <label class="form-label">标签定义<span class="required">*</span></label>
+        <textarea class="form-textarea" id="tag-desc-input" placeholder="请描述该标签的定义和标注范围..." maxlength="200"></textarea>
+        <div class="form-hint">明确该标签的适用范围和标注标准</div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-secondary" onclick="closeTagDrawer()">取消</button>
+      <button class="btn btn-primary" id="tag-drawer-confirm" onclick="saveTag()">确认创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 添加人员抽屉 ===== -->
+<div class="drawer-overlay" id="add-person-drawer-overlay">
+  <div class="drawer">
+    <div class="drawer-head">
+      <span class="drawer-title">添加人员 · <span id="apd-tag-name"></span></span>
+      <button class="drawer-close" onclick="closeAddPersonDrawer()">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div class="form-group">
+        <label class="form-label">所属群组 / 标签</label>
+        <input class="form-input" id="apd-group-tag" readonly style="background:var(--bg-secondary);color:var(--text-secondary)">
+      </div>
+      <!-- 模式切换 -->
+      <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid var(--border);padding-bottom:12px">
+        <button class="btn btn-sm" id="apd-tab-batch" onclick="switchAddMode('batch')" style="border:none;background:rgba(37,99,235,.08);color:var(--color-primary)">📋 批量导入</button>
+        <button class="btn btn-sm" id="apd-tab-single" onclick="switchAddMode('single')" style="border:none;background:transparent;color:var(--text-secondary)">🔍 单个查找</button>
+      </div>
+      <!-- 批量导入模式 -->
+      <div id="apd-mode-batch">
+        <div class="form-group">
+          <label class="form-label">粘贴学号/工号列表<span class="required">*</span></label>
+          <textarea class="form-textarea" id="apd-batch-ids" placeholder="每行一个学号或工号，或用逗号/空格分隔&#10;例如：&#10;202310001&#10;202310005&#10;202320012" style="min-height:150px"></textarea>
+          <div class="form-hint">系统将自动匹配学号/工号，找到对应人员并标注标签</div>
+        </div>
+        <div id="apd-batch-result" style="display:none;margin-bottom:16px;padding:12px;border-radius:8px;font-size:13px;line-height:20px"></div>
+      </div>
+      <!-- 单个查找模式 -->
+      <div id="apd-mode-single" style="display:none">
+        <div class="filter-bar">
+          <select class="filter-select" id="apd-single-dept" onchange="searchSinglePerson()" style="min-width:200px">
+            <option value="">全部单位</option>
+          </select>
+          <input class="filter-input search" type="text" id="apd-single-search" placeholder="搜索姓名/学号..." oninput="searchSinglePerson()" style="width:200px;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2386909C' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:10px center;">
+        </div>
+        <div class="table-wrap" style="max-height:360px;overflow-y:auto">
+          <table>
+            <thead><tr>
+              <th>学号/工号</th><th>姓名</th><th>所在单位</th><th>分类身份</th><th>岗位身份</th><th style="width:80px">操作</th>
+            </tr></thead>
+            <tbody id="apd-single-result"></tbody>
+          </table>
+        </div>
+        <div class="form-hint" style="margin-top:8px">仅显示尚未标注该标签的人员</div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-secondary" onclick="closeAddPersonDrawer()">取消</button>
+      <button class="btn btn-primary" id="apd-confirm-batch" onclick="confirmBatchAdd()">确认批量添加</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 实时时钟 =====
+function updateTime() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  document.getElementById('time-display').textContent =
+    `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+}
+updateTime();
+setInterval(updateTime, 1000);
+
+// ===== 人员主数据（模拟系统内完整人员信息，来自M1/M3） =====
+const MASTER_PERSON = [
+  { sid:'202310001',name:'张伟',idNo:'440101200201010011',uid:'UID-A00001',dept:'计算机科学与技术学院',cls:'普通本科生',pos:'计算机科学与技术学院2023级本科生团支部 普通团员'},
+  { sid:'202310002',name:'王芳',idNo:'440101200202020022',uid:'UID-A00002',dept:'计算机科学与技术学院',cls:'普通本科生',pos:'计算机科学与技术学院2023级本科生团支部 团支部书记'},
+  { sid:'202310003',name:'李娜',idNo:'440101200203030033',uid:'UID-A00003',dept:'计算机科学与技术学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310004',name:'刘洋',idNo:'440101200204040044',uid:'UID-A00004',dept:'数学学院',cls:'普通本科生',pos:'数学学院2022级本科生团支部 普通团员'},
+  { sid:'202310005',name:'陈静',idNo:'440101200205050055',uid:'UID-A00005',dept:'数学学院',cls:'普通本科生',pos:'数学学院2022级团支部 组织委员'},
+  { sid:'202310006',name:'杨帆',idNo:'440101200206060066',uid:'UID-A00006',dept:'数学学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310007',name:'赵敏',idNo:'440101200207070077',uid:'UID-A00007',dept:'电子与信息工程学院',cls:'普通本科生',pos:'电子与信息工程学院2022级本科生团支部 普通团员'},
+  { sid:'202310008',name:'黄磊',idNo:'440101200208080088',uid:'UID-A00008',dept:'电子与信息工程学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310009',name:'周杰',idNo:'440101200209090099',uid:'UID-A00009',dept:'外国语学院',cls:'普通本科生',pos:'外国语学院2022级本科生团支部 团支部书记'},
+  { sid:'202310010',name:'吴鑫',idNo:'440101200210100010',uid:'UID-A00010',dept:'外国语学院',cls:'普通本科生',pos:'校学生会宣传部 干事'},
+  { sid:'202310011',name:'孙悦',idNo:'440101200211110011',uid:'UID-A00011',dept:'物理学院',cls:'普通本科生',pos:'物理学院2023级本科生团支部 宣传委员'},
+  { sid:'202310012',name:'朱峰',idNo:'440101200212120012',uid:'UID-A00012',dept:'物理学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310013',name:'马丽',idNo:'440101200201130013',uid:'UID-A00013',dept:'化学学院',cls:'普通本科生',pos:'化学学院学生会 普通会员'},
+  { sid:'202310014',name:'胡涛',idNo:'440101200202140014',uid:'UID-A00014',dept:'化学学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310015',name:'林琳',idNo:'440101200203150015',uid:'UID-A00015',dept:'生命科学学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310016',name:'何宇',idNo:'440101200204160016',uid:'UID-A00016',dept:'生命科学学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310017',name:'郭昕',idNo:'440101200205170017',uid:'UID-A00017',dept:'管理学院',cls:'普通本科生',pos:'管理学院2023级本科生团支部 普通团员'},
+  { sid:'202310018',name:'高远',idNo:'440101200206180018',uid:'UID-A00018',dept:'管理学院',cls:'普通本科生',pos:'管理学院学生会 普通会员'},
+  { sid:'202310019',name:'罗浩',idNo:'440101200207190019',uid:'UID-A00019',dept:'法学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310020',name:'梁艳',idNo:'440101200208200020',uid:'UID-A00020',dept:'法学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310021',name:'宋睿',idNo:'440101200209210021',uid:'UID-A00021',dept:'医学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310022',name:'唐骏',idNo:'440101200210220022',uid:'UID-A00022',dept:'医学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310023',name:'韩雪',idNo:'440101200211230023',uid:'UID-A00023',dept:'计算机科学与技术学院',cls:'普通本科生',pos:'计算机科学与技术学院学生会 部长'},
+  { sid:'202310024',name:'冯凯',idNo:'440101200212240024',uid:'UID-A00024',dept:'数学学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310025',name:'董洁',idNo:'440101200201250025',uid:'UID-A00025',dept:'电子与信息工程学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310026',name:'程鹏',idNo:'440101200202260026',uid:'UID-A00026',dept:'外国语学院',cls:'普通本科生',pos:'校学生会 主席团成员'},
+  { sid:'202320001',name:'曹鹏',idNo:'440101200203270027',uid:'UID-B00001',dept:'计算机科学与技术学院',cls:'普通硕士生',pos:'计算机科学与技术学院研究生第二党支部 普通党员'},
+  { sid:'202320002',name:'袁媛',idNo:'440101200204280028',uid:'UID-B00002',dept:'计算机科学与技术学院',cls:'普通硕士生',pos:'计算机科学与技术学院研究生第二党支部 党支部书记'},
+  { sid:'202320003',name:'邓波',idNo:'440101200205290029',uid:'UID-B00003',dept:'数学学院',cls:'普通硕士生',pos:'普通硕士生'},
+  { sid:'202320004',name:'许宁',idNo:'440101200206300030',uid:'UID-B00004',dept:'化学学院',cls:'普通硕士生',pos:'化学学院博士生党支部 普通党员'},
+  { sid:'202320005',name:'傅雷',idNo:'440101200207010031',uid:'UID-B00005',dept:'管理学院',cls:'普通硕士生',pos:'管理学院研究生第一党支部 党支部委员'},
+  { sid:'202320006',name:'沈默',idNo:'440101200208020032',uid:'UID-B00006',dept:'管理学院',cls:'普通硕士生',pos:'普通硕士生'},
+  { sid:'202320007',name:'曾浩',idNo:'440101200209030033',uid:'UID-B00007',dept:'法学院',cls:'普通硕士生',pos:'法学院研究生党支部 普通党员'},
+  { sid:'202320008',name:'彭飞',idNo:'440101200210040034',uid:'UID-B00008',dept:'医学院',cls:'普通硕士生',pos:'医学院研究生党支部 普通党员'},
+  { sid:'202320009',name:'吕鑫',idNo:'440101200211050035',uid:'UID-B00009',dept:'物理学院',cls:'普通硕士生',pos:'普通硕士生'},
+  { sid:'202320010',name:'苏畅',idNo:'440101200212060036',uid:'UID-B00010',dept:'生命科学学院',cls:'普通硕士生',pos:'普通硕士生'},
+  { sid:'202320011',name:'蒋明',idNo:'440101200201070037',uid:'UID-B00011',dept:'电子与信息工程学院',cls:'普通硕士生',pos:'普通硕士生'},
+  { sid:'202320012',name:'蔡文',idNo:'440101200202080038',uid:'UID-B00012',dept:'外国语学院',cls:'普通硕士生',pos:'外国语学院学生会 部长'},
+  { sid:'202330001',name:'贾玲',idNo:'440101200203090039',uid:'UID-C00001',dept:'计算机科学与技术学院',cls:'普通博士生',pos:'普通博士生'},
+  { sid:'202330002',name:'丁凯',idNo:'440101200204100040',uid:'UID-C00002',dept:'化学学院',cls:'普通博士生',pos:'化学学院博士生党支部 普通党员'},
+  { sid:'202330003',name:'魏然',idNo:'440101200205110041',uid:'UID-C00003',dept:'管理学院',cls:'普通博士生',pos:'普通博士生'},
+  { sid:'202330004',name:'薛峰',idNo:'440101200206120042',uid:'UID-C00004',dept:'医学院',cls:'普通博士生',pos:'普通博士生'},
+  { sid:'202330005',name:'叶舒',idNo:'440101200207130043',uid:'UID-C00005',dept:'物理学院',cls:'普通博士生',pos:'普通博士生'},
+  // 补充更多本科生
+  { sid:'202310027',name:'阎冰',idNo:'440101200208140044',uid:'UID-A00027',dept:'物理学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310028',name:'余杰',idNo:'440101200209150045',uid:'UID-A00028',dept:'化学学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310029',name:'潘安',idNo:'440101200210160046',uid:'UID-A00029',dept:'管理学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310030',name:'杜衡',idNo:'440101200211170047',uid:'UID-A00030',dept:'法学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310031',name:'戴玉',idNo:'440101200212180048',uid:'UID-A00031',dept:'医学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310032',name:'夏雨',idNo:'440101200201190049',uid:'UID-A00032',dept:'计算机科学与技术学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310033',name:'钟灵',idNo:'440101200202200050',uid:'UID-A00033',dept:'数学学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310034',name:'谭峰',idNo:'440101200203210051',uid:'UID-A00034',dept:'电子与信息工程学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310035',name:'廖凯',idNo:'440101200204220052',uid:'UID-A00035',dept:'外国语学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310036',name:'邹敏',idNo:'440101200205230053',uid:'UID-A00036',dept:'生命科学学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310037',name:'熊斌',idNo:'440101200206240054',uid:'UID-A00037',dept:'计算机科学与技术学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310038',name:'金悦',idNo:'440101200207250055',uid:'UID-A00038',dept:'数学学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310039',name:'陆铭',idNo:'440101200208260056',uid:'UID-A00039',dept:'管理学院',cls:'普通本科生',pos:'普通本科生'},
+  { sid:'202310040',name:'顾晨',idNo:'440101200209270057',uid:'UID-A00040',dept:'法学院',cls:'普通本科生',pos:'普通本科生'},
+  // 补充更多硕士
+  { sid:'202320013',name:'姚洁',idNo:'440101200210280058',uid:'UID-B00013',dept:'计算机科学与技术学院',cls:'普通硕士生',pos:'普通硕士生'},
+  { sid:'202320014',name:'龙涛',idNo:'440101200211290059',uid:'UID-B00014',dept:'数学学院',cls:'普通硕士生',pos:'普通硕士生'},
+  { sid:'202320015',name:'万丽',idNo:'440101200212300060',uid:'UID-B00015',dept:'化学学院',cls:'普通硕士生',pos:'普通硕士生'},
+  { sid:'202320016',name:'段宇',idNo:'440101200201010061',uid:'UID-B00016',dept:'物理学院',cls:'普通硕士生',pos:'普通硕士生'},
+  { sid:'202320017',name:'雷军',idNo:'440101200202020062',uid:'UID-B00017',dept:'医学院',cls:'普通硕士生',pos:'普通硕士生'},
+  // 补充博士
+  { sid:'202330006',name:'贺敏',idNo:'440101200203030063',uid:'UID-C00006',dept:'计算机科学与技术学院',cls:'普通博士生',pos:'普通博士生'},
+  { sid:'202330007',name:'汤磊',idNo:'440101200204040064',uid:'UID-C00007',dept:'数学学院',cls:'普通博士生',pos:'普通博士生'},
+  { sid:'202330008',name:'龚倩',idNo:'440101200205050065',uid:'UID-C00008',dept:'生命科学学院',cls:'普通博士生',pos:'普通博士生'},
+];
+
+// 人员快速查找索引
+const personBySid = {};
+MASTER_PERSON.forEach(p => { personBySid[p.sid] = p; });
+const ALL_DEPTS = [...new Set(MASTER_PERSON.map(p => p.dept))];
+
+// ===== 群组数据 =====
+let nextGroupId = 5;
+let nextTagId = 15;
+const TAG_GROUPS = [
+  { id:'g1',name:'2026学科竞赛人员',desc:'2026年度各类学科竞赛参赛及指导人员',tagCount:4,personCount:0,created:'2026-03-15'},
+  { id:'g2',name:'科研创新团队',desc:'重点实验室在研成员及科研项目团队核心人员',tagCount:4,personCount:0,created:'2026-02-20'},
+  { id:'g3',name:'国际交流项目',desc:'国际交换生、联合培养及来华留学相关人员',tagCount:3,personCount:0,created:'2026-01-10'},
+  { id:'g4',name:'学生社团骨干',desc:'学生会、注册社团及志愿者团队的核心骨干成员',tagCount:3,personCount:0,created:'2025-11-05'},
+];
+
+// ===== 标签数据 =====
+const TAG_LIST = [
+  { id:'t1',groupId:'g1',groupName:'2026学科竞赛人员',name:'计算机学科参赛人员',desc:'参加ACM-ICPC、蓝桥杯、天梯赛等计算机类学科竞赛的学生',personCount:0,created:'2026-03-16'},
+  { id:'t2',groupId:'g1',groupName:'2026学科竞赛人员',name:'数学建模参赛人员',desc:'参加全国大学生数学建模竞赛的正式队员',personCount:0,created:'2026-03-17'},
+  { id:'t3',groupId:'g1',groupName:'2026学科竞赛人员',name:'电子设计参赛人员',desc:'参加全国大学生电子设计竞赛的学生',personCount:0,created:'2026-03-18'},
+  { id:'t4',groupId:'g1',groupName:'2026学科竞赛人员',name:'英语竞赛参赛人员',desc:'参加全国大学生英语竞赛及外研社杯系列赛事的学生',personCount:0,created:'2026-03-20'},
+  { id:'t5',groupId:'g2',groupName:'科研创新团队',name:'重点实验室成员',desc:'省部级及以上重点实验室在研学生成员',personCount:0,created:'2026-02-22'},
+  { id:'t6',groupId:'g2',groupName:'科研创新团队',name:'大创项目负责人',desc:'大学生创新创业训练计划项目负责人',personCount:0,created:'2026-02-25'},
+  { id:'t7',groupId:'g2',groupName:'科研创新团队',name:'高水平论文发表人员',desc:'近一年发表SCI/EI/中文核心期刊论文的学生作者',personCount:0,created:'2026-03-01'},
+  { id:'t8',groupId:'g2',groupName:'科研创新团队',name:'专利发明人员',desc:'已提交申请或获得授权的发明专利学生发明人',personCount:0,created:'2026-03-05'},
+  { id:'t9',groupId:'g3',groupName:'国际交流项目',name:'国际交换生',desc:'正在境外合作高校进行学期交换学习的学生',personCount:0,created:'2026-01-15'},
+  { id:'t10',groupId:'g3',groupName:'国际交流项目',name:'联合培养研究生',desc:'中外联合培养项目在读硕士/博士研究生',personCount:0,created:'2026-01-20'},
+  { id:'t11',groupId:'g3',groupName:'国际交流项目',name:'来华留学生',desc:'在校就读的国际留学生',personCount:0,created:'2026-02-01'},
+  { id:'t12',groupId:'g4',groupName:'学生社团骨干',name:'学生会干部',desc:'校院两级学生会主席团及部长级主要干部',personCount:0,created:'2025-11-10'},
+  { id:'t13',groupId:'g4',groupName:'学生社团骨干',name:'社团负责人',desc:'经校团委注册的学生社团社长/会长',personCount:0,created:'2025-11-15'},
+  { id:'t14',groupId:'g4',groupName:'学生社团骨干',name:'志愿者骨干',desc:'校级大型活动及公益志愿服务项目核心成员',personCount:0,created:'2025-11-20'},
+];
+
+// ===== 标签-人员关联 =====
+// 从MASTER_PERSON中选择人员打上各标签（模拟初始数据）
+const TAG_PEOPLE = [];
+const now = new Date();
+const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+// 为每个标签选若干人
+const tagPeopleSeed = {
+  t1:[0,1,2,22,31,36,40,41,42,43,44,45,55,56,57,58,59,60], // 计算机学科参赛: 18人
+  t2:[3,4,5,23,32,37,47,48], // 数学建模: 8人
+  t3:[6,7,24,28,33,38,49,53], // 电子设计: 8人
+  t4:[8,9,25,34,39,50], // 英语竞赛: 6人
+  t5:[26,27,51,52,41,42], // 重点实验室: 6人
+  t6:[26,46,52,57], // 大创项目: 4人
+  t7:[27,45,52,55,56], // 论文发表: 5人
+  t8:[51,53,58,59], // 专利发明: 4人
+  t9:[8,9,26,34,39], // 国际交换生: 5人
+  t10:[27,45,46,52], // 联合培养: 4人
+  t11:[28,29,30], // 来华留学生: 3人
+  t12:[9,17,22,25,26], // 学生会干部: 5人
+  t13:[1,4,6,11,13,23,31,38], // 社团负责人: 8人
+  t14:[10,11,15,16,19,20,21,29,35,43,49,54,60], // 志愿者骨干: 13人
+};
+TAG_LIST.forEach(tag => {
+  const idxs = tagPeopleSeed[tag.id] || [];
+  idxs.forEach(idx => {
+    if (idx < MASTER_PERSON.length) {
+      const p = MASTER_PERSON[idx];
+      TAG_PEOPLE.push({
+        id: 'p_' + tag.id + '_' + idx,
+        tagId: tag.id, tagName: tag.name,
+        groupId: tag.groupId, groupName: tag.groupName,
+        sid: p.sid, name: p.name, idNo: p.idNo, uid: p.uid,
+        dept: p.dept, cls: p.cls, pos: p.pos,
+        taggedAt: dateStr,
+      });
+    }
+  });
+});
+
+// ===== 当前状态 =====
+let selectedGroupId = null;
+let selectedTagId = null;
+let tpPage = 0; // tag people page
+let ppPageNum = 1;
+const PAGE_SIZE = 8;
+const PP_PAGE_SIZE = 15;
+
+// ===== 侧栏切换 =====
+document.querySelectorAll('.sidebar-item[data-view]').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-item[data-view]').forEach(s => s.classList.remove('active'));
+    item.classList.add('active');
+    const viewId = item.dataset.view;
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + viewId).classList.add('active');
+    document.getElementById('crumb-last').textContent =
+      viewId === 'groups' ? '自定义标签身份' : '人员标签查询';
+    if (viewId === 'people') initPeopleView();
+  });
+});
+
+// ===== 统计更新 =====
+function updateStats() {
+  document.getElementById('stat-groups').textContent = TAG_GROUPS.length;
+  const totalTags = TAG_LIST.length;
+  const totalPeople = new Set(TAG_PEOPLE.map(p => p.sid + '|' + p.tagId)).size;
+  document.getElementById('stat-tags').textContent = totalTags;
+  document.getElementById('stat-people').textContent = totalPeople;
+  document.getElementById('group-count-badge').textContent = TAG_GROUPS.length;
+  document.getElementById('people-count-badge').textContent = totalPeople;
+  TAG_GROUPS.forEach(g => {
+    g.tagCount = TAG_LIST.filter(t => t.groupId === g.id).length;
+    g.personCount = new Set(TAG_PEOPLE.filter(p => p.groupId === g.id).map(p => p.sid)).size;
+  });
+}
+
+// ===== 渲染群组卡片 =====
+function renderGroups() {
+  updateStats();
+  const search = (document.getElementById('group-search').value || '').toLowerCase();
+  const filtered = TAG_GROUPS.filter(g =>
+    !search || g.name.toLowerCase().includes(search) || g.desc.toLowerCase().includes(search)
+  );
+  const grid = document.getElementById('group-grid');
+  grid.innerHTML = filtered.map(g => `
+    <div class="group-card ${g.id === selectedGroupId ? 'selected' : ''}" onclick="selectGroup('${g.id}')">
+      <div class="group-card-head">
+        <span class="group-card-name">${g.name}</span>
+        <span class="tag tag-blue">${g.tagCount} 个标签</span>
+      </div>
+      <div class="group-card-desc">${g.desc}</div>
+      <div class="group-card-meta">
+        <span><strong>${g.personCount}</strong> 人已标注</span>
+        <span>创建于 ${g.created}</span>
+      </div>
+    </div>
+  `).join('');
+  if (selectedGroupId) { renderTagDetail(); }
+  else { document.getElementById('tag-detail-panel').style.display = 'none'; }
+}
+
+function selectGroup(groupId) { selectedGroupId = groupId; selectedTagId = null; tpPage = 0; renderGroups(); }
+
+// ===== 渲染标签详情 =====
+function renderTagDetail() {
+  const group = TAG_GROUPS.find(g => g.id === selectedGroupId);
+  if (!group) return;
+  document.getElementById('tag-detail-panel').style.display = 'block';
+  document.getElementById('tag-detail-title').textContent = group.name + ' · 标签列表';
+  document.getElementById('tag-group-display').value = group.name;
+  const tags = TAG_LIST.filter(t => t.groupId === selectedGroupId);
+  document.getElementById('tag-chip-list').innerHTML = tags.map(t => `
+    <span class="tag-chip ${t.id === selectedTagId ? 'active' : ''}" onclick="selectTag('${t.id}')">
+      ${t.name}<span class="count">${t.personCount}</span>
+    </span>`).join('');
+  document.getElementById('tag-table-body').innerHTML = tags.map(t => `
+    <tr style="${t.id === selectedTagId ? 'background:rgba(37,99,235,.04)' : ''}">
+      <td><span style="font-weight:500;cursor:pointer;color:var(--color-info)" onclick="selectTag('${t.id}')">${t.name}</span></td>
+      <td style="color:var(--text-secondary);font-size:13px">${t.desc}</td>
+      <td class="mono" style="font-weight:500">${t.personCount}</td>
+      <td>${t.created}</td>
+      <td><div class="opts"><button class="btn-text btn-sm" onclick="selectTag('${t.id}')">查看人员</button><button class="btn-danger-text btn-sm" onclick="deleteTag('${t.id}')">删除</button></div></td>
+    </tr>`).join('');
+  if (selectedTagId) { renderTagPeople(); }
+  else { document.getElementById('tag-people-panel').style.display = 'none'; }
+}
+
+function selectTag(tagId) { selectedTagId = tagId; tpPage = 0; renderTagDetail(); }
+
+// ===== 渲染标签人员（新数据模型） =====
+function renderTagPeople() {
+  const tag = TAG_LIST.find(t => t.id === selectedTagId);
+  if (!tag) return;
+  document.getElementById('tag-people-panel').style.display = 'block';
+  document.getElementById('tag-people-title').textContent = tag.name + ' · 标注人员';
+  const people = TAG_PEOPLE.filter(p => p.tagId === selectedTagId);
+  const total = people.length;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const start = tpPage * PAGE_SIZE;
+  const pageData = people.slice(start, start + PAGE_SIZE);
+  document.getElementById('tag-people-body').innerHTML = pageData.map(p => `
+    <tr>
+      <td class="mono">${p.sid}</td>
+      <td>${p.name}</td>
+      <td class="mono" style="font-size:12px;color:var(--text-secondary)">${p.idNo}</td>
+      <td class="mono" style="font-size:12px;color:var(--text-disabled)">${p.uid}</td>
+      <td>${p.dept}</td>
+      <td><span class="tag tag-gray">${p.cls}</span></td>
+      <td style="font-size:13px;color:var(--text-secondary)">${p.pos}</td>
+      <td style="color:var(--text-disabled);font-size:13px">${p.taggedAt}</td>
+      <td><button class="btn-danger-text btn-sm" onclick="removeTagPerson('${p.id}')">移除</button></td>
+    </tr>`).join('');
+  document.getElementById('tp-pager-info').textContent = total > 0 ? `共 ${total} 人 · 第 ${tpPage + 1}/${totalPages} 页` : '';
+  document.getElementById('tp-prev').disabled = tpPage <= 0;
+  document.getElementById('tp-next').disabled = tpPage >= totalPages - 1;
+}
+function tpPrev() { if (tpPage > 0) { tpPage--; renderTagPeople(); } }
+function tpNext() { const max = Math.ceil(TAG_PEOPLE.filter(p => p.tagId === selectedTagId).length / PAGE_SIZE) - 1; if (tpPage < max) { tpPage++; renderTagPeople(); } }
+
+// ===== 删除标签 / 群组 =====
+function deleteTag(tagId) {
+  if (!confirm('确定删除该标签？已标注的人员关联也将一并清除。')) return;
+  const idx = TAG_LIST.findIndex(t => t.id === tagId);
+  if (idx < 0) return;
+  TAG_LIST.splice(idx, 1);
+  for (let i = TAG_PEOPLE.length - 1; i >= 0; i--) { if (TAG_PEOPLE[i].tagId === tagId) TAG_PEOPLE.splice(i, 1); }
+  if (selectedTagId === tagId) selectedTagId = null;
+  updateStats(); renderGroups();
+}
+function deleteGroup(groupId) {
+  if (!confirm('确定删除该群组？其下所有标签及人员标注将一并清除。')) return;
+  const idx = TAG_GROUPS.findIndex(g => g.id === groupId);
+  if (idx < 0) return;
+  TAG_GROUPS.splice(idx, 1);
+  for (let i = TAG_LIST.length - 1; i >= 0; i--) { if (TAG_LIST[i].groupId === groupId) TAG_LIST.splice(i, 1); }
+  for (let i = TAG_PEOPLE.length - 1; i >= 0; i--) { if (TAG_PEOPLE[i].groupId === groupId) TAG_PEOPLE.splice(i, 1); }
+  if (selectedGroupId === groupId) { selectedGroupId = null; selectedTagId = null; }
+  updateStats(); renderGroups();
+}
+
+// ===== 群组/标签抽屉 =====
+function openGroupDrawer() {
+  document.getElementById('group-drawer-title').textContent = '新建群组';
+  document.getElementById('group-drawer-confirm').textContent = '确认创建';
+  document.getElementById('group-name-input').value = '';
+  document.getElementById('group-desc-input').value = '';
+  document.getElementById('group-drawer-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('group-name-input').focus(), 350);
+}
+function closeGroupDrawer() { document.getElementById('group-drawer-overlay').classList.remove('show'); }
+function saveGroup() {
+  const name = document.getElementById('group-name-input').value.trim();
+  const desc = document.getElementById('group-desc-input').value.trim();
+  if (!name) { alert('请输入群组名称'); return; }
+  const now = new Date();
+  const created = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  TAG_GROUPS.push({ id:'g'+(nextGroupId++),name,desc,tagCount:0,personCount:0,created });
+  closeGroupDrawer(); updateStats(); renderGroups();
+}
+function openTagDrawer() {
+  if (!selectedGroupId) { alert('请先选择一个群组'); return; }
+  const group = TAG_GROUPS.find(g => g.id === selectedGroupId);
+  document.getElementById('tag-group-display').value = group.name;
+  document.getElementById('tag-name-input').value = '';
+  document.getElementById('tag-desc-input').value = '';
+  document.getElementById('tag-drawer-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('tag-name-input').focus(), 350);
+}
+function closeTagDrawer() { document.getElementById('tag-drawer-overlay').classList.remove('show'); }
+function saveTag() {
+  const name = document.getElementById('tag-name-input').value.trim();
+  const desc = document.getElementById('tag-desc-input').value.trim();
+  if (!name) { alert('请输入标签名称'); return; }
+  if (!desc) { alert('请输入标签定义'); return; }
+  const group = TAG_GROUPS.find(g => g.id === selectedGroupId);
+  const now = new Date();
+  const created = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  TAG_LIST.push({ id:'t'+(nextTagId++),groupId:selectedGroupId,groupName:group.name,name,desc,personCount:0,created });
+  closeTagDrawer(); updateStats(); renderGroups();
+}
+
+// ===== 移除标签人员关联 =====
+function removeTagPerson(personId) {
+  if (!confirm('确定移除该人员在此标签下的标注？')) return;
+  const idx = TAG_PEOPLE.findIndex(p => p.id === personId);
+  if (idx >= 0) TAG_PEOPLE.splice(idx, 1);
+  const tag = TAG_LIST.find(t => t.id === selectedTagId);
+  if (tag) tag.personCount = TAG_PEOPLE.filter(p => p.tagId === selectedTagId).length;
+  updateStats(); renderTagDetail();
+}
+
+// ===== 人员查询视图 =====
+function initPeopleView() {
+  const groupSel = document.getElementById('pf-group');
+  groupSel.innerHTML = '<option value="">全部群组</option>' + TAG_GROUPS.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+  updateTagSelect(); onPeopleFilter();
+}
+function updateTagSelect() {
+  const groupId = document.getElementById('pf-group').value;
+  const tagSel = document.getElementById('pf-tag');
+  const tags = groupId ? TAG_LIST.filter(t => t.groupId === groupId) : TAG_LIST;
+  tagSel.innerHTML = '<option value="">全部标签</option>' + tags.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+}
+function onPeopleFilter() { updateTagSelect(); ppPageNum = 1; renderPeopleTable(); }
+function renderPeopleTable() {
+  const groupId = document.getElementById('pf-group').value;
+  const tagId = document.getElementById('pf-tag').value;
+  const search = (document.getElementById('pf-search').value || '').toLowerCase();
+  let data = [...TAG_PEOPLE];
+  if (groupId) data = data.filter(p => p.groupId === groupId);
+  if (tagId) data = data.filter(p => p.tagId === tagId);
+  if (search) data = data.filter(p => p.name.toLowerCase().includes(search) || p.sid.includes(search));
+  const total = data.length;
+  const totalPages = Math.max(1, Math.ceil(total / PP_PAGE_SIZE));
+  if (ppPageNum > totalPages) ppPageNum = totalPages;
+  const start = (ppPageNum - 1) * PP_PAGE_SIZE;
+  const pageData = data.slice(start, start + PP_PAGE_SIZE);
+  document.getElementById('people-table-body').innerHTML = pageData.map(p => `
+    <tr>
+      <td class="mono">${p.sid}</td>
+      <td>${p.name}</td>
+      <td class="mono" style="font-size:12px;color:var(--text-secondary)">${p.idNo}</td>
+      <td>${p.dept}</td>
+      <td><span class="tag tag-gray">${p.cls}</span></td>
+      <td style="font-size:13px;color:var(--text-secondary)">${p.pos}</td>
+      <td><span class="tag tag-blue">${p.groupName}</span></td>
+      <td><span class="tag tag-green">${p.tagName}</span></td>
+      <td style="font-size:13px;color:var(--text-disabled)">${p.taggedAt}</td>
+    </tr>`).join('');
+  document.getElementById('pf-result-info').textContent = total > 0 ? `共 ${total} 条记录` : '暂无匹配数据';
+  document.getElementById('pp-pager-info').textContent = total > 0 ? `共 ${total} 条 · 第 ${ppPageNum}/${totalPages} 页` : '';
+  document.getElementById('pp-page-num').textContent = ppPageNum;
+  document.getElementById('pp-prev').disabled = ppPageNum <= 1;
+  document.getElementById('pp-next').disabled = ppPageNum >= totalPages;
+}
+function ppPage(delta) {
+  const groupId = document.getElementById('pf-group').value;
+  const tagId = document.getElementById('pf-tag').value;
+  const search = (document.getElementById('pf-search').value || '').toLowerCase();
+  let data = [...TAG_PEOPLE];
+  if (groupId) data = data.filter(p => p.groupId === groupId);
+  if (tagId) data = data.filter(p => p.tagId === tagId);
+  if (search) data = data.filter(p => p.name.toLowerCase().includes(search) || p.sid.includes(search));
+  const maxPage = Math.max(1, Math.ceil(data.length / PP_PAGE_SIZE));
+  ppPageNum = Math.max(1, Math.min(maxPage, ppPageNum + delta));
+  renderPeopleTable();
+}
+
+// ===== 添加人员功能 =====
+let addPersonTagId = null;
+let addPersonGroupId = null;
+let addMode = 'batch';
+let batchMatchedPeople = [];
+
+function openAddPersonDrawer() {
+  if (!selectedTagId) { alert('请先选择一个标签'); return; }
+  addPersonTagId = selectedTagId;
+  addPersonGroupId = selectedGroupId;
+  const tag = TAG_LIST.find(t => t.id === selectedTagId);
+  const group = TAG_GROUPS.find(g => g.id === selectedGroupId);
+  document.getElementById('apd-tag-name').textContent = tag.name;
+  document.getElementById('apd-group-tag').value = group.name + ' / ' + tag.name;
+  document.getElementById('apd-batch-ids').value = '';
+  document.getElementById('apd-batch-result').style.display = 'none';
+  batchMatchedPeople = [];
+  // 初始化单个查找
+  const deptSel = document.getElementById('apd-single-dept');
+  deptSel.innerHTML = '<option value="">全部单位</option>' + ALL_DEPTS.map(d => `<option value="${d}">${d}</option>`).join('');
+  document.getElementById('apd-single-search').value = '';
+  switchAddMode('batch');
+  document.getElementById('add-person-drawer-overlay').classList.add('show');
+}
+function closeAddPersonDrawer() { document.getElementById('add-person-drawer-overlay').classList.remove('show'); }
+
+function switchAddMode(mode) {
+  addMode = mode;
+  document.getElementById('apd-mode-batch').style.display = mode === 'batch' ? 'block' : 'none';
+  document.getElementById('apd-mode-single').style.display = mode === 'single' ? 'block' : 'none';
+  document.getElementById('apd-confirm-batch').style.display = mode === 'batch' ? 'inline-flex' : 'none';
+  document.getElementById('apd-tab-batch').style.background = mode === 'batch' ? 'rgba(37,99,235,.08)' : 'transparent';
+  document.getElementById('apd-tab-batch').style.color = mode === 'batch' ? 'var(--color-primary)' : 'var(--text-secondary)';
+  document.getElementById('apd-tab-single').style.background = mode === 'single' ? 'rgba(37,99,235,.08)' : 'transparent';
+  document.getElementById('apd-tab-single').style.color = mode === 'single' ? 'var(--color-primary)' : 'var(--text-secondary)';
+  if (mode === 'single') searchSinglePerson();
+}
+
+// ===== 批量导入：解析学号并匹配 =====
+function confirmBatchAdd() {
+  const raw = document.getElementById('apd-batch-ids').value.trim();
+  if (!raw) { alert('请输入学号/工号列表'); return; }
+  // 解析：支持换行、逗号、空格分隔
+  const ids = raw.split(/[\n,\s]+/).map(s => s.trim()).filter(Boolean);
+  const resultDiv = document.getElementById('apd-batch-result');
+  // 去重
+  const uniqueIds = [...new Set(ids)];
+  // 已在此标签下的人员学号
+  const existingSids = new Set(TAG_PEOPLE.filter(p => p.tagId === addPersonTagId).map(p => p.sid));
+  const matched = [];
+  const notFound = [];
+  const alreadyTagged = [];
+  uniqueIds.forEach(sid => {
+    const person = personBySid[sid];
+    if (!person) { notFound.push(sid); return; }
+    if (existingSids.has(sid)) { alreadyTagged.push(`${sid}(${person.name})`); return; }
+    matched.push(person);
+  });
+  batchMatchedPeople = matched;
+  let html = '';
+  if (matched.length > 0) html += `<div style="color:var(--color-success);margin-bottom:4px">✅ 匹配成功 <strong>${matched.length}</strong> 人，点击下方"确认批量添加"完成标注</div>`;
+  if (alreadyTagged.length > 0) html += `<div style="color:var(--color-warning);margin-bottom:4px">⚠️ 已在该标签下 <strong>${alreadyTagged.length}</strong> 人：${alreadyTagged.join('、')}</div>`;
+  if (notFound.length > 0) html += `<div style="color:var(--color-error)">❌ 未找到 <strong>${notFound.length}</strong> 人：${notFound.join('、')}</div>`;
+  if (matched.length > 0) {
+    html += `<div style="margin-top:8px;font-size:12px;color:var(--text-secondary)">匹配人员：${matched.map(p => p.sid+' '+p.name).join('、')}</div>`;
+    // 执行添加
+    const tag = TAG_LIST.find(t => t.id === addPersonTagId);
+    const now = new Date();
+    const dStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    matched.forEach(p => {
+      TAG_PEOPLE.push({
+        id: 'p_batch_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+        tagId: addPersonTagId, tagName: tag.name,
+        groupId: addPersonGroupId, groupName: tag.groupName,
+        sid: p.sid, name: p.name, idNo: p.idNo, uid: p.uid,
+        dept: p.dept, cls: p.cls, pos: p.pos,
+        taggedAt: dStr,
+      });
+    });
+    tag.personCount = TAG_PEOPLE.filter(p => p.tagId === addPersonTagId).length;
+    updateStats();
+  }
+  if (matched.length === 0 && alreadyTagged.length === 0 && notFound.length === 0) {
+    html = '<div style="color:var(--text-disabled)">未输入有效学号</div>';
+  }
+  resultDiv.innerHTML = html;
+  resultDiv.style.display = 'block';
+}
+
+// ===== 单个查找 =====
+function searchSinglePerson() {
+  const dept = document.getElementById('apd-single-dept').value;
+  const search = (document.getElementById('apd-single-search').value || '').toLowerCase();
+  const existingSids = new Set(TAG_PEOPLE.filter(p => p.tagId === addPersonTagId).map(p => p.sid));
+  let candidates = MASTER_PERSON.filter(p => !existingSids.has(p.sid));
+  if (dept) candidates = candidates.filter(p => p.dept === dept);
+  if (search) candidates = candidates.filter(p => p.name.toLowerCase().includes(search) || p.sid.includes(search));
+  candidates = candidates.slice(0, 20);
+  document.getElementById('apd-single-result').innerHTML = candidates.map(p => `
+    <tr>
+      <td class="mono">${p.sid}</td>
+      <td>${p.name}</td>
+      <td>${p.dept}</td>
+      <td><span class="tag tag-gray">${p.cls}</span></td>
+      <td style="font-size:13px;color:var(--text-secondary)">${p.pos}</td>
+      <td><button class="btn-text btn-sm" onclick="addSinglePerson('${p.sid}')">添加</button></td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-disabled)">暂无可添加的人员</td></tr>';
+}
+
+// ===== 单个添加人员 =====
+function addSinglePerson(sid) {
+  const person = personBySid[sid];
+  if (!person) return;
+  const existing = TAG_PEOPLE.find(p => p.tagId === addPersonTagId && p.sid === sid);
+  if (existing) { alert('该人员已在此标签下'); return; }
+  const tag = TAG_LIST.find(t => t.id === addPersonTagId);
+  const now = new Date();
+  const dStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  TAG_PEOPLE.push({
+    id: 'p_single_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    tagId: addPersonTagId, tagName: tag.name,
+    groupId: addPersonGroupId, groupName: tag.groupName,
+    sid: person.sid, name: person.name, idNo: person.idNo, uid: person.uid,
+    dept: person.dept, cls: person.cls, pos: person.pos,
+    taggedAt: dStr,
+  });
+  tag.personCount = TAG_PEOPLE.filter(p => p.tagId === addPersonTagId).length;
+  updateStats();
+  searchSinglePerson(); // 刷新列表
+  // 标签人员面板也在标签详情里，但不在当前抽屉上下文中，关闭抽屉后会自动刷新
+}
+
+// ===== 初始渲染 =====
+updateStats();
+renderGroups();
+</script>
+</body>
+</html>

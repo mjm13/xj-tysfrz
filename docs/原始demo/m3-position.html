@@ -1,0 +1,2114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人员岗位身份 · 高校综合身份数据平台</title>
+<style>
+  :root {
+    --color-primary: #2563EB;
+    --color-primary-secondary: #478EF7;
+    --color-success: #00B42A;
+    --color-warning: #FF7D00;
+    --color-error: #F53F3F;
+    --color-info: #165DFF;
+    --text-primary: #1D2129;
+    --text-secondary: #4E5969;
+    --text-disabled: #86909C;
+    --bg-page: #FAFAFB;
+    --bg-card: #FFFFFF;
+    --bg-secondary: #F2F3F5;
+    --border: #E5E6EB;
+    --chart-1: #387EF5; --chart-2: #0FB17B; --chart-3: #F6980D; --chart-4: #A251F6;
+    --shadow-1: 0 1px 2px 0 rgba(0,0,0,.03), 0 1px 6px -1px rgba(0,0,0,.02);
+    --shadow-2: 0 4px 12px 0 rgba(0,0,0,.05), 0 2px 4px 0 rgba(0,0,0,.03);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg-page); }
+  body { font-family: "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+    color: var(--text-primary); font-size: 14px; line-height: 22px; }
+  a { text-decoration: none; color: inherit; }
+  button, input, select { font: inherit; color: inherit; outline: none; }
+
+  .topbar { height: 64px; background: var(--bg-card); box-shadow: var(--shadow-1);
+    display: flex; align-items: center; padding: 0 24px; position: sticky; top: 0; z-index: 100; }
+  .logo-wrap { display: flex; align-items: center; gap: 12px; margin-right: 32px; }
+  .logo-mark { width: 32px; height: 32px; border-radius: 6px; background: var(--color-primary);
+    display: flex; align-items: center; justify-content: center; }
+  .logo-mark svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; }
+  .logo-text { font-size: 16px; font-weight: 600; }
+  .topbar nav { display: flex; gap: 32px; flex: 1; height: 100%; align-items: center; }
+  .topbar nav a { color: var(--text-secondary); font-size: 14px; height: 100%; display: flex; align-items: center; position: relative; transition: color 200ms; }
+  .topbar nav a:hover { color: var(--color-primary); }
+  .topbar nav a.active { color: var(--color-primary); font-weight: 500; }
+  .topbar nav a.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--color-primary); }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .time-display { font-size: 12px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", monospace; }
+  .user-info { display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border); }
+  .user-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary); color: white;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; }
+  .user-name { font-size: 14px; color: var(--text-secondary); }
+
+  .layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 64px); }
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 16px 0; }
+  .sidebar-section { padding: 8px 16px; font-size: 12px; color: var(--text-disabled); letter-spacing: 1px; }
+  .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+    margin: 2px 8px; font-size: 14px; color: var(--text-secondary); cursor: pointer;
+    border-radius: 6px; transition: all 200ms; }
+  .sidebar-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; }
+  .sidebar-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .sidebar-item.active { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); font-weight: 500; }
+  .sidebar-item .badge { margin-left: auto; font-size: 11px; padding: 1px 6px;
+    border-radius: 3px; background: var(--bg-secondary); color: var(--text-disabled); }
+
+  .main { padding: 16px 24px 32px; min-width: 0; }
+  .breadcrumb { font-size: 14px; color: var(--text-disabled); margin-bottom: 12px; }
+  .breadcrumb a { color: var(--text-disabled); }
+  .breadcrumb a:hover { color: var(--color-primary); }
+  .breadcrumb .sep { margin: 0 8px; }
+  .breadcrumb .last { color: var(--text-primary); }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .page-title { font-size: 20px; font-weight: 600; color: var(--text-primary); line-height: 28px; margin-bottom: 4px; }
+  .page-desc { font-size: 14px; color: var(--text-secondary); }
+  .page-stats { display: flex; gap: 24px; font-size: 12px; color: var(--text-secondary); }
+  .page-stats strong { font-size: 16px; color: var(--text-primary); margin-left: 4px; font-family: "DIN Alternate", "Roboto", inherit; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .panel { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); padding: 16px; margin-bottom: 16px; }
+  .panel-title { font-size: 16px; font-weight: 500; color: var(--text-primary);
+    padding-left: 12px; position: relative; margin-bottom: 16px; }
+  .panel-title::before { content: ''; position: absolute; left: 0; top: 4px; width: 4px; height: 16px; background: var(--color-primary); border-radius: 2px; }
+  .panel-title .sub { font-size: 12px; color: var(--text-disabled); font-weight: 400; margin-left: 8px; }
+
+  .filter-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-input { height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg-card); font-size: 14px; color: var(--text-primary); transition: all 200ms; min-width: 200px; }
+  .filter-input:focus { border-color: var(--color-info); box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1); }
+  .filter-input.search { padding-left: 36px; }
+  .search-wrap { position: relative; }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-disabled); }
+  .filter-select { height: 40px; padding: 0 32px 0 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg-card) url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2386909C' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") right 12px center no-repeat;
+    font-size: 14px; cursor: pointer; appearance: none; min-width: 140px; }
+  .filter-spacer { flex: 1; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    height: 40px; padding: 0 16px; border-radius: 6px; font-size: 14px; font-weight: 500;
+    border: none; cursor: pointer; transition: all 200ms; }
+  .btn-primary { background: var(--color-primary); color: white; }
+  .btn-primary:hover { background: #1d4fc7; }
+  .btn-secondary { background: var(--bg-card); color: var(--color-info); border: 1px solid var(--color-info); }
+  .btn-secondary:hover { background: rgba(22, 93, 255, 0.04); }
+  .btn-text { background: transparent; color: var(--color-info); padding: 0 8px; height: 32px; }
+  .btn-text:hover { color: var(--color-primary); }
+  .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+
+  .table-wrap { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead { background: var(--bg-secondary); }
+  thead th { height: 48px; padding: 0 16px; text-align: left; font-weight: 500;
+    color: var(--text-secondary); white-space: nowrap; font-size: 14px; }
+  tbody td { padding: 12px 16px; color: var(--text-primary); border-bottom: 1px solid var(--border); white-space: nowrap; vertical-align: middle; }
+  tbody tr { transition: background 200ms; }
+  tbody tr:hover { background: var(--bg-secondary); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono { font-family: "DIN Alternate", "Roboto", inherit; color: var(--text-secondary); }
+
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 12px; line-height: 20px; font-weight: 400; }
+  .tag-blue { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); }
+  .tag-green { background: rgba(0, 180, 42, 0.08); color: var(--color-success); }
+  .tag-orange { background: rgba(255, 125, 0, 0.08); color: var(--color-warning); }
+  .tag-red { background: rgba(245, 63, 63, 0.08); color: var(--color-error); }
+  .tag-purple { background: rgba(162, 81, 246, 0.08); color: var(--chart-4); }
+  .tag-gray { background: var(--bg-secondary); color: var(--text-secondary); }
+  .tag-cyan { background: rgba(70, 180, 195, 0.10); color: #2A8B9C; }
+
+  .multi-pos { display: inline-flex; align-items: center; gap: 4px; padding: 1px 6px; border-radius: 3px;
+    background: rgba(162, 81, 246, 0.08); color: var(--chart-4); font-size: 10.5px; line-height: 16px; margin-left: 6px; font-weight: 500; }
+
+  .info-box { background: rgba(22, 93, 255, 0.04); border: 1px solid rgba(22, 93, 255, 0.16);
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 12px; }
+  .info-box-icon { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; color: var(--color-info); }
+  .info-box-icon svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 2; }
+  .info-box-content { flex: 1; font-size: 13px; color: var(--text-secondary); line-height: 22px; }
+  .info-box-content strong { color: var(--text-primary); font-weight: 500; }
+
+  .readonly-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; background: var(--bg-secondary); border-radius: 3px;
+    font-size: 11px; color: var(--text-secondary); margin-left: 12px; vertical-align: middle;
+  }
+  .readonly-badge::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--text-disabled);
+  }
+
+  /* ===== 顶导下拉菜单 ===== */
+  .nav-dropdown {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .nav-dropdown-trigger {
+    color: var(--text-secondary);
+    font-size: 14px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: color 200ms;
+  }
+  .nav-dropdown-trigger::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    margin-left: 4px;
+    margin-bottom: 3px;
+    transition: transform 200ms;
+    opacity: 0.6;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger {
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 16px;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger {
+    color: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger::after {
+    transform: rotate(-135deg);
+    margin-bottom: -3px;
+    opacity: 1;
+  }
+  .nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-2);
+    min-width: 220px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 200ms;
+    z-index: 200;
+  }
+  .nav-dropdown:hover .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+  .nav-dropdown-menu a {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    height: auto !important;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 150ms;
+  }
+  .nav-dropdown-menu a::after { display: none !important; }
+  .nav-dropdown-menu a:hover {
+    background: rgba(37, 99, 235, 0.06);
+    color: var(--color-primary);
+  }
+  .nav-dropdown-menu a svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+  .nav-dropdown-menu a:hover svg { opacity: 1; }
+  .nav-dropdown-menu .menu-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .nav-dropdown-menu .menu-label {
+    font-size: 14px;
+    line-height: 18px;
+  }
+  .nav-dropdown-menu .menu-desc {
+    font-size: 11px;
+    color: var(--text-disabled);
+    margin-top: 2px;
+    line-height: 14px;
+  }
+  .nav-dropdown-menu a:hover .menu-desc { color: var(--color-primary-secondary); }
+  .nav-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 0;
+    right: 0;
+    height: 8px;
+  }
+
+  /* ===== 岗位映射管理 ===== */
+  .map-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0 12px;
+  }
+  .map-step-no {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--color-primary); color: #fff;
+    font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .map-step-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  .map-step-sub { font-size: 12px; color: var(--text-disabled); }
+
+  /* 源头勾选 */
+  .src-checks { display: flex; flex-wrap: wrap; gap: 8px; }
+  .src-check {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; cursor: pointer; transition: all 150ms; background: var(--bg-card);
+  }
+  .src-check:hover { border-color: var(--color-primary); }
+  .src-check input { accent-color: var(--color-primary); cursor: pointer; }
+  .src-check:has(input:checked) { border-color: var(--color-primary); background: rgba(37,99,235,.06); color: var(--color-primary); }
+
+  /* 拆分结果汇总 */
+  .split-summary {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  .sp-item {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 16px; text-align: center;
+  }
+  .sp-num { font-size: 24px; font-weight: 600; color: var(--text-primary); font-family: 'DIN Alternate','Roboto',inherit; line-height: 30px; }
+  .sp-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+  /* 拆分表 - 参照列底色 */
+  .split-table .ref-col { background: var(--bg-secondary); color: var(--text-secondary); font-size: 12px; }
+  .split-table thead .ref-col { color: var(--text-disabled); }
+
+  /* 三态标定分段控件 */
+  .flag-seg { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .flag-opt {
+    border: none; background: var(--bg-card); cursor: pointer;
+    padding: 5px 12px; font-size: 12.5px; color: var(--text-secondary);
+    border-right: 1px solid var(--border); transition: all 150ms;
+  }
+  .flag-opt:last-child { border-right: none; }
+  .flag-opt:hover { background: var(--bg-secondary); }
+  .flag-opt.valid.on   { background: var(--color-success); color: #fff; }
+  .flag-opt.invalid.on { background: var(--color-error); color: #fff; }
+  .flag-opt.pending.on { background: var(--color-warning); color: #fff; }
+
+  /* 批量标定 */
+  .bulk-flag { display: inline-flex; align-items: center; gap: 6px; }
+  .flag-btn {
+    border: 1px solid var(--border); background: var(--bg-card); cursor: pointer;
+    padding: 5px 10px; border-radius: 6px; font-size: 12.5px; transition: all 150ms;
+  }
+  .flag-btn.valid:hover   { border-color: var(--color-success); color: var(--color-success); }
+  .flag-btn.invalid:hover { border-color: var(--color-error); color: var(--color-error); }
+  .flag-btn.pending:hover { border-color: var(--color-warning); color: var(--color-warning); }
+
+  /* 入库结果面板 */
+  .result-panel { border-color: rgba(0,180,42,.25); background: rgba(0,180,42,.02); }
+  .result-steps { display: flex; flex-direction: column; gap: 12px; }
+  .result-step {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px;
+  }
+  .result-step-ic {
+    width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+    background: rgba(37,99,235,.08); color: var(--color-primary);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .result-step-ic svg { width: 20px; height: 20px; }
+  .result-step-body { flex: 1; min-width: 0; }
+  .result-step-title { font-size: 14px; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+  .result-step-no { font-size: 11px; font-weight: 500; color: var(--color-primary); background: rgba(37,99,235,.08); padding: 1px 7px; border-radius: 3px; }
+  .result-step-desc { font-size: 13px; color: var(--text-secondary); margin-top: 5px; line-height: 20px; }
+  .result-step-meta { font-size: 11.5px; color: var(--text-disabled); margin-top: 5px; }
+  .result-step-ok {
+    flex-shrink: 0; align-self: center; font-size: 12px; color: var(--color-success);
+    background: rgba(0,180,42,.1); padding: 3px 10px; border-radius: 4px; font-weight: 500;
+  }
+
+  /* toast */
+  .m3-toast {
+    position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%) translateY(20px);
+    background: rgba(29,33,41,.92); color: #fff; padding: 10px 20px; border-radius: 8px;
+    font-size: 13.5px; box-shadow: var(--shadow-3); z-index: 999;
+    opacity: 0; visibility: hidden; transition: all 220ms;
+  }
+  .m3-toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo-wrap">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>
+    </div>
+    <div class="logo-text">身份数据平台</div>
+  </div>
+  <nav>
+    <a href="页面主页.html">主页</a>
+    <div class="nav-dropdown active">
+      <a href="m1-basic-identity.html" class="nav-dropdown-trigger" style="text-decoration:none;color:inherit">身份管理</a>
+      <div class="nav-dropdown-menu">
+        <a href="m1-basic-identity.html">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员基础身份</div>
+            <div class="menu-desc">人员进档 · 一人一ID · 多源头采集</div>
+          </div>
+        </a>
+        <a href="m2-classification.html">
+          <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员分类身份</div>
+            <div class="menu-desc">树形分类 · 标准属性 · 实例挂载</div>
+          </div>
+        </a>
+        <a href="m3-position.html">
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员岗位身份</div>
+            <div class="menu-desc">广义岗位 · 一人多身份</div>
+          </div>
+        </a>
+        <a href="m7-custom-tags.html">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员自定义标签管理</div>
+            <div class="menu-desc">自定义群组 · 灵活标注 · 便捷查询</div>
+          </div>
+        </a>
+        <a href="m4-org.html">
+          <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">组织机构体系</div>
+            <div class="menu-desc">院系树 · 强绑定身份</div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <a href="m5-identity-permission.html">身份权限管理</a>
+    <a href="m6-data-query.html">数据查询</a>
+  </nav>
+  <div class="topbar-right">
+    <span class="time-display" id="time-display"></span>
+    <div class="user-info">
+      <div class="user-avatar">管</div>
+      <span class="user-name">管理员 · 数据治理岗</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-section">人员管理</div>
+    <a href="m1-basic-identity.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+      <span>人员基础身份</span>
+    </div></a>
+    <a href="m2-classification.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+      <span>人员分类身份</span>
+    </div></a>
+    <div class="sidebar-item active">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+      <span>人员岗位身份</span>
+    </div>
+    <a href="m7-custom-tags.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      <span>自定义标签身份</span>
+    </div></a>
+    <a href="m4-org.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+      <span>组织机构体系</span>
+    </div></a>
+
+    <div class="sidebar-section" style="margin-top:8px">M3 子功能</div>
+    <div class="sidebar-item active" data-view="data">
+      <svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      <span>岗位身份数据</span>
+      <span class="badge">15.2K</span>
+    </div>
+    <div class="sidebar-item" data-view="mapping">
+      <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+      <span>岗位映射管理</span>
+      <span class="badge" id="sb-map-count">—</span>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="页面主页.html">平台总览</a>
+      <span class="sep">/</span>
+      <span class="last" id="crumb-last">人员岗位身份</span>
+    </div>
+
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">人员岗位身份<span class="readonly-badge">只读 · 数据源自各源头部门</span></h1>
+        <p class="page-desc">广义岗位治理 · 一人多岗位 · 任职生命周期 · 与组织机构强绑定</p>
+      </div>
+      <div class="page-stats">
+        <span>有效岗位 <strong>15,234</strong></span>
+        <span>持岗人员 <strong>8,452</strong></span>
+        <span>一人多岗 <strong>2,068</strong></span>
+        <span>本月任免 <strong>56</strong></span>
+      </div>
+    </div>
+
+    <!-- ============ 视图1：岗位身份数据 ============ -->
+    <section class="view active" id="view-data">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>数据治理边界</strong>：岗位身份数据全部来自源头部门（党办/校办/学工部/教务处/各院系等），平台仅作汇聚展示与统一治理，<strong>不支持前台直接编辑</strong>。一个人员类型可对应多个岗位身份（如教师 = 行政职务 + 党内职务），不同岗位身份关联到不同的组织机构体系。<br><strong style="color:var(--color-warning)">来源说明</strong>：人事系统通常只维护到<strong>科级及以上管理岗位</strong>；科级以下的教师、专技、学生干部等岗位人事系统多无记录，由对应部门/学院<strong>线下采集</strong>补充。下表"数据来源"列标注每条岗位的来源类型。
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <input class="filter-input search" placeholder="搜索 UID / 学工号 / 姓名 / 职务" id="data-search">
+        </div>
+        <select class="filter-select" id="data-type">
+          <option value="">全部任职类型</option>
+          <option value="行政职务">行政职务</option>
+          <option value="党内职务">党内职务</option>
+          <option value="辅导员">辅导员</option>
+          <option value="班主任">班主任</option>
+        </select>
+        <select class="filter-select" id="data-effective">
+          <option value="">全部有效性</option>
+          <option value="有效">仅看有效</option>
+          <option value="无效">仅看无效</option>
+        </select>
+        <select class="filter-select" id="data-status">
+          <option value="">全部任免状态</option>
+          <option value="在任">在任</option>
+          <option value="拟任">拟任</option>
+          <option value="免职">免职</option>
+          <option value="退休">退休</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm">导出</button>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:110px">人员唯一标识</th>
+                <th style="width:100px">学工号</th>
+                <th style="width:90px">学工号类型</th>
+                <th style="width:90px">姓名</th>
+                <th style="width:100px">任职类型</th>
+                <th>任职岗位</th>
+                <th>任职单位</th>
+                <th style="width:120px">起止时间</th>
+                <th style="width:80px">有效性</th>
+                <th style="width:80px">任免状态</th>
+                <th style="width:150px">数据来源</th>
+                <th style="width:80px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="data-tbody"></tbody>
+          </table>
+        </div>
+        <div style="padding:12px 16px;border-top:1px solid var(--border);font-size:13px;color:var(--text-secondary);display:flex;justify-content:space-between;align-items:center">
+          <span>共 <strong id="data-total" style="color:var(--text-primary)">—</strong> 条岗位记录</span>
+          <span style="color:var(--text-disabled);font-size:12px">数据源头：党办 / 校办 / 学工部 / 教务处 / 各院系 · T+1 同步</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============ 视图2：岗位映射管理 ============ -->
+    <section class="view" id="view-mapping">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>岗位映射管理</strong>：源头岗位原始数据<strong>每行保留、不做分组合并</strong>。将其中<strong>多值</strong>的关键字段（职务名称、任职单位名称）逐行按笛卡尔积拆分为<strong>一对一</strong>映射明细，供逐条标定后入库。原始字段值保留为<strong>参照列</strong>不做修改。<strong style="color:var(--color-warning)">每次仅加载并处理一个源头</strong>的原始数据。
+        </div>
+      </div>
+
+      <!-- 步骤 1：选择源头并加载原始数据 -->
+      <div class="map-step">
+        <div class="map-step-no">1</div>
+        <div class="map-step-title">选择源头 · 加载原始数据</div>
+        <div class="map-step-sub">可勾选多个源头，但每次仅处理一个</div>
+      </div>
+
+      <div class="filter-bar" style="flex-wrap:wrap;gap:10px">
+        <span class="filter-label" style="font-size:13px;color:var(--text-secondary)">源头范围：</span>
+        <div class="src-checks" id="src-checks"></div>
+        <div class="filter-spacer"></div>
+        <span class="filter-label" style="font-size:13px;color:var(--text-secondary)">本次处理：</span>
+        <select class="filter-select" id="map-active-src" style="min-width:200px"></select>
+        <button class="btn btn-primary btn-sm" onclick="loadSourceRaw()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          加载源头数据
+        </button>
+      </div>
+
+      <!-- 原始数据（去重后每行保留，未做分组合并） -->
+      <div class="panel" id="raw-panel" style="display:none">
+        <div class="panel-title">
+          源头原始数据 <span class="sub" id="raw-src-name">—</span>
+          <span style="margin-left:auto;font-size:12px;color:var(--text-disabled);font-weight:400" id="raw-meta"></span>
+        </div>
+        <div class="table-wrap">
+          <div class="table-scroll" style="max-height:420px">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:60px">行号</th>
+                  <th>关键字段1 · 职务名称</th>
+                  <th>关键字段2 · 任职单位名称</th>
+                </tr>
+              </thead>
+              <tbody id="raw-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 步骤 2：分组去重 + 笛卡尔积拆分 -->
+      <div class="map-step" id="step2" style="display:none">
+        <div class="map-step-no">2</div>
+        <div class="map-step-title">多值字段逐行笛卡尔积拆分</div>
+        <div class="map-step-sub">每行保留 · 多值 → 一对一，原始值保留为参照列</div>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-primary btn-sm" id="btn-split" onclick="doSplit()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 3v12M6 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM18 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM6 9a9 9 0 0 0 9 9h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          执行拆分
+        </button>
+      </div>
+
+      <!-- 拆分结果（含标定列） -->
+      <div id="split-wrap" style="display:none">
+
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <span class="search-icon">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg>
+            </span>
+            <input class="filter-input search" id="split-search" placeholder="搜索拆分字段 / 参照值" oninput="renderSplit()">
+          </div>
+          <select class="filter-select" id="split-flag" onchange="renderSplit()">
+            <option value="">全部标定状态</option>
+            <option value="valid">仅看有效</option>
+            <option value="invalid">仅看无效</option>
+            <option value="pending">仅看待定</option>
+          </select>
+          <div class="filter-spacer"></div>
+          <div class="bulk-flag">
+            <span style="font-size:12.5px;color:var(--text-secondary);margin-right:4px">批量标定：</span>
+            <button class="flag-btn valid" onclick="bulkFlag('valid')">全部有效</button>
+            <button class="flag-btn invalid" onclick="bulkFlag('invalid')">全部无效</button>
+            <button class="flag-btn pending" onclick="bulkFlag('pending')">全部待定</button>
+          </div>
+        </div>
+
+        <div class="split-summary" id="split-summary"></div>
+
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table class="split-table">
+              <thead>
+                <tr>
+                  <th style="width:54px">序号</th>
+                  <th>拆分字段1 · 职务名称</th>
+                  <th>拆分字段2 · 任职单位名称</th>
+                  <th class="ref-col">原始字段1（参照）</th>
+                  <th class="ref-col">原始字段2（参照）</th>
+                  <th style="width:230px">是否有效拆分</th>
+                </tr>
+              </thead>
+              <tbody id="split-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 步骤 3：保存入库 -->
+        <div class="map-step" style="margin-top:18px">
+          <div class="map-step-no">3</div>
+          <div class="map-step-title">标定完成 · 保存入库</div>
+          <div class="map-step-sub" id="save-hint">请先完成各行标定</div>
+          <div class="filter-spacer"></div>
+          <button class="btn btn-secondary btn-sm" onclick="resetSplit()">重置拆分</button>
+          <button class="btn btn-primary btn-sm" id="btn-save-map" onclick="saveMapping()">保存映射</button>
+        </div>
+
+        <!-- 本次入库结果面板（保存后展开） -->
+        <div class="panel result-panel" id="save-result" style="display:none">
+          <div class="panel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right:6px;vertical-align:-3px"><path d="M9 12l2 2 4-4" stroke="var(--color-success)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="10" stroke="var(--color-success)" stroke-width="2"/></svg>
+            本次入库结果
+            <span class="sub" id="save-result-time">—</span>
+          </div>
+          <div class="result-steps" id="result-steps"></div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<script>
+  function updateTime() {
+    const now = new Date(); const pad = n => String(n).padStart(2, '0');
+    document.getElementById('time-display').textContent = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  }
+  updateTime(); setInterval(updateTime, 1000);
+
+  // ===== Mock 岗位数据 - 一人多岗位 =====
+  const POSITIONS = [
+    {
+      uid: 'NP00000001', xgh: 'T2018001', xghType: '教工号', name: '张明远',
+      positions: [
+        { type: '行政职务', title: '院长', orgCode: 'D001', orgName: '数计学院',
+          start: '2022-09-01', end: null, effective: true, status: '在任', source: '校办公室' },
+        { type: '党内职务', title: '党委委员', orgCode: 'P-D001', orgName: '数计学院党委',
+          start: '2023-06-01', end: null, effective: true, status: '在任', source: '党委办公室' }
+      ]
+    },
+    {
+      uid: 'NP00000002', xgh: 'A2019003', xghType: '教工号', name: '李雪琴',
+      positions: [
+        { type: '行政职务', title: '主任', orgCode: 'D000', orgName: '校长办公室',
+          start: '2024-01-15', end: null, effective: true, status: '在任', source: '校办公室' }
+      ]
+    },
+    {
+      uid: 'NP00000003', xgh: 'T2020055', xghType: '教工号', name: '陈志强',
+      positions: [
+        { type: '辅导员', title: '本科生辅导员', orgCode: 'D001', orgName: '数计学院',
+          start: '2023-09-01', end: null, effective: true, status: '在任', source: '学生工作部' },
+        { type: '班主任', title: '2023级软件工程3班班主任', orgCode: 'D001-23-SE3', orgName: '软件工程2023级3班',
+          start: '2023-09-01', end: '2027-06-30', effective: true, status: '在任', source: '教务处' }
+      ]
+    },
+    {
+      uid: 'NP00000050', xgh: 'T2015042', xghType: '教工号', name: '吴志强',
+      positions: [
+        { type: '行政职务', title: '副院长', orgCode: 'D003', orgName: '理工学院',
+          start: '2021-09-01', end: null, effective: true, status: '在任', source: '校办公室' },
+        { type: '党内职务', title: '党委副书记', orgCode: 'P-D003', orgName: '理工学院党委',
+          start: '2024-03-15', end: null, effective: true, status: '在任', source: '党委办公室' }
+      ]
+    },
+    {
+      uid: 'NP00000087', xgh: 'A2010012', xghType: '教工号', name: '孙雅丽',
+      positions: [
+        { type: '行政职务', title: '处长', orgCode: 'D003-FIN', orgName: '财务处（国有资产管理办公室）',
+          start: '2020-04-01', end: null, effective: true, status: '在任', source: '校办公室' }
+      ]
+    },
+    {
+      uid: 'NP00000124', xgh: 'T2017089', xghType: '教工号', name: '刘建华',
+      positions: [
+        { type: '辅导员', title: '研究生辅导员', orgCode: 'D201', orgName: '研究生院',
+          start: '2022-09-01', end: null, effective: true, status: '在任', source: '学生工作部' }
+      ]
+    },
+    {
+      uid: 'NP00000156', xgh: 'A2012045', xghType: '教工号', name: '黄敏君',
+      positions: [
+        { type: '党内职务', title: '党支部书记', orgCode: 'P-D902', orgName: '后勤工作办公室党支部',
+          start: '2023-12-01', end: null, effective: true, status: '在任', source: '党委办公室' }
+      ]
+    },
+    {
+      uid: 'NP00000201', xgh: 'T2008021', xghType: '教工号', name: '周志远',
+      positions: [
+        { type: '行政职务', title: '副校长', orgCode: 'D000', orgName: '校长办公室',
+          start: '2019-06-01', end: '2024-12-31', effective: false, status: '免职', source: '校办公室' },
+        { type: '党内职务', title: '党委常委', orgCode: 'P-D000', orgName: '校党委',
+          start: '2019-06-01', end: null, effective: true, status: '在任', source: '党委办公室' }
+      ]
+    },
+    {
+      uid: 'NP00000312', xgh: 'T2021008', xghType: '教工号', name: '王慧颖',
+      positions: [
+        { type: '班主任', title: '2024级国际本科1班班主任', orgCode: 'D102-24-IB1', orgName: '国际本科2024级1班',
+          start: '2024-09-01', end: '2028-06-30', effective: true, status: '在任', source: '教务处' }
+      ]
+    },
+    {
+      uid: 'NP00000405', xgh: 'T2014038', xghType: '教工号', name: '林峰',
+      positions: [
+        { type: '行政职务', title: '副处长', orgCode: 'D003-FIN', orgName: '财务处（国有资产管理办公室）',
+          start: '2026-06-01', end: null, effective: true, status: '拟任', source: '校办公室' }
+      ]
+    },
+  ];
+
+  // ===== 岗位映射：源头原始数据（测试数据.xlsx · 去重后每行保留，未做分组合并） =====
+  // 关键字段1 = 职务名称；关键字段2 = 任职单位名称。含 , ，、/ 分隔的多值，拆分时逐行做笛卡尔积。
+  const MAP_SOURCES = [
+    {
+      code: 'SRC-HR', name: '人事管理系统 (HR)', sys: '人事管理系统 (HR)', sync: 'T+1 凌晨',
+      rows: [
+        { f1: '办公室副主任', f2: '学科规划与建设办公室' },
+        { f1: '文员', f2: '医学部' },
+        { f1: '办公室主管', f2: '校园规划与基本建设管理中心' },
+        { f1: '保卫部（处）安全教育与宣传主管', f2: '保卫部/保卫处' },
+        { f1: '副院长', f2: '管理学院' },
+        { f1: '文员', f2: '继续教育管理处/干部教育培训基地管理办公室' },
+        { f1: '机械工程学院副院长', f2: '机械工程学院' },
+        { f1: '法学院院长', f2: '法学院' },
+        { f1: '文员', f2: '离退休工作处' },
+        { f1: '仪器科学与技术学院副院长', f2: '仪器科学与技术学院' },
+        { f1: '文员', f2: '电子与信息学部' },
+        { f1: '医学部综合办公室主任', f2: '医学部' },
+        { f1: '保密办主管', f2: '保密办' },
+        { f1: '国家储能技术产教融合创新平台（中心）常务副主任（正处级）', f2: '国家储能技术产教融合创新平台（中心）' },
+        { f1: '项目管理主管', f2: '西部科技创新港管理办公室' },
+        { f1: '校园规划与基本建设管理中心工程部主管', f2: '校园规划与基本建设管理中心' },
+        { f1: '文员', f2: '财务处' },
+        { f1: '金禾经济研究中心副主任', f2: '金禾经济研究中心' },
+        { f1: '教师工作部副部长', f2: '教师工作部/人力资源部' },
+        { f1: '外事秘书', f2: '理学院' },
+        { f1: '副主任', f2: '医学部' },
+        { f1: '文员', f2: '人文社会科学学院' },
+        { f1: '文员', f2: '西安交大附中' },
+        { f1: '材料学院副院长', f2: '材料科学与工程学院' },
+        { f1: '项目管理办公室主管', f2: '后勤保障部' },
+        { f1: '国库与核算管理主管', f2: '财务处' },
+        { f1: '项目、节能办公室主任', f2: '后勤保障部' },
+        { f1: '文员', f2: '体育学院（体育中心）' },
+        { f1: '综合办公室副主任', f2: '医学部' },
+        { f1: '学生就业创业指导服务中心副主任', f2: '学生就业创业指导服务中心' },
+        { f1: '定点帮扶及对口支援主管', f2: '党委办公室/校长办公室' },
+        { f1: '文员', f2: '国际教育学院' },
+        { f1: '文员', f2: '资产公司' },
+        { f1: '处长', f2: '实验室管理处' },
+        { f1: '科学与技术研究院综合事务主管', f2: '科学与技术研究院' },
+        { f1: '处长', f2: '财务处' },
+        { f1: '综合办公室主管', f2: '实验室管理处' },
+        { f1: '外事秘书', f2: '电子与信息学部' },
+        { f1: '高端装备研究院事务主管', f2: '机械工程学院' },
+        { f1: '文员', f2: '实验室管理处' },
+        { f1: '质量监督办公室主管', f2: '继续教育管理处/干部教育培训基地管理办公室' },
+        { f1: '副处长', f2: '审计处' },
+        { f1: '副主任', f2: '党委办公室/校长办公室' },
+        { f1: '文员', f2: '研究生工作部/研究生院' },
+        { f1: '先进技术纵向管理文员', f2: '科学与技术研究院' },
+        { f1: '文员', f2: '后勤保障部' },
+        { f1: '文员', f2: '电气工程学院' },
+        { f1: '后勤保障部综合办公室主任', f2: '后勤保障部' },
+        { f1: '纪检监察机构办公室副主任', f2: '纪委/监察专员办' },
+        { f1: '化工学院副院长', f2: '化学工程与技术学院' },
+        { f1: '党建工作文员', f2: '党委组织部/党校' },
+        { f1: '科学与技术研究院科研项目管理主管', f2: '科学与技术研究院' },
+        { f1: '医院管理处处长', f2: '医学部' },
+        { f1: '未来技术学院和现代产业学院综合事务主管', f2: '未来技术学院和现代产业学院' },
+        { f1: '副主任（副处级）', f2: '教师教学发展中心' },
+        { f1: '巡视巡察整改督办主管', f2: '纪委/监察专员办' },
+        { f1: '文员', f2: '保卫部/保卫处' },
+        { f1: '收入与薪金管理主管', f2: '财务处' },
+        { f1: '校长(副处级)', f2: '西安交大附小' },
+        { f1: '文员', f2: '经济与金融学院' },
+        { f1: '副处长', f2: '实验室管理处' },
+        { f1: '副主任', f2: '中国西部高等教育评估中心' },
+        { f1: '科研服务与产教融合主管', f2: '国家储能技术产教融合创新平台（中心）' },
+        { f1: '期刊中心主任', f2: '学术期刊中心' },
+        { f1: '西安交通大学副校长', f2: '西安交通大学' },
+        { f1: '校友关系发展部副主任（兼）', f2: '校友关系发展部' },
+        { f1: '行政副主任', f2: '金属材料强度全国重点实验室' },
+        { f1: '饮食服务中心办公室主任', f2: '后勤保障部' },
+        { f1: '文员', f2: '继续教育学院' },
+        { f1: '国际教育学院常务副院长', f2: '国际教育学院' },
+        { f1: '国有资产管理处综合管理办公室主管', f2: '国有资产管理处' },
+        { f1: '科研秘书', f2: '电子与信息学部' },
+        { f1: '综合事务主管', f2: '国际合作与交流处' },
+        { f1: '纪检监察机构办公室秘书', f2: '纪委/监察专员办' },
+        { f1: '科学与技术研究院基础与海外合作处副处长', f2: '科学与技术研究院' },
+        { f1: '创新港办公室副主任', f2: '西部科技创新港管理办公室' },
+        { f1: '行政副主任', f2: '人机混合增强智能全国重点实验室' },
+        { f1: '校友关系发展部副主任', f2: '校友关系发展部' },
+        { f1: '馆长', f2: '档案馆、博物馆' },
+        { f1: '文员', f2: '马克思主义学院' },
+        { f1: '文员', f2: '党委宣传部' },
+        { f1: '文员', f2: '校友关系发展部' },
+        { f1: '纪检监察机构第二纪检监察室副主任', f2: '纪委/监察专员办' },
+        { f1: '副院长', f2: '校医院' },
+        { f1: '体育中心副主任', f2: '体育学院（体育中心）' },
+        { f1: '综合事务主管', f2: '教师工作部/人力资源部' },
+        { f1: '宿舍文化主管', f2: '学工部/学生处/武装部' },
+        { f1: '文员', f2: '管理学院' },
+        { f1: '财务处副处长', f2: '财务处' },
+        { f1: '文员', f2: '教务处' },
+        { f1: '文员', f2: '学工部/学生处/武装部' },
+        { f1: '大型仪器设备共享实验中心副主任', f2: '大型仪器设备共享实验中心' },
+        { f1: '科研秘书', f2: '机械工程学院' },
+        { f1: '办公室主任', f2: '国际教育学院' },
+        { f1: '物理学院副院长', f2: '物理学院' },
+        { f1: '副校长', f2: '西安交通大学' },
+        { f1: '文员', f2: '党委政策研究室' },
+        { f1: '综合事务主管', f2: '党委政策研究室' },
+        { f1: '纪检监察机构第一纪检监察室主任', f2: '纪委/监察专员办' },
+        { f1: '文员', f2: '党校/干部教育培训基地' },
+        { f1: '未来技术学院和现代产业学院副院长', f2: '未来技术学院和现代产业学院' },
+        { f1: '继续教育管理处/干部教育培训基地资源建设办公室主管', f2: '党校/干部教育培训基地' },
+        { f1: '考务录取主管', f2: '研究生工作部/研究生院' },
+        { f1: '办公室主任', f2: '管理学院' },
+        { f1: '文员', f2: '教师工作部/人力资源部' },
+        { f1: '文员', f2: '党委办公室/校长办公室' },
+        { f1: '审计处经济责任审计主管', f2: '审计处' },
+        { f1: '港澳台事务办公室主任（兼）', f2: '国际合作与交流处' },
+        { f1: '校友关系发展部研究发展主管', f2: '校友关系发展部' },
+        { f1: '文员', f2: '图书馆' },
+        { f1: '质量监督办公室主管', f2: '后勤保障部' },
+        { f1: '主管', f2: '学科规划与建设办公室' },
+        { f1: '评估质保主管', f2: '研究生工作部/研究生院' },
+        { f1: '文员', f2: '科学与技术研究院' },
+        { f1: '保卫处副处长', f2: '保卫部/保卫处' },
+        { f1: '网络信息中心项目管理主管', f2: '网络信息中心' },
+        { f1: '文员', f2: '学科规划与建设办公室' },
+        { f1: '住房管理处雁塔校区住房管理主管', f2: '住房管理处' },
+        { f1: '钱学森学院常务副院长（正处级）', f2: '钱学森学院/钱学森书院' },
+        { f1: '文员', f2: '纪委/监察专员办' },
+        { f1: '文员', f2: '附设卫生学校' },
+        { f1: '网络思政主管', f2: '党委宣传部' },
+        { f1: '主管', f2: '财务处' },
+        { f1: '文员', f2: '社会科学处' },
+        { f1: '继续教育管理处处长', f2: '继续教育管理处/干部教育培训基地管理办公室' },
+        { f1: '办公室副主任', f2: '电子与信息学部' },
+        { f1: '办公室主任', f2: '体育学院（体育中心）' },
+        { f1: '主任(兼)（正处级）', f2: '饮食服务中心' },
+        { f1: '文员', f2: '国际合作与交流处' },
+        { f1: '文员', f2: '（原）科技与教育发展研究院' },
+        { f1: '科研院先进技术综合业务与质量主管', f2: '科学与技术研究院' },
+        { f1: '科学与技术研究院副院长', f2: '科学与技术研究院' },
+        { f1: '创新港核算主管', f2: '财务处' },
+        { f1: '米兰理工联合设计与创新学院副院长（兼）', f2: '西安交通大学米兰理工联合学院' },
+        { f1: '办公室主任', f2: '电气工程学院' },
+        { f1: '国家储能平台（中心）国家储能教材基地综合事务主管', f2: '国家储能技术产教融合创新平台（中心）' },
+        { f1: '内控评价及综合事务主管', f2: '审计处' },
+        { f1: '西安交通大学米兰理工联合设计与创新学院发展与合作主管', f2: '西安交通大学米兰理工联合学院' },
+        { f1: '化学学院副院长', f2: '化学学院' },
+        { f1: '宣传主管', f2: '电子与信息学部' },
+        { f1: '办公室主管', f2: '机关与直属单位党委' },
+        { f1: '文员', f2: '西部科技创新港管理办公室' },
+        { f1: '人才计划与发展主管', f2: '教师工作部/人力资源部' },
+        { f1: '科研服务与产教融合主管', f2: '西安交通大学国家医学攻关产教融合创新平台（中心）' },
+        { f1: '文员', f2: '校园规划与基本建设管理中心' },
+        { f1: '生命科学与技术学院副院长', f2: '生命科学与技术学院' },
+        { f1: '文员', f2: '化学工程与技术学院' },
+        { f1: '航天学院副院长', f2: '航天航空学院' },
+        { f1: '物业服务中心副主任', f2: '后勤保障部' },
+        { f1: '人力资源部副部长（兼）', f2: '教师工作部/人力资源部' },
+        { f1: '文员', f2: '工会' },
+        { f1: '医学校区离退休工作主管', f2: '离退休工作处' },
+        { f1: '后勤保障部部长', f2: '后勤保障部' },
+        { f1: '研究院行政秘书', f2: '数学与统计学院' },
+        { f1: '信息管理部主管', f2: '网络信息中心' },
+        { f1: '副主任', f2: '实践教学中心/工程坊' },
+        { f1: '电气工程学院学科与人才主管', f2: '电气工程学院' },
+        { f1: '创新港综合服务中心主任', f2: '后勤保障部' },
+        { f1: '文员', f2: '能源与动力工程学院' },
+        { f1: '住房管理处雁塔校区文员', f2: '后勤保障部' },
+        { f1: '离退休工作处退休人员管理服务主管', f2: '离退休工作处' },
+        { f1: '副部长', f2: '党委宣传部' },
+        { f1: '科学与技术研究院国防科技处副处长（兼）', f2: '科学与技术研究院' },
+        { f1: '科学与与技术研究院常务副院长', f2: '科学与技术研究院' },
+        { f1: '医学部副主任（兼）', f2: '医学部' },
+        { f1: '副部长', f2: '后勤保障部' },
+        { f1: '审计处工程审计主管', f2: '审计处' },
+        { f1: '教育基金会秘书长', f2: '教育基金会' },
+        { f1: '科学与技术研究院副院长、国防科技处处长', f2: '科学与技术研究院' },
+        { f1: '副处长', f2: '保卫部/保卫处' },
+        { f1: '创新港综合事务文员', f2: '航天航空学院' },
+        { f1: '科研财务助理', f2: '机械工程学院' },
+        { f1: '副院长（正处级）、基础与海外合作处处长', f2: '科学与技术研究院' },
+        { f1: '建设管理主管', f2: '校园规划与基本建设管理中心' },
+        { f1: '第一附属医院总会计师', f2: '第一附属医院' },
+        { f1: '人力资源处', f2: '医学部' },
+        { f1: '人才工作主管', f2: '数学与统计学院' },
+        { f1: '文员', f2: '外国语学院' },
+        { f1: '校长办公室副主任、信访办公室主任（兼）', f2: '党委办公室/校长办公室' },
+        { f1: '审计处财务收支及绩效审计主管', f2: '审计处' },
+        { f1: '国际教育学院副院长', f2: '国际教育学院' },
+        { f1: '综合事务及资金管理主管', f2: '后勤保障部' },
+        { f1: '文员', f2: '机械工程学院' },
+        { f1: '办公室主任', f2: '机械工程学院' },
+        { f1: '电气学院副院长', f2: '电气工程学院' },
+        { f1: '副主任', f2: '学科规划与建设办公室' },
+        { f1: '主任', f2: '曲江校区管理办公室' },
+        { f1: '出入境管理主管', f2: '国际合作与交流处' },
+        { f1: '保卫处政委', f2: '保卫部/保卫处' },
+        { f1: '综合管理文员', f2: '能源与动力工程学院' },
+        { f1: '机械工程学院院长（兼）', f2: '机械工程学院' },
+        { f1: '文员', f2: '网络教育学院' },
+        { f1: '副主任（兼）', f2: '党委政策研究室' },
+        { f1: '科学与技术研究院综合办公室主任（副处级）', f2: '科学与技术研究院' },
+        { f1: '行政事务文员', f2: '电气工程学院' },
+        { f1: '副主任', f2: '校园规划与基本建设管理中心' },
+        { f1: '副处长', f2: '离退休工作处' },
+        { f1: '医学部主任（兼）', f2: '医学部' },
+        { f1: '科学与技术研究院重大专项处副处长', f2: '科学与技术研究院' },
+        { f1: '西安交通大学米兰理工联合学院院长（兼）', f2: '西安交通大学米兰理工联合学院' },
+        { f1: '办公室主任', f2: '化学学院' },
+        { f1: '巡视办公室主任', f2: '党委巡视工作办公室' },
+        { f1: '人文学院副院长', f2: '人文社会科学学院' },
+        { f1: '数学学院副院长', f2: '数学与统计学院' },
+        { f1: '材料科学与工程学院副院长', f2: '材料科学与工程学院' },
+        { f1: '副校长', f2: '附属中学' },
+        { f1: '医学部公共卫生学院副院长', f2: '公共卫生学院' },
+        { f1: '副院长', f2: '（原）科技与教育发展研究院' },
+        { f1: '文员', f2: '西安交大附小' },
+        { f1: '文员', f2: '教师教学发展中心' },
+        { f1: '物业主管', f2: '后勤保障部' },
+        { f1: '财务信息化主管', f2: '财务处' },
+        { f1: '国际合作与交流处副处长', f2: '国际合作与交流处' },
+        { f1: '后勤保障部综合办公室主任', f2: '后勤保障部机关' },
+        { f1: '教育基金会捐赠项目管理主管', f2: '教育基金会' },
+        { f1: '人事秘书', f2: '电子与信息学部' },
+        { f1: '公管学院副院长', f2: '公共政策与管理学院' },
+        { f1: '科学与技术研究院成果评价与管理主管', f2: '科学与技术研究院' },
+        { f1: '网络信息中心服务培训主管', f2: '网络信息中心' },
+        { f1: '科研院重大项目管理主管', f2: '科学与技术研究院' },
+        { f1: '文员', f2: '学生就业创业指导服务中心' },
+        { f1: '资金结算中心主管', f2: '财务处' },
+        { f1: '医院管理处副处长', f2: '医学部' },
+        { f1: '科学与技术研究院产教融合与成果转化处副处长', f2: '科学与技术研究院' },
+        { f1: '机械学院副院长', f2: '机械工程学院' },
+        { f1: '医学部药学院副院长', f2: '医学部' },
+        { f1: '项目管理文员', f2: '社会科学处' },
+        { f1: '副书记', f2: '机关与直属单位党委' },
+        { f1: '创新港综合服务大厅主管', f2: '党委办公室/校长办公室' },
+        { f1: '综合信息部主管', f2: '学生就业创业指导服务中心' },
+        { f1: '饮食中心质监办主管', f2: '后勤保障部' },
+        { f1: '口腔医院副院长', f2: '口腔医院' },
+        { f1: '图书馆馆长', f2: '图书馆' },
+        { f1: '网络空间安全学院副院长', f2: '网络空间安全学院' },
+        { f1: '项目与捐赠管理主管', f2: '校友关系发展部' },
+        { f1: '校长助理', f2: '西安交通大学' },
+        { f1: '国家储能技术产教融合创新平台（中心）副主任', f2: '国家储能技术产教融合创新平台（中心）' },
+        { f1: '处长', f2: '教务处' },
+        { f1: '政策法规办公室政策法规主管', f2: '政策法规办公室' },
+        { f1: '综合主管', f2: '西安交通大学国家医学攻关产教融合创新平台（中心）' },
+        { f1: '后勤保障部住房管理处副处长', f2: '住房管理处' },
+        { f1: '思政教育主管', f2: '研究生工作部/研究生院' },
+        { f1: '博士后管理主管', f2: '教师工作部/人力资源部' },
+        { f1: '科学与技术研究院副院长（正处级）、项目组织管理处处长', f2: '科学与技术研究院' },
+        { f1: '校园规划与基本建设管理中心副主任', f2: '校园规划与基本建设管理中心' },
+        { f1: '主任（兼）', f2: '党校/干部教育培训基地' },
+        { f1: '副主任', f2: '能源与动力工程学院' },
+        { f1: '主管', f2: '教师工作部/人力资源部' },
+        { f1: '校际交流主管', f2: '教务处' },
+        { f1: '国有资产管理处固定资产管理办公室主管', f2: '国有资产管理处' },
+        { f1: '城市学院院长', f2: '城市学院' },
+        { f1: '科学与技术研究院副院长（正处级）、重大专项处处长', f2: '科学与技术研究院' },
+        { f1: '法学院副院长', f2: '法学院' },
+        { f1: '科学与技术研究院校企合作与成果转化主管', f2: '科学与技术研究院' },
+        { f1: '副书记', f2: '基础教育管理处/基础教育党委' },
+        { f1: '社会科学处项目管理主管', f2: '社会科学处' },
+        { f1: '综合事务文员', f2: '电气工程学院' },
+        { f1: '自动化科学与工程学院副院长', f2: '自动化科学与工程学院' },
+        { f1: '创新港办公室副主任（兼）', f2: '西部科技创新港管理办公室' },
+        { f1: '文员', f2: '人居环境与建筑工程学院' },
+        { f1: '软件学院院长', f2: '电子与信息学部' },
+        { f1: '马克思主义学院副院长', f2: '马克思主义学院' },
+        { f1: '人事事务文员', f2: '电气工程学院' },
+        { f1: '文员', f2: '审计处' },
+        { f1: '物业服务中心主任', f2: '后勤保障部' },
+        { f1: '科学与技术研究院国防科技处副处长', f2: '科学与技术研究院' },
+        { f1: '新闻与新媒体学院副院长', f2: '新闻与新媒体学院' },
+        { f1: '附属中学校长', f2: '西安交大附中' },
+        { f1: '电子与信息学部副主任', f2: '电子与信息学部' },
+        { f1: '医学部基础医学院副院长', f2: '医学部' },
+        { f1: '国际教育学院创新港综合事务主管', f2: '国际教育学院' },
+        { f1: '法医学院副院长', f2: '法医学院' },
+        { f1: '副处长', f2: '财务处' },
+        { f1: '生命学院副院长', f2: '生命科学与技术学院' },
+        { f1: '主任（副处级）', f2: '社会保险管理中心' },
+        { f1: '国际合作与交流处综合事务主管', f2: '国际合作与交流处' },
+        { f1: '副院长', f2: '国际教育学院' },
+        { f1: '西安交通大学常务副校长', f2: '西安交通大学' },
+        { f1: '西安交通大学米兰理工联合设计与创新学院执行院长（正处级）', f2: '西安交通大学米兰理工联合学院' },
+        { f1: '综合办公室主管', f2: '教师教学发展中心' },
+        { f1: '办公室主任', f2: '生命科学与技术学院' },
+        { f1: '创新港综合管理文员', f2: '经济与金融学院' },
+        { f1: '薪酬管理主管', f2: '教师工作部/人力资源部' },
+        { f1: '思想政治工作秘书', f2: '党委宣传部' },
+        { f1: '学科规划与建设办公室综合协调主管', f2: '学科规划与建设办公室' },
+        { f1: '公共政策与管理学院副院长', f2: '公共政策与管理学院' },
+        { f1: '学生就业创业指导服务中心毕业生就业管理主管', f2: '学生就业创业指导服务中心' },
+        { f1: '文员', f2: '网络信息中心' },
+        { f1: '文员', f2: '国有资产管理处' },
+        { f1: '办公室主任', f2: '新闻与新媒体学院' },
+        { f1: '校地合作办公室主任', f2: '党委办公室/校长办公室' },
+        { f1: '办公室主任', f2: '能源与动力工程学院' },
+        { f1: '项目管理办公室主管', f2: '国有资产管理处' },
+        { f1: '档案馆办公室主管', f2: '档案馆、博物馆' },
+        { f1: '人居学院副院长', f2: '人居环境与建筑工程学院' },
+        { f1: '数学与统计学院副院长', f2: '数学与统计学院' },
+        { f1: '学位授予主管', f2: '研究生工作部/研究生院' },
+        { f1: '实验室建设与运行管理办公室主管', f2: '实验室管理处' },
+        { f1: '文员', f2: '航天航空学院' },
+        { f1: '人力资源与教师服务主管', f2: '管理学院' },
+        { f1: '副馆长', f2: '档案馆、博物馆' },
+        { f1: '人才计划项目主管', f2: '教师工作部/人力资源部' },
+        { f1: '人力资源部综合办主任（副处级）', f2: '综合办公室' },
+        { f1: '副主任 （兼）', f2: '党校/干部教育培训基地' },
+        { f1: '国际合作与交流处处长', f2: '国际合作与交流处' },
+        { f1: '文员', f2: '生命科学与技术学院' },
+        { f1: '未来技术学院和现代产业学院执行院长', f2: '未来技术学院和现代产业学院' },
+        { f1: '总会计师', f2: '第二附属医院' },
+        { f1: '能源与动力工程学院副院长', f2: '能源与动力工程学院' },
+        { f1: '行政副主任', f2: '高能高功率脉冲电源全国重点实验室' },
+        { f1: '副院长', f2: '钱学森学院/钱学森书院' },
+        { f1: '文员', f2: '法学院' },
+        { f1: '学科与人事事务文员', f2: '电气工程学院' },
+        { f1: '校友关系发展部主任', f2: '校友关系发展部' },
+        { f1: '审计处处长', f2: '审计处' },
+        { f1: '医学部基础医学院副院长', f2: '基础医学院' },
+        { f1: '外事秘书', f2: '材料科学与工程学院' },
+        { f1: '创新港综合管理服务中心综合事务主管', f2: '后勤保障部' },
+        { f1: '秘书科文员', f2: '党委办公室/校长办公室' },
+        { f1: '国有资产管理处副处长', f2: '国有资产管理处' },
+        { f1: '创新港办公室主任（兼）', f2: '西部科技创新港管理办公室' },
+        { f1: '兴庆校区核算主管', f2: '财务处' },
+        { f1: '合同考核文员', f2: '教师工作部/人力资源部' },
+        { f1: '能源中心办公室主任', f2: '后勤保障部' },
+        { f1: '校医院办公室主管', f2: '后勤保障部' },
+        { f1: '组织员', f2: '工会' },
+        { f1: '纪检监察机构办公室主任', f2: '纪委/监察专员办' },
+        { f1: '党总支书记', f2: '体育学院（体育中心）' },
+        { f1: '纪检监察机构综合业务室副主任', f2: '纪委/监察专员办' },
+        { f1: '办公室主任', f2: '电子与信息学部' },
+        { f1: '钱学森学院办公室主任', f2: '钱学森学院/钱学森书院' },
+        { f1: '医学部法医学院副院长', f2: '法医学院' },
+        { f1: '科研主管', f2: '数学与统计学院' },
+        { f1: '国家卓越工程师学院副院长', f2: '卓越工程师学院' },
+        { f1: '网络信息中心统计与综合事务主管', f2: '网络信息中心' },
+        { f1: '院长', f2: '创新创业学院' },
+        { f1: '中国西部高等教育评估中心主任', f2: '中国西部高等教育评估中心' },
+        { f1: '文员', f2: '公共政策与管理学院' },
+        { f1: '科学与技术研究院基地建设主管', f2: '科学与技术研究院' },
+        { f1: '医学部基础医学院院长', f2: '基础医学院' },
+        { f1: '医学部科学技术与学科建设处副处长', f2: '医学部' },
+        { f1: '教育评估主管', f2: '中国西部高等教育评估中心' },
+        { f1: '财务管理办公室主管', f2: '财务处' },
+        { f1: '副部长', f2: '党委组织部/党校' },
+        { f1: '驻京办主管', f2: '校友关系发展部' },
+        { f1: '处长', f2: '社会科学处' },
+        { f1: '实践文员', f2: '团委' },
+        { f1: '管理学院副院长', f2: '管理学院' },
+        { f1: '人事工作主管', f2: '能源与动力工程学院' },
+        { f1: '科研院基础研究项目主管', f2: '科学与技术研究院' },
+        { f1: '合同与考核主管', f2: '教师工作部/人力资源部' },
+        { f1: '电信学部副主任', f2: '电子与信息学部' },
+        { f1: '文员', f2: '军事教研室' },
+        { f1: '国际合作与交流处出入境管理办公室主管', f2: '国际合作与交流处' },
+        { f1: '政策法规办公室副主任', f2: '政策法规办公室' },
+        { f1: '电气工程学院副院长', f2: '电气工程学院' },
+        { f1: '副部长', f2: '党委统战部' },
+        { f1: '政策法规办公室法律事务与合同管理主管', f2: '政策法规办公室' },
+        { f1: '电信学部微电子学院院长（副处级）', f2: '微电子学院' },
+        { f1: '大型仪器设备与平台管理办公室主管', f2: '实验室管理处' },
+        { f1: '副主任', f2: '网络信息中心' },
+        { f1: '党外知识分子及综合事务主管', f2: '党委统战部' },
+        { f1: '实验室技术安全管理办公室主管', f2: '实验室管理处' },
+        { f1: '前沿院副院长', f2: '前沿科学技术研究院' },
+        { f1: '港澳台事务主管', f2: '国际合作与交流处' },
+        { f1: '副馆长', f2: '图书馆' },
+        { f1: '社会科学处处长', f2: '社会科学处' },
+        { f1: '仪器科学与技术学院执行院长（正处级）', f2: '仪器科学与技术学院' },
+        { f1: '校园规划与基本建设管理中心主任', f2: '校园规划与基本建设管理中心' },
+        { f1: '人力资源部部长', f2: '教师工作部/人力资源部' },
+        { f1: '办公室主任', f2: '数学与统计学院' },
+        { f1: '学生事务文员', f2: '学工部/学生处/武装部' },
+        { f1: '节能管理主管', f2: '后勤保障部' },
+        { f1: '副院长', f2: '本科生院' },
+        { f1: '文员', f2: '党委统战部' },
+        { f1: '国防科技处副处长', f2: '科学与技术研究院' },
+        { f1: '公房管理主管', f2: '国有资产管理处' },
+        { f1: '精神文明建设文员', f2: '党委宣传部' },
+        { f1: '后勤保障部劳动育人主管', f2: '后勤保障部' },
+        { f1: '党总支秘书兼公文秘书', f2: '新闻与新媒体学院' },
+        { f1: '微电子学院办公室主任', f2: '电子与信息学部' },
+        { f1: '综合治理文员', f2: '材料科学与工程学院' },
+        { f1: '社会科学处副处长', f2: '社会科学处' },
+        { f1: '主任兼(总工程师)', f2: '校园规划与基本建设管理中心' },
+        { f1: '副部长', f2: '学工部/学生处/武装部' },
+        { f1: '文员', f2: '实践教学中心/工程坊' },
+        { f1: '人工智能学院副院长', f2: '人工智能学院' },
+        { f1: '治安管理文员', f2: '保卫部/保卫处' },
+        { f1: '机构编制管理主管', f2: '教师工作部/人力资源部' },
+        { f1: '创新港校区校卫队队长', f2: '保卫部/保卫处' },
+        { f1: '科研院先进技术横向项目主管', f2: '科学与技术研究院' },
+        { f1: '院长（兼）', f2: '国际教育学院' },
+        { f1: '副书记', f2: '学工部/学生处/武装部' },
+        { f1: '上海合作组织大学中方校长办公室主任', f2: '上海合作组织大学中方校长办公室' },
+        { f1: '文员', f2: '数学与统计学院' },
+        { f1: '副主任（兼）', f2: '西部科技创新港管理办公室' },
+        { f1: '电信学部 计算机科学与技术学院院长（副处级）', f2: '计算机科学与技术学院' },
+        { f1: '资产管理主管', f2: '后勤保障部' },
+        { f1: '国家医学攻关产教融合创新平台（中心）副主任', f2: '西安交通大学国家医学攻关产教融合创新平台（中心）' },
+        { f1: '国际项目管理主管', f2: '国际合作与交流处' },
+        { f1: '医学部副主任、医学部人力资源处处长', f2: '医学部' },
+        { f1: '副主任', f2: '学生就业创业指导服务中心' },
+        { f1: '国有资产管理处处长', f2: '国有资产管理处' },
+        { f1: '创新港综合管理服务中心能源设备主管', f2: '后勤保障部' },
+        { f1: '办公室主任', f2: '经济与金融学院' },
+        { f1: '航天航空学院办公室主任', f2: '航天航空学院' },
+        { f1: '新闻与新媒体学院副院长（兼）', f2: '新闻与新媒体学院' },
+        { f1: '对口支援办公室主任（兼）', f2: '党委办公室/校长办公室' },
+        { f1: '主任(兼)', f2: '党委政策研究室' },
+        { f1: '西安交通大学米兰理工联合设计与创新学院办公室主任', f2: '西安交通大学米兰理工联合学院' },
+        { f1: '综合管理办公室主管', f2: '财务处' },
+        { f1: '消技防主管', f2: '保卫部/保卫处' },
+        { f1: '国有资产管理处经营性资产办公室主管', f2: '国有资产管理处' },
+        { f1: '综合事务主管', f2: '党委宣传部' },
+        { f1: '经金学院副院长', f2: '经济与金融学院' },
+        { f1: '执行院长', f2: '卓越工程师学院' },
+        { f1: '行政主管', f2: '后勤保障部' },
+        { f1: '人事管理文员', f2: '能源与动力工程学院' },
+        { f1: '图书馆副馆长', f2: '图书馆' },
+        { f1: '未来技术学院和现代产业学院项目管理主管', f2: '未来技术学院和现代产业学院' },
+        { f1: '办公室主任', f2: '公共政策与管理学院' },
+        { f1: '自动化科学与工程学院院长', f2: '自动化科学与工程学院' },
+        { f1: '综合事务文员', f2: '研究生工作部/研究生院' },
+        { f1: '电信学部 自动化科学与工程学院院长（副处级）', f2: '自动化科学与工程学院' },
+        { f1: '能动学院副院长', f2: '能源与动力工程学院' },
+        { f1: '创新港综合服务中心副主任', f2: '后勤保障部' },
+        { f1: '人事薪酬主管', f2: '机械工程学院' },
+        { f1: '继续教育管理处副处长', f2: '继续教育管理处/干部教育培训基地管理办公室' },
+        { f1: '武装部文员', f2: '学工部/学生处/武装部' },
+        { f1: '上海合作组织大学中方校长办公室常务副主任', f2: '中国—上海合作组织高等教育合作中心' },
+        { f1: '政策法规办公室主任', f2: '政策法规办公室' },
+        { f1: '综合处办公室主管', f2: '科学与技术研究院' },
+        { f1: '医学部常务副主任', f2: '医学部' },
+        { f1: '保卫部（处）校卫队队长', f2: '保卫部/保卫处' },
+        { f1: '公共政策与管理学院院长', f2: '公共政策与管理学院' },
+        { f1: '未来技术学院和现代产业学院副院长（兼）', f2: '未来技术学院和现代产业学院' },
+        { f1: '外事秘书', f2: '机械工程学院' },
+        { f1: '书记', f2: '机关与直属单位党委' },
+        { f1: '社会科学处横向科研与社会服务主管', f2: '社会科学处' },
+        { f1: '副处长', f2: '社会科学处' },
+        { f1: '科学与技术研究院副院长（正处级）、产教融合与成果转化处处长', f2: '科学与技术研究院' },
+        { f1: '国际交流主管', f2: '钱学森学院/钱学森书院' },
+        { f1: '创新创业学院副院长', f2: '创新创业学院' },
+        { f1: '书记', f2: '（原）科技与教育发展研究院' },
+        { f1: '外国语学院副院长', f2: '外国语学院' },
+        { f1: '委员', f2: '基础教育管理处/基础教育党委' },
+        { f1: '保卫部（处）政保与综合治理主管', f2: '保卫部/保卫处' },
+        { f1: '宣教文体工作主管', f2: '工会' },
+        { f1: '巡察项目主管', f2: '纪委/监察专员办' },
+        { f1: '常务副书记(兼)', f2: '继续教育管理处/干部教育培训基地管理办公室' },
+        { f1: '国家医学攻关产教融合创新平台（中心） 主任（兼）', f2: '西安交通大学国家医学攻关产教融合创新平台（中心）' },
+        { f1: '主任', f2: '保密办' },
+        { f1: '所长', f2: '高等教育研究所' },
+        { f1: '医学部副主任', f2: '医学部' },
+        { f1: '办公室主任', f2: '前沿科学技术研究院' },
+        { f1: '法学院党总支书记', f2: '法学院' },
+        { f1: '西迁博物馆办公室主任', f2: '档案馆、博物馆' },
+        { f1: '航天航空学院副院长', f2: '航天航空学院' },
+        { f1: '总会计师', f2: '口腔医院' },
+        { f1: '科研工作主管', f2: '能源与动力工程学院' },
+        { f1: '住房管理处周转公寓与人才住房管理主管', f2: '住房管理处' },
+        { f1: '雁塔校区安全管理主管', f2: '保卫部/保卫处' },
+        { f1: '文员', f2: '南洋书院' },
+        { f1: '住宅服务与条件保障办公室主管', f2: '后勤保障部' },
+        { f1: '党总支副书记(主持工作)', f2: '法医学院' },
+        { f1: '行政主管', f2: '精密微纳制造技术全国重点实验室' },
+        { f1: '科学与技术研究院基地与成果评价处副处长', f2: '科学与技术研究院' },
+        { f1: '保卫部（处）兴庆校区安全管理主管', f2: '保卫部/保卫处' },
+        { f1: '项目与竞赛主管', f2: '实践教学中心/工程坊' },
+        { f1: '副院长', f2: '继续教育学院' },
+        { f1: '雁塔校区综合服务中心主任', f2: '后勤保障部' },
+        { f1: '研究院行政事务秘书', f2: '数学与统计学院' },
+        { f1: '招聘办文员', f2: '教师工作部/人力资源部' },
+        { f1: '校友信息管理主管', f2: '校友关系发展部' },
+        { f1: '副院长', f2: '卓越工程师学院' },
+        { f1: '外国语学院办公室主任', f2: '外国语学院' },
+        { f1: '馆长', f2: '图书馆' },
+        { f1: '期刊中心党建及文化建设主管', f2: '学术期刊中心' },
+        { f1: '科学与技术研究院副院长、基地与成果评价处处长', f2: '科学与技术研究院' },
+        { f1: '文员', f2: '研究生招生办公室' },
+        { f1: '网络信息中心网络安全管理主管', f2: '网络信息中心' },
+        { f1: '办公室主任', f2: '先进技术与装备研究院' },
+        { f1: '综合业务室主任', f2: '纪委/监察专员办' },
+        { f1: '文员', f2: '教育基金会' },
+        { f1: '副校长', f2: '西安交大附中' },
+        { f1: '文员', f2: '高能高功率脉冲电源全国重点实验室' },
+        { f1: '副院长', f2: '能源与动力工程学院' },
+        { f1: '行政管理文员', f2: '西安交大附中' },
+        { f1: '国家卓越工程师学院院长', f2: '卓越工程师学院' },
+        { f1: '电子科学与工程学院院长', f2: '电子与信息学部' },
+        { f1: '人力资源部人才服务主管', f2: '教师工作部/人力资源部' },
+        { f1: '离退休工作处综合事务主管', f2: '离退休工作处' },
+        { f1: '材料科学与工程学院办公室主任', f2: '材料科学与工程学院' },
+        { f1: '国家卓越工程师学院选拔与质量工作主管', f2: '卓越工程师学院' },
+        { f1: '办公室主任', f2: '化学工程与技术学院' },
+        { f1: '人力资源部岗位聘任主管', f2: '教师工作部/人力资源部' },
+        { f1: '文秘主管', f2: '网络信息中心' },
+        { f1: '后勤核算主管', f2: '财务处' },
+        { f1: '人才交流中心主任', f2: '教师工作部/人力资源部' },
+        { f1: '办公室主任', f2: '物理学院' },
+        { f1: '全国干部教育培训西安交大 基地管理办公室副主任（兼）', f2: '继续教育管理处/干部教育培训基地管理办公室' },
+        { f1: '综合事务主管', f2: '学术期刊中心' },
+        { f1: '造价部主管', f2: '校园规划与基本建设管理中心' },
+        { f1: '文员', f2: '基础医学院' },
+        { f1: '高层次人才办公室副主任', f2: '教师工作部/人力资源部' },
+        { f1: '创业办公室主管', f2: '学生就业创业指导服务中心' },
+        { f1: '后勤保障部曲江校区管理办公室主任', f2: '后勤保障部' },
+        { f1: '行政副主任', f2: '电工材料电气绝缘全国重点实验室' },
+        { f1: '电信学部网络空间安全学院院长（副处级）', f2: '网络空间安全学院' },
+        { f1: '科研基地主管', f2: '电气工程学院' },
+        { f1: '人居环境与建筑工程学院副院长', f2: '人居环境与建筑工程学院' },
+        { f1: '综合事务秘书', f2: '理学院' },
+        { f1: '副院长（兼）', f2: '研究生工作部/研究生院' },
+        { f1: '留学生管理主管', f2: '国际教育学院' },
+        { f1: '主任（副处级）', f2: '雁塔校区综合服务中心' },
+        { f1: '医学部科技处基地与学科建设管理主管', f2: '医学部' },
+        { f1: '办公室行政主管', f2: '金禾经济研究中心' },
+        { f1: '纪检监察机构第一纪检监察室副主任', f2: '纪委/监察专员办' },
+        { f1: '宿舍文化文员', f2: '学工部/学生处/武装部' },
+        { f1: '行政副主任', f2: '复杂服役环境重大装备结构强度与寿命全国重点实验室' },
+        { f1: '处长', f2: '人力资源处' },
+        { f1: '主管', f2: '校园规划与基本建设管理中心' },
+        { f1: '人力资源部博士后管理主管', f2: '教师工作部/人力资源部' },
+        { f1: '党总支副书记', f2: '体育学院（体育中心）' },
+        { f1: '副主任（副处级）', f2: '饮食服务中心' },
+        { f1: '人力资源部副部长', f2: '教师工作部/人力资源部' },
+        { f1: '第二附属医院副院长', f2: '第二附属医院' },
+        { f1: '主任（正处级）', f2: '网络信息中心' },
+        { f1: '新媒体及舆情中心主管', f2: '党委宣传部' },
+        { f1: '前沿科学技术研究院院长', f2: '前沿科学技术研究院' },
+        { f1: '招标管理办公室主管', f2: '国有资产管理处' },
+        { f1: '综合办公室主管', f2: '医学部' },
+        { f1: '综合事务主管', f2: '科技与教育发展研究院' },
+        { f1: '文员', f2: '自动化科学与工程学院' },
+        { f1: '数学学院院长', f2: '数学与统计学院' },
+        { f1: '继续教育管理处/干部教育培训基地综合办公室主管', f2: '党校/干部教育培训基地' },
+        { f1: '科研主管', f2: '机械工程学院' },
+        { f1: '基础教育管理处处长', f2: '基础教育管理处/基础教育党委' },
+        { f1: '电子与信息学部软件学院办公室主任', f2: '软件学院' },
+        { f1: '副处长', f2: '教务处' },
+        { f1: '综合事务主管', f2: '离退休工作处' },
+        { f1: '综合事务主管', f2: '大型仪器设备共享实验中心' },
+        { f1: '基建项目规划实施管理员', f2: '继续教育学院' },
+        { f1: '行政主管', f2: '实践教学中心/工程坊' },
+        { f1: '教育基金会副秘书长', f2: '教育基金会' },
+        { f1: '人事财务秘书', f2: '数学与统计学院' },
+        { f1: '基础教育管理处副处长', f2: '基础教育管理处/基础教育党委' },
+        { f1: '科研管理文员', f2: '能源与动力工程学院' },
+        { f1: '医院管理处', f2: '医学部' },
+        { f1: '文员', f2: '机关与直属单位党委' },
+        { f1: '体育中心主任、党总支副书记', f2: '体育学院（体育中心）' },
+        { f1: '档案管理文员', f2: '学工部/学生处/武装部' },
+        { f1: '创新创业学院副院长（兼）', f2: '创新创业学院' },
+        { f1: '副部长（兼）', f2: '学工部/学生处/武装部' },
+        { f1: '文员', f2: '学术期刊中心' },
+        { f1: '主任（正处级）', f2: '大型仪器设备共享实验中心' },
+        { f1: '文员', f2: '团委' },
+        { f1: '行政人事秘书', f2: '理学院' },
+        { f1: '后勤管理主管', f2: '国际教育学院' },
+        { f1: '副主任', f2: '招生办公室' },
+        { f1: '流体机械及压缩机国家工程研究中心副主任', f2: '能源与动力工程学院' },
+        { f1: '机械工程学院常务副院长（正处级）', f2: '机械工程学院' },
+        { f1: '行政秘书', f2: '机械工程学院' },
+        { f1: '校医院院长', f2: '后勤保障部' },
+        { f1: '医学部项目与成果管理主管', f2: '医学部' },
+        { f1: '纪检监察机构第二纪检监察室主任（副处级）', f2: '纪委/监察专员办' },
+        { f1: '文秘主管', f2: '党委办公室/校长办公室' },
+        { f1: '综合主管', f2: '党委办公室/校长办公室' },
+        { f1: '行政文员', f2: '材料科学与工程学院' },
+        { f1: '国际交流主管', f2: '国际合作与交流处' },
+        { f1: '米兰理工联合设计与创新学院副院长', f2: '西安交通大学米兰理工联合学院' },
+        { f1: '科学与技术研究院先进技术纵向项目主管', f2: '科学与技术研究院' },
+        { f1: '学生就业创业指导服务中心职业发展主管', f2: '学生就业创业指导服务中心' },
+        { f1: '大科学装置指挥部办公室综合事务主管', f2: '科学与技术研究院' },
+        { f1: '人工智能学院办公室主任', f2: '人工智能学院' },
+        { f1: '文员', f2: '理学院' },
+        { f1: '综合办公室主管', f2: '校友关系发展部' },
+        { f1: '科研秘书', f2: '理学院' },
+        { f1: '学科规划与建设办公室主任', f2: '学科规划与建设办公室' },
+        { f1: '保卫部（处）创新港校区安全管理主管', f2: '保卫部/保卫处' },
+        { f1: '交流合作文员', f2: '党委办公室/校长办公室' },
+        { f1: '物理学院院长', f2: '物理学院' },
+        { f1: '仪器科学与技术学院办公室主任', f2: '仪器科学与技术学院' },
+        { f1: '办公室主任', f2: '人居环境与建筑工程学院' },
+        { f1: '人工智能学院科研主管', f2: '人工智能学院' },
+        { f1: '科学与技术研究院副院长（兼）', f2: '科学与技术研究院' },
+        { f1: '国际合作与交流处丝绸之路大学联盟事务项目主任', f2: '国际合作与交流处' },
+        { f1: '离退休工作处副处长、离退休单位委员', f2: '离退休工作处' },
+        { f1: '工程硕士文员', f2: '电气工程学院' },
+        { f1: '电子科学与工程学院副院长', f2: '电子科学与工程学院' },
+        { f1: '主任', f2: '学生就业创业指导服务中心' },
+        { f1: '医学部药学院院长', f2: '医学部' },
+        { f1: '办公室主任', f2: '法学院' },
+        { f1: '后勤保障部副部长（正处级）、住房管理处处长', f2: '后勤保障部' },
+        { f1: '第一附属医院院长（兼）', f2: '第一附属医院' },
+        { f1: '党建主管', f2: '党委组织部/党校' },
+        { f1: '电信学部信息与通信工程学院院长（副处级）', f2: '信息与通信工程学院' },
+        { f1: '电气工程学院院长', f2: '电气工程学院' },
+        { f1: '综合管理办公室主管', f2: '后勤保障部' },
+        { f1: '副处长', f2: '人力资源处' },
+        { f1: '产教融合与成果转化处副处长', f2: '科学与技术研究院' },
+        { f1: '文员', f2: '材料科学与工程学院' },
+        { f1: '航天学院院长', f2: '航天航空学院' },
+      ]
+    },
+    {
+      code: 'SRC-PARTY', name: '党委办公室', sys: '党建管理系统', sync: 'T+1 凌晨',
+      rows: [
+        { f1: '为新闻与新媒体学院党委委员、书记', f2: '新闻与新媒体学院' },
+        { f1: '党委办公室、校长办公室稳定安全主管', f2: '党委办公室/校长办公室' },
+        { f1: '党委办公室副主任', f2: '党委办公室/校长办公室' },
+        { f1: '数学与统计学院院长、党委委员', f2: '数学与统计学院' },
+        { f1: '分党委秘书兼办公室副主任', f2: '人居环境与建筑工程学院' },
+        { f1: '党委副书记', f2: '西安交通大学' },
+        { f1: '基础教育党委/基础教育管理处党委秘书/办公室主任', f2: '基础教育管理处/基础教育党委' },
+        { f1: '党委书记', f2: '电子与信息学部' },
+        { f1: '党委副书记', f2: '机械工程学院' },
+        { f1: '校团委书记（副处级）', f2: '团委' },
+        { f1: '党委副书记', f2: '马克思主义学院' },
+        { f1: '资产公司财务总监（副处级）、党委委员', f2: '资产公司' },
+        { f1: '继续教育学院党委委员、副书记', f2: '继续教育学院' },
+        { f1: '前沿科学技术研究院党委委员、副书记', f2: '前沿科学技术研究院' },
+        { f1: '物理学院党委委员、书记', f2: '物理学院' },
+        { f1: '公共卫生学院分党委秘书、办公室主任', f2: '医学部' },
+        { f1: '口腔医院党委委员、书记', f2: '口腔医院' },
+        { f1: '党委副书记', f2: '人文社会科学学院' },
+        { f1: '资产公司副总经理、党委副书记', f2: '资产公司' },
+        { f1: '党委副书记（兼）', f2: '电子与信息学部' },
+        { f1: '分党委秘书兼办公室副主任', f2: '理学院' },
+        { f1: '党委副书记', f2: '物理学院' },
+        { f1: '机关与直属单位党委副书记（兼）', f2: '机关与直属单位党委' },
+        { f1: '人工智能学院党委委员', f2: '人工智能学院' },
+        { f1: '公共卫生学院党委副书记', f2: '公共卫生学院' },
+        { f1: '党委委员、副书记', f2: '航天航空学院' },
+        { f1: '机械工程学院党委副书记', f2: '机械工程学院' },
+        { f1: '党委组织部副部长', f2: '党委组织部/党校' },
+        { f1: '机关与直属单位党委委员、副书记，纪委委员、书记', f2: '机关与直属单位党委' },
+        { f1: '化学工程与技术学院党委委员、副书记', f2: '化学工程与技术学院' },
+        { f1: '人工智能学院党委委员、书记', f2: '人工智能学院' },
+        { f1: '党委秘书', f2: '机械工程学院' },
+        { f1: '党委办公室、 校长办公室党务主管', f2: '党委办公室/校长办公室' },
+        { f1: '学生处（学工部）大学生党委秘书', f2: '学工部/学生处/武装部' },
+        { f1: '党委书记', f2: '城市学院' },
+        { f1: '党委教师工作部部长、高层次人才办公室主任', f2: '教师工作部/人力资源部' },
+        { f1: '党委委员、书记', f2: '马克思主义学院' },
+        { f1: '仪器科学与技术学院党委委员、副书记', f2: '仪器科学与技术学院' },
+        { f1: '党委宣传部副部长', f2: '党委宣传部' },
+        { f1: '电信学部副主任、党委副书记', f2: '电子与信息学部' },
+        { f1: '分党委秘书', f2: '能源与动力工程学院' },
+        { f1: '公管学院党委书记', f2: '公共政策与管理学院' },
+        { f1: '第一附属医院党委副书记', f2: '第一附属医院' },
+        { f1: '公共政策与管理学院党委副书记', f2: '公共政策与管理学院' },
+        { f1: '党委委员、副书记、总编辑', f2: '出版社' },
+        { f1: '党委秘书、办公室主任', f2: '医学部' },
+        { f1: '党委书记', f2: '人居环境与建筑工程学院' },
+        { f1: '党委组织部干部选任主管', f2: '党委组织部/党校' },
+        { f1: '党委统战部副部长', f2: '党委统战部' },
+        { f1: '宣传部部长', f2: '党委宣传部' },
+        { f1: '外国语学院党委副书记', f2: '外国语学院' },
+        { f1: '前沿科学技术研究院党委委员、书记', f2: '前沿科学技术研究院' },
+        { f1: '党委、校长办公室机要主管', f2: '党委办公室/校长办公室' },
+        { f1: '团委副书记', f2: '团委' },
+        { f1: '党委教师工作部师德师风建设主管', f2: '教师工作部/人力资源部' },
+        { f1: '宣传部副部长', f2: '党委宣传部' },
+        { f1: '生命科学与技术学院院长、党委副书记', f2: '生命科学与技术学院' },
+        { f1: '分党委秘书', f2: '后勤保障部' },
+        { f1: '机械工程学院党委委员、书记', f2: '机械工程学院' },
+        { f1: '后勤保障部党委委员、副书记，纪委委员、书记', f2: '后勤保障部' },
+        { f1: '人居学院党委副书记', f2: '人居环境与建筑工程学院' },
+        { f1: '离退休工作处处长、离退休党委书记', f2: '离退休工作处' },
+        { f1: '党委政策研究室副主任（主持日常工作）', f2: '党委政策研究室' },
+        { f1: '纪委委员、纪委副书记', f2: '纪委/监察专员办' },
+        { f1: '人居环境与建筑工程学院院长/党委副书记', f2: '人居环境与建筑工程学院' },
+        { f1: '党委副书记', f2: '电气工程学院' },
+        { f1: '党委秘书', f2: '机关与直属单位党委' },
+        { f1: '党委委员、书记', f2: '航天航空学院' },
+        { f1: '分党委秘书', f2: '机械工程学院' },
+        { f1: '大学生党委组织员', f2: '学工部/学生处/武装部' },
+        { f1: '化学学院院长、党委副书记', f2: '化学学院' },
+        { f1: '医学部党委秘书', f2: '医学部' },
+        { f1: '机械工程学院党委委员', f2: '机械工程学院' },
+        { f1: '党委副书记', f2: '外国语学院' },
+        { f1: '党委书记', f2: '生命科学与技术学院' },
+        { f1: '资产公司党委委员、书记', f2: '资产公司' },
+        { f1: '党委办公室、校长办公室校地合作主管', f2: '党委办公室/校长办公室' },
+        { f1: '人居环境与建筑工程学院党委委员', f2: '人居环境与建筑工程学院' },
+        { f1: '化学工程与技术学院党委副书记（兼）', f2: '化学工程与技术学院' },
+        { f1: '分党委秘书兼办公室副主任', f2: '人文社会科学学院' },
+        { f1: '党委副书记兼纪委书记', f2: '第二附属医院' },
+        { f1: '党委委员、副书记', f2: '化学学院' },
+        { f1: '马克思主义学院党委委员、副院长', f2: '马克思主义学院' },
+        { f1: '能动学院党委秘书', f2: '能源与动力工程学院' },
+        { f1: '党委办公室主任、校长办公室主任', f2: '党委办公室/校长办公室' },
+        { f1: '党委副书记（兼）', f2: '能源与动力工程学院' },
+        { f1: '公共政策与管理学院党委委员、副书记', f2: '公共政策与管理学院' },
+        { f1: '党委宣传部文化建设主管', f2: '党委宣传部' },
+        { f1: '医学部法医学院院长、党委书记', f2: '医学部' },
+        { f1: '法医学院分党委秘书、办公室主任', f2: '医学部' },
+        { f1: '第二附属医院党委副书记', f2: '第二附属医院' },
+        { f1: '校工会办公室行政主管', f2: '工会' },
+        { f1: '材料科学与工程学院院长、党委副书记', f2: '材料科学与工程学院' },
+        { f1: '党委副书记', f2: '材料科学与工程学院' },
+        { f1: '人文学院党委副书记', f2: '人文社会科学学院' },
+        { f1: '校长、党委副书记', f2: '西安交通大学' },
+        { f1: '党委书记', f2: '西安交通大学' },
+        { f1: '医学部基础医学院党委副书记', f2: '医学部' },
+        { f1: '资产公司总经理、董事、党委副书记', f2: '资产公司' },
+        { f1: '党总支委员、副书记', f2: '新闻与新媒体学院' },
+        { f1: '人文社会科学学院党委委员、书记', f2: '人文社会科学学院' },
+        { f1: '党委副书记', f2: '化学工程与技术学院' },
+        { f1: '分党委秘书', f2: '马克思主义学院' },
+        { f1: '党委副书记（兼）', f2: '数学与统计学院' },
+        { f1: '西安交通大学出版社社长、党委委员、书记', f2: '出版社' },
+        { f1: '党委宣传部电视广播中心主管', f2: '党委宣传部' },
+        { f1: '党委宣传部新闻主管', f2: '党委宣传部' },
+        { f1: '党委副书记（兼）', f2: '第一附属医院' },
+        { f1: '分党委秘书兼办公室副主任', f2: '生命科学与技术学院' },
+        { f1: '医学部药学院党委委员、副书记', f2: '药学院' },
+        { f1: '分党委秘书兼办公室副主任', f2: '数学与统计学院' },
+        { f1: '党委研究生工作部副部长', f2: '研究生工作部/研究生院' },
+        { f1: '医学部党委副书记', f2: '医学部' },
+        { f1: '分党委秘书兼办公室副主任', f2: '公共政策与管理学院' },
+        { f1: '经济与金融学院党委委员、副书记', f2: '经济与金融学院' },
+        { f1: '生命科学与技术学院党委委员', f2: '生命科学与技术学院' },
+        { f1: '党委办公室、校长办公室信访主管', f2: '党委办公室/校长办公室' },
+        { f1: '马克思主义学院院长、党委副书记', f2: '马克思主义学院' },
+        { f1: '体育中心党委委员、副书记', f2: '体育学院（体育中心）' },
+        { f1: '校党委常委', f2: '西安交通大学' },
+        { f1: '电气学院党委书记', f2: '电气工程学院' },
+        { f1: '党委保卫部部长/保卫处处长', f2: '保卫部/保卫处' },
+        { f1: '党委副书记', f2: '管理学院' },
+        { f1: '医学部基础医学院党委委员、书记', f2: '基础医学院' },
+        { f1: '党委书记', f2: '后勤保障部' },
+        { f1: '继续教育学院党委书记', f2: '继续教育学院' },
+        { f1: '第一附属医院党委委员', f2: '第一附属医院' },
+        { f1: '前沿院党委副书记', f2: '前沿科学技术研究院' },
+        { f1: '能源与动力工程学院党委委员、书记', f2: '能源与动力工程学院' },
+        { f1: '党委组织部优秀年轻干部工作主管', f2: '党委组织部/党校' },
+        { f1: '党校校长', f2: '西安交通大学' },
+        { f1: '党委秘书', f2: '航天航空学院' },
+        { f1: '分党委秘书', f2: '理学院' },
+        { f1: '党委宣传部理论宣教主管', f2: '党委宣传部' },
+        { f1: '化学工程与技术学院党委委员、书记', f2: '化学工程与技术学院' },
+        { f1: '党委组织部副部长（兼）', f2: '党委组织部/党校' },
+        { f1: '管理学院院长、党委副书记', f2: '管理学院' },
+        { f1: '经济与金融学院党委书记', f2: '经济与金融学院' },
+        { f1: '党委副书记', f2: '电子与信息学部' },
+        { f1: '党委副书记、纪委书记', f2: '西安交通大学' },
+        { f1: '仪器科学与技术学院党委委员、书记', f2: '仪器科学与技术学院' },
+        { f1: '党委副书记（兼）', f2: '理学院' },
+        { f1: '人文学院院长、党委副书记', f2: '人文社会科学学院' },
+        { f1: '工会主席（兼任）', f2: '工会' },
+        { f1: '数学学院党委副书记', f2: '数学与统计学院' },
+        { f1: '第一附属医院党委委员、副书记，纪委委员、纪委书记', f2: '第一附属医院' },
+        { f1: '党委组织部干部监督管理主管', f2: '党委组织部/党校' },
+        { f1: '经金学院院长、党委副书记', f2: '经济与金融学院' },
+        { f1: '能源与动力工程学院院长/党委委员、副书记', f2: '能源与动力工程学院' },
+        { f1: '党委组织部（党校）考核与绩效分析主管', f2: '党委组织部/党校' },
+        { f1: '党委宣传部精神文明建设主管', f2: '党委宣传部' },
+        { f1: '校工会委员会委员、副主席', f2: '工会' },
+        { f1: '大学生党委副书记', f2: '学工部/学生处/武装部' },
+        { f1: '党委委员、书记', f2: '材料科学与工程学院' },
+        { f1: '党委组织部部长、党校常务副校长', f2: '党委组织部/党校' },
+        { f1: '体育中心党委秘书兼办公室副主任', f2: '体育学院（体育中心）' },
+        { f1: '分党委秘书兼办公室副主任', f2: '化学工程与技术学院' },
+        { f1: '党委副书记', f2: '化学学院' },
+        { f1: '党校主管', f2: '党校/干部教育培训基地' },
+        { f1: '党委统战部部长', f2: '党委统战部' },
+        { f1: '党委书记', f2: '管理学院' },
+        { f1: '工会委员会委员、副主席', f2: '工会' },
+        { f1: '化学学院党委书记', f2: '化学学院' },
+        { f1: '基础医学院分党委秘书、办公室主任', f2: '医学部' },
+        { f1: '西安交通大学党委副书记、校长', f2: '西安交通大学' },
+        { f1: '西安交通大学党委副书记', f2: '西安交通大学' },
+        { f1: '西安交通大学党委书记', f2: '党委办公室/校长办公室' },
+        { f1: '党委书记', f2: '数学与统计学院' },
+        { f1: '医学部药学院党总支委员、书记', f2: '药学院' },
+        { f1: '党委秘书', f2: '前沿科学技术研究院' },
+        { f1: '党务主管', f2: '党委办公室/校长办公室' },
+        { f1: '党委纪检文员', f2: '后勤保障部' },
+        { f1: '化学工程与技术学院院长/化学工程与技术学院党委副书记', f2: '化学工程与技术学院' },
+        { f1: '学生处处长、党委学生工作部部长、党委人民武装部部长（兼）、 大学生党委书记（兼）', f2: '学工部/学生处/武装部' },
+        { f1: '基础教育党委委员、书记', f2: '基础教育管理处/基础教育党委' },
+        { f1: '党委副书记', f2: '能源与动力工程学院' },
+        { f1: '马克思主义学院党委委员、副书记', f2: '马克思主义学院' },
+        { f1: '人工智能学院党委秘书', f2: '人工智能学院' },
+        { f1: '医学部法医学院党委副书记、委员', f2: '医学部' },
+        { f1: '分党委秘书兼办公室副主任', f2: '电子与信息学部' },
+        { f1: '离退休党委副书记', f2: '离退休工作处' },
+        { f1: '经金学院党委秘书兼办公室副主任', f2: '经济与金融学院' },
+        { f1: '党委、校长办公室督办主管', f2: '党委办公室/校长办公室' },
+        { f1: '校工会常务副主席（正处级）', f2: '工会' },
+        { f1: '资产公司党委委员、副书记，纪委委员、书记', f2: '资产公司' },
+        { f1: '西安交通大学米兰理工联合设计与创新学院党支部委员、副书记', f2: '西安交通大学米兰理工联合学院' },
+        { f1: '人工智能学院党委委员、副书记', f2: '人工智能学院' },
+        { f1: '外国语学院院长、党委副书记', f2: '外国语学院' },
+        { f1: '城市学院院长、党委委员、副书记', f2: '城市学院' },
+      ]
+    },
+    {
+      code: 'SRC-EDU', name: '教务处', sys: '教务管理系统', sync: 'T+1 凌晨',
+      rows: [
+        { f1: '研究生院综合办公室主管', f2: '研究生工作部/研究生院' },
+        { f1: '教务处教材建设与管理主管', f2: '教务处' },
+        { f1: '研究生院招生宣传主管', f2: '研究生工作部/研究生院' },
+        { f1: '研究生教务员', f2: '化学工程与技术学院' },
+        { f1: '本科生大面积教学秘书', f2: '数学与统计学院' },
+        { f1: '本科教学秘书', f2: '电子与信息学部' },
+        { f1: '研究生院实践教学管理主管', f2: '研究生工作部/研究生院' },
+        { f1: '研究生院课程教学主管', f2: '研究生工作部/研究生院' },
+        { f1: '教务文员', f2: '能源与动力工程学院' },
+        { f1: '本科教务秘书', f2: '理学院' },
+        { f1: '本科教学文员', f2: '电气工程学院' },
+        { f1: '教学科研管理主管', f2: '人文社会科学学院' },
+        { f1: '本科生教务文员', f2: '人居环境与建筑工程学院' },
+        { f1: '西安交通大学米兰理工联合设计与创新学院教学管理主管', f2: '西安交通大学米兰理工联合学院' },
+        { f1: '研究生院研究生在线教育质量建设主管', f2: '研究生工作部/研究生院' },
+        { f1: '研究生教务文员', f2: '电气工程学院' },
+        { f1: '钱学森学院教学研究与教学改革主管', f2: '钱学森学院/钱学森书院' },
+        { f1: '教务处教学运行主管', f2: '教务处' },
+        { f1: '教务处教学研究主管', f2: '教务处' },
+        { f1: 'MPA教学秘书', f2: '公共政策与管理学院' },
+        { f1: '研究生及专项教学秘书', f2: '数学与统计学院' },
+        { f1: '招生办公室主任（副处级）', f2: '研究生工作部/研究生院' },
+        { f1: '人才培养处研究生教育教学管理主管', f2: '医学部' },
+        { f1: '本科生教学文员', f2: '能源与动力工程学院' },
+        { f1: '研究生院培养办公室副主任（兼）', f2: '研究生工作部/研究生院' },
+        { f1: '本科生教务员', f2: '化学工程与技术学院' },
+        { f1: '人力资源部人才培养主管', f2: '教师工作部/人力资源部' },
+        { f1: '教务处学籍管理主管', f2: '教务处' },
+        { f1: '本科生教务文员', f2: '法学院' },
+        { f1: '本科教务', f2: '机械工程学院' },
+        { f1: '教务处通识教育主管', f2: '教务处' },
+        { f1: '研究生院(苏州)副院长', f2: '苏州研究院' },
+        { f1: '研究生院副院长', f2: '研究生工作部/研究生院' },
+        { f1: '教学发展文员', f2: '材料科学与工程学院' },
+        { f1: '本科生教务文员', f2: '电气工程学院' },
+        { f1: '教学科研主管', f2: '航天航空学院' },
+        { f1: '硕士研究生秘书', f2: '公共政策与管理学院' },
+        { f1: '硕士教务', f2: '机械工程学院' },
+        { f1: '本科生教学秘书', f2: '理学院' },
+        { f1: '研究生教务文员', f2: '人居环境与建筑工程学院' },
+        { f1: '研究生教学秘书', f2: '经济与金融学院' },
+        { f1: '教务处副处长', f2: '教务处' },
+        { f1: '教务处教学质量评价主管', f2: '教务处' },
+        { f1: '本科教学秘书', f2: '经济与金融学院' },
+        { f1: 'MBA教学管理文员', f2: '经济与社会保障系' },
+        { f1: '研究生教育管理主管', f2: '研究生工作部/研究生院' },
+        { f1: '招生主管', f2: '国际教育学院' },
+        { f1: '本科生教务文员', f2: '金禾经济研究中心' },
+        { f1: '招生研究与数据分析主管', f2: '招生办公室' },
+        { f1: '研究生教学管理主管', f2: '能源与动力工程学院' },
+        { f1: '博士教务', f2: '机械工程学院' },
+        { f1: '实验实习教学主管', f2: '实践教学中心/工程坊' },
+        { f1: '教务处信息与资源建设主管', f2: '教务处' },
+        { f1: '研究生工作部部长', f2: '研究生工作部/研究生院' },
+        { f1: '研究生教学秘书', f2: '电子与信息学部' },
+        { f1: '研究生教学秘书', f2: '马克思主义学院' },
+        { f1: '人才培养处副处长', f2: '医学部' },
+        { f1: '教学管理文员', f2: '西安交通大学米兰理工联合学院' },
+        { f1: '招生办公室主任', f2: '招生办公室' },
+        { f1: '招生宣传与基地建设主管', f2: '招生办公室' },
+        { f1: '研究生教学文员', f2: '电气工程学院' },
+        { f1: '研究生院培养办公室主任', f2: '研究生工作部/研究生院' },
+        { f1: '教师教学发展中心主任', f2: '教师教学发展中心' },
+        { f1: '教学培训主管', f2: '教师教学发展中心' },
+        { f1: '研究生教学文员', f2: '能源与动力工程学院' },
+        { f1: '实践教学中心/工程坊主任（兼）', f2: '实践教学中心/工程坊' },
+        { f1: '本科生教学文员', f2: '材料科学与工程学院' },
+        { f1: '研究生院常务副院长', f2: '研究生工作部/研究生院' },
+        { f1: '招生办公室副主任', f2: '招生办公室' },
+        { f1: '研究生教务科研秘书', f2: '金禾经济研究中心' },
+        { f1: '实践教学中心（工程坊）副主任', f2: '实践教学中心/工程坊' },
+        { f1: '本科生教务文员', f2: '新闻与新媒体学院' },
+        { f1: '招生宣传与综合事务主管', f2: '招生办公室' },
+        { f1: '本科生院院长', f2: '本科生院' },
+        { f1: '研究生院院长', f2: '研究生院' },
+        { f1: '未来技术学院和现代产业学院人才培养主管', f2: '未来技术学院和现代产业学院' },
+        { f1: '本科生专业教学秘书', f2: '数学与统计学院' },
+        { f1: '实验实习教学文员', f2: '实践教学中心/工程坊' },
+        { f1: '外国语学院教学管理主管', f2: '外国语学院' },
+        { f1: '科研教学管理主管', f2: '电子与信息学部' },
+        { f1: '博士研究生秘书', f2: '公共政策与管理学院' },
+        { f1: '本科生教学秘书', f2: '航天航空学院' },
+        { f1: '硕士研究生教学秘书', f2: '人文社会科学学院' },
+        { f1: '综合事务与人才培养主管', f2: '国家储能技术产教融合创新平台（中心）' },
+        { f1: '本科生教学秘书', f2: '马克思主义学院' },
+        { f1: '研究生教务文员', f2: '材料科学与工程学院' },
+        { f1: '教务处综合办公室主管', f2: '教务处' },
+        { f1: '教学主管', f2: '电气工程学院' },
+        { f1: '学籍奖励主管', f2: '研究生工作部/研究生院' },
+      ]
+    },
+    {
+      code: 'SRC-STU', name: '学生工作部', sys: '学工综合服务平台', sync: '准实时 (30 分钟)',
+      rows: [
+        { f1: '院务主任助理', f2: '启德书院' },
+        { f1: '大学生经济资助主管', f2: '学工部/学生处/武装部' },
+        { f1: '崇实书院院务主任（副处级）', f2: '崇实书院' },
+        { f1: '学生处心理咨询主管', f2: '学工部/学生处/武装部' },
+        { f1: '学生处副处长', f2: '学工部/学生处/武装部' },
+        { f1: '院务副主任（兼）', f2: '文治书院' },
+        { f1: '院务副主任', f2: '励志书院' },
+        { f1: '院务副主任（兼）', f2: '彭康书院' },
+        { f1: '学生处副处长（兼）', f2: '学工部/学生处/武装部' },
+        { f1: '学生工作管理处党 建与思政办公室主管（兼）', f2: '医学部' },
+        { f1: '院务副主任（兼）', f2: '南洋书院' },
+        { f1: '院务副主任（兼）', f2: '崇实书院' },
+        { f1: '钱学森书院院务副主任', f2: '钱学森学院/钱学森书院' },
+        { f1: '仲英书院院务副主任（兼）', f2: '仲英书院' },
+        { f1: '院务主任（副处级）', f2: '钱学森学院/钱学森书院' },
+        { f1: '仲英书院院务主任助理', f2: '仲英书院' },
+        { f1: '学生工作专职委员', f2: '法学院' },
+        { f1: '院务主任助理', f2: '崇实书院' },
+        { f1: '宗濂书院院务主任助理兼医学部学生工作管理处学生事务办公室主管', f2: '宗濂书院' },
+        { f1: '学生处学生事务主管', f2: '学工部/学生处/武装部' },
+        { f1: '彭康书院院务副主任', f2: '彭康书院' },
+        { f1: '院务主任助理', f2: '励志书院' },
+        { f1: '化学工程与技术学院副院长', f2: '化学工程与技术学院' },
+        { f1: '启德书院院务副主任（兼）', f2: '启德书院' },
+        { f1: '院务副主任', f2: '文治书院' },
+        { f1: '院务副主任', f2: '彭康书院' },
+        { f1: '院务主任助理', f2: '宗濂书院' },
+        { f1: '经济资助文员', f2: '学工部/学生处/武装部' },
+        { f1: '院务副主（兼）', f2: '启德书院' },
+        { f1: '彭康书院院务主任', f2: '彭康书院' },
+        { f1: '院务主任', f2: '励志书院' },
+        { f1: '院务副主任', f2: '宗濂书院' },
+        { f1: '院务主任', f2: '南洋书院' },
+        { f1: '院务主任', f2: '仲英书院' },
+        { f1: '院务主任', f2: '宗濂明德书院' },
+        { f1: '院务副主任（兼）', f2: '仲英书院' },
+        { f1: '院务副主任（兼）', f2: '宗濂书院' },
+        { f1: '院务主任助理', f2: '文治书院' },
+        { f1: '院务主任', f2: '启德书院' },
+        { f1: '院务主任', f2: '文治书院' },
+        { f1: '院务副主任', f2: '启德书院' },
+        { f1: '南洋书院院务副主任', f2: '南洋书院' },
+        { f1: '彭康书院院务副主任（兼）', f2: '彭康书院' },
+        { f1: '少数民族学生工作主管', f2: '学工部/学生处/武装部' },
+        { f1: '院务主任', f2: '宗濂尚德书院' },
+        { f1: '学生处思想教育主管', f2: '学工部/学生处/武装部' },
+        { f1: '南洋书院院务主任助理', f2: '南洋书院' },
+        { f1: '宗濂书院院务副主任', f2: '宗濂书院' },
+        { f1: '学生处一站式学生事务大厅主管', f2: '学工部/学生处/武装部' },
+        { f1: '院务主任助理', f2: '彭康书院' },
+        { f1: '励志书院院务副主任', f2: '励志书院' },
+      ]
+    },
+  ];
+
+  // 关键字段拆分用分隔符
+  const SPLIT_RE = /[,，、\/]/;
+  const splitVals = s => String(s || '').split(SPLIT_RE).map(x => x.trim()).filter(Boolean);
+
+  // 映射运行态
+  let MAP_STATE = {
+    loadedSrc: null,   // 已加载的源头 code
+    raw: [],           // 原始行
+    split: [],         // 拆分结果行 {f1,f2,raw1,raw2,flag}
+    savedCount: 0,     // 已入库映射条数（demo 累计）
+  };
+
+  // ===== 渲染岗位主表（一人多岗位 rowspan） =====
+  // 数据来源分类：管理岗（行政/党内职务）→ 人事系统；辅导员/班主任等科级以下/学院岗 → 线下采集
+  function sourceCell(pos) {
+    const isHR = (pos.type === '行政职务' || pos.type === '党内职务');
+    if (isHR) {
+      return `<span class="tag tag-blue" title="${pos.source} · 人事系统维护（科级及以上）"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:currentColor;margin-right:5px;vertical-align:middle"></span>人事系统</span>
+        <div style="font-size:11px;color:var(--text-disabled);margin-top:2px">${pos.source}</div>`;
+    }
+    return `<span class="tag tag-orange" title="${pos.source} · 线下采集（科级以下/学院采集）"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:currentColor;margin-right:5px;vertical-align:middle"></span>线下采集</span>
+      <div style="font-size:11px;color:var(--text-disabled);margin-top:2px">${pos.source}</div>`;
+  }
+
+  function renderData() {
+    const q = (document.getElementById('data-search').value || '').trim();
+    const tFilter = document.getElementById('data-type').value;
+    const eFilter = document.getElementById('data-effective').value;
+    const sFilter = document.getElementById('data-status').value;
+
+    let totalRows = 0;
+    let html = '';
+    POSITIONS.forEach(p => {
+      if (q && !p.name.includes(q) && !p.uid.includes(q) && !p.xgh.includes(q)
+          && !p.positions.some(pos => pos.title.includes(q))) return;
+      const filtered = p.positions.filter(pos => {
+        if (tFilter && pos.type !== tFilter) return false;
+        if (eFilter === '有效' && !pos.effective) return false;
+        if (eFilter === '无效' && pos.effective) return false;
+        if (sFilter && pos.status !== sFilter) return false;
+        return true;
+      });
+      if (filtered.length === 0) return;
+      totalRows += filtered.length;
+      const multi = filtered.length > 1;
+
+      filtered.forEach((pos, idx) => {
+        const typeTag = {
+          '行政职务': 'tag-blue', '党内职务': 'tag-red',
+          '辅导员': 'tag-green', '班主任': 'tag-orange',
+        }[pos.type] || 'tag-gray';
+        const statusTag = {
+          '在任': 'tag-green', '拟任': 'tag-orange', '免职': 'tag-gray', '退休': 'tag-gray',
+        }[pos.status] || 'tag-gray';
+
+        html += `<tr>
+          ${idx === 0 ? `
+            <td class="mono" rowspan="${filtered.length}">${p.uid}</td>
+            <td class="mono" rowspan="${filtered.length}">${p.xgh}</td>
+            <td rowspan="${filtered.length}"><span class="tag tag-cyan">${p.xghType}</span></td>
+            <td rowspan="${filtered.length}"><strong>${p.name}</strong>${multi ? `<span class="multi-pos">${filtered.length}岗</span>` : ''}</td>` : ''}
+          <td><span class="tag ${typeTag}">${pos.type}</span></td>
+          <td><strong>${pos.title}</strong></td>
+          <td>
+            <span style="font-family:'DIN Alternate',monospace;font-size:11px;color:var(--text-disabled)">${pos.orgCode}</span>
+            <span style="margin-left:6px;font-size:12.5px">${pos.orgName}</span>
+          </td>
+          <td class="mono" style="font-size:12px">${pos.start}<br><span style="color:var(--text-disabled)">${pos.end ? '至 ' + pos.end : '至今'}</span></td>
+          <td>${pos.effective ? '<span class="tag tag-green">有效</span>' : '<span class="tag tag-gray">无效</span>'}</td>
+          <td><span class="tag ${statusTag}">${pos.status}</span></td>
+          <td>${sourceCell(pos)}</td>
+          ${idx === 0 ? `<td rowspan="${filtered.length}"><button class="btn btn-text btn-sm">详情</button></td>` : ''}
+        </tr>`;
+      });
+    });
+
+    const tbody = document.getElementById('data-tbody');
+    if (totalRows === 0) {
+      tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--text-disabled)">暂无匹配数据</td></tr>`;
+      document.getElementById('data-total').textContent = '0';
+    } else {
+      tbody.innerHTML = html;
+      document.getElementById('data-total').textContent = totalRows.toLocaleString();
+    }
+  }
+
+  ['data-search', 'data-type', 'data-effective', 'data-status'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', renderData);
+  });
+
+  // ===================== 岗位映射管理 =====================
+  const FLAG_META = {
+    valid:   { label: '有效', cls: 'valid' },
+    invalid: { label: '无效', cls: 'invalid' },
+    pending: { label: '待定', cls: 'pending' },
+  };
+
+  // ---- 步骤1：源头勾选 + 本次处理下拉 ----
+  function renderSrcChecks() {
+    document.getElementById('src-checks').innerHTML = MAP_SOURCES.map((s, i) => `
+      <label class="src-check">
+        <input type="checkbox" ${i === 0 ? 'checked' : ''} value="${s.code}" onchange="syncActiveSrcOptions()">
+        <span>${s.name}</span>
+      </label>
+    `).join('');
+    syncActiveSrcOptions();
+  }
+  // 下拉只列出已勾选的源头；每次仅能处理其中一个
+  function syncActiveSrcOptions() {
+    const checked = [...document.querySelectorAll('#src-checks input:checked')].map(c => c.value);
+    const sel = document.getElementById('map-active-src');
+    const prev = sel.value;
+    sel.innerHTML = checked.map(code => {
+      const s = MAP_SOURCES.find(x => x.code === code);
+      return `<option value="${code}">${s.name} · ${s.sys}</option>`;
+    }).join('') || '<option value="">请先勾选源头</option>';
+    if (checked.includes(prev)) sel.value = prev;
+  }
+
+  // ---- 步骤1：加载某一个源头的原始数据 ----
+  const RAW_PREVIEW_CAP = 300;  // 原始数据预览上限（拆分仍按全量处理）
+  function loadSourceRaw() {
+    const code = document.getElementById('map-active-src').value;
+    const src = MAP_SOURCES.find(x => x.code === code);
+    if (!src) { toast('请先勾选并选择一个要处理的源头'); return; }
+
+    MAP_STATE.loadedSrc = code;
+    MAP_STATE.raw = src.rows.map(r => ({ ...r }));
+    MAP_STATE.split = [];
+
+    const multiCnt = MAP_STATE.raw.filter(r => splitVals(r.f1).length > 1 || splitVals(r.f2).length > 1).length;
+    document.getElementById('raw-src-name').textContent = `${src.name} · ${src.sys}`;
+    document.getElementById('raw-meta').textContent =
+      `${src.rows.length} 行（去重后保留）· 含多值待拆 ${multiCnt} 行 · 同步策略 ${src.sync}`;
+
+    const shown = MAP_STATE.raw.slice(0, RAW_PREVIEW_CAP);
+    let rowsHtml = shown.map((r, i) => {
+      const v1 = splitVals(r.f1), v2 = splitVals(r.f2);
+      return `
+      <tr>
+        <td class="mono">${i + 1}</td>
+        <td>${v1.map(v => `<span class="tag tag-blue">${v}</span>`).join(' ')}${v1.length > 1 ? '<span class="multi-pos">多值</span>' : ''}</td>
+        <td>${v2.map(v => `<span class="tag tag-purple">${v}</span>`).join(' ')}${v2.length > 1 ? '<span class="multi-pos">多值</span>' : ''}</td>
+      </tr>`;
+    }).join('');
+    if (MAP_STATE.raw.length > RAW_PREVIEW_CAP) {
+      rowsHtml += `<tr><td colspan="3" style="text-align:center;padding:14px;color:var(--text-disabled);font-size:12.5px">仅预览前 ${RAW_PREVIEW_CAP} 行，拆分将按全部 ${MAP_STATE.raw.length} 行处理</td></tr>`;
+    }
+    document.getElementById('raw-tbody').innerHTML = rowsHtml;
+
+    document.getElementById('raw-panel').style.display = 'block';
+    document.getElementById('step2').style.display = 'flex';
+    document.getElementById('split-wrap').style.display = 'none';
+    document.getElementById('save-result').style.display = 'none';
+    document.getElementById('raw-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ---- 步骤2：分组去重 + 笛卡尔积拆分 ----
+  function doSplit() {
+    if (!MAP_STATE.raw.length) { toast('请先加载源头数据'); return; }
+
+    // 逐行笛卡尔积拆分（每行保留，不做分组合并）：
+    // 对每一条原始行，将其字段1、字段2 各自按分隔符拆分去重后做笛卡尔积；
+    // 每条拆分明细的参照列 = 该原始行自身的字段1 / 字段2 取值。
+    const out = [];
+    const seen = new Set(); // 去重：同一 (拆分1,拆分2,参照1,参照2) 不重复
+    MAP_STATE.raw.forEach(r => {
+      const u1 = [...new Set(splitVals(r.f1))];
+      const u2 = [...new Set(splitVals(r.f2))];
+      const ref1 = u1.join(', ');
+      const ref2 = u2.join(', ');
+      u1.forEach(a => u2.forEach(b => {
+        const key = `${a}|||${b}|||${ref1}|||${ref2}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        out.push({ f1: a, f2: b, raw1: ref1, raw2: ref2, flag: 'pending' });
+      }));
+    });
+    MAP_STATE.split = out;
+
+    document.getElementById('split-wrap').style.display = 'block';
+    document.getElementById('save-result').style.display = 'none';
+    document.getElementById('split-search').value = '';
+    document.getElementById('split-flag').value = '';
+    renderSplit();
+    document.getElementById('split-wrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ---- 拆分结果渲染（含筛选 + 标定） ----
+  function renderSplit() {
+    const q = (document.getElementById('split-search').value || '').trim();
+    const ff = document.getElementById('split-flag').value;
+    const rows = MAP_STATE.split
+      .map((r, idx) => ({ r, idx }))
+      .filter(({ r }) => {
+        if (ff && r.flag !== ff) return false;
+        if (q && !(`${r.f1}${r.f2}${r.raw1}${r.raw2}`.includes(q))) return false;
+        return true;
+      });
+
+    const tbody = document.getElementById('split-tbody');
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-disabled)">暂无匹配的拆分结果</td></tr>`;
+    } else {
+      const CAP = 400;
+      const shown = rows.slice(0, CAP);
+      let h = shown.map(({ r, idx }) => `
+        <tr>
+          <td class="mono">${idx + 1}</td>
+          <td><span class="tag tag-blue">${r.f1}</span></td>
+          <td><span class="tag tag-purple">${r.f2}</span></td>
+          <td class="ref-col mono">${r.raw1}</td>
+          <td class="ref-col mono">${r.raw2}</td>
+          <td>${flagControl(idx, r.flag)}</td>
+        </tr>
+      `).join('');
+      if (rows.length > CAP) {
+        h += `<tr><td colspan="6" style="text-align:center;padding:14px;color:var(--text-disabled);font-size:12.5px">仅显示前 ${CAP} / ${rows.length} 行（可用搜索或状态筛选缩小范围）· 批量标定与保存对全部行生效</td></tr>`;
+      }
+      tbody.innerHTML = h;
+    }
+    renderSplitSummary();
+    updateSaveHint();
+  }
+
+  // 三态标定控件
+  function flagControl(idx, flag) {
+    return `<div class="flag-seg">` + ['valid', 'invalid', 'pending'].map(k =>
+      `<button class="flag-opt ${k} ${flag === k ? 'on' : ''}" onclick="setFlag(${idx}, '${k}')">${FLAG_META[k].label}</button>`
+    ).join('') + `</div>`;
+  }
+  function setFlag(idx, k) {
+    MAP_STATE.split[idx].flag = k;
+    renderSplit();
+  }
+  function bulkFlag(k) {
+    // 仅对当前筛选可见的行批量标定
+    const q = (document.getElementById('split-search').value || '').trim();
+    const ff = document.getElementById('split-flag').value;
+    MAP_STATE.split.forEach(r => {
+      if (ff && r.flag !== ff) return;
+      if (q && !(`${r.f1}${r.f2}${r.raw1}${r.raw2}`.includes(q))) return;
+      r.flag = k;
+    });
+    renderSplit();
+  }
+
+  function renderSplitSummary() {
+    const total = MAP_STATE.split.length;
+    const v = MAP_STATE.split.filter(r => r.flag === 'valid').length;
+    const iv = MAP_STATE.split.filter(r => r.flag === 'invalid').length;
+    const pd = MAP_STATE.split.filter(r => r.flag === 'pending').length;
+    const u1 = new Set(MAP_STATE.split.map(r => r.f1)).size;
+    const u2 = new Set(MAP_STATE.split.map(r => r.f2)).size;
+    document.getElementById('split-summary').innerHTML = `
+      <div class="sp-item"><div class="sp-num">${total}</div><div class="sp-label">拆分行（逐行笛卡尔积，去重后）</div></div>
+      <div class="sp-item"><div class="sp-num" style="color:var(--color-success)">${v}</div><div class="sp-label">有效</div></div>
+      <div class="sp-item"><div class="sp-num" style="color:var(--color-error)">${iv}</div><div class="sp-label">无效</div></div>
+      <div class="sp-item"><div class="sp-num" style="color:var(--color-warning)">${pd}</div><div class="sp-label">待定</div></div>
+    `;
+  }
+
+  function updateSaveHint() {
+    const pd = MAP_STATE.split.filter(r => r.flag === 'pending').length;
+    const v = MAP_STATE.split.filter(r => r.flag === 'valid').length;
+    const hint = document.getElementById('save-hint');
+    const btn = document.getElementById('btn-save-map');
+    if (pd > 0) {
+      hint.innerHTML = `仍有 <strong style="color:var(--color-warning)">${pd}</strong> 行待定，建议标定完成后保存`;
+    } else {
+      hint.innerHTML = `已全部标定 · 有效 <strong style="color:var(--color-success)">${v}</strong> 行将入库`;
+    }
+    btn.disabled = MAP_STATE.split.length === 0;
+  }
+
+  // ---- 步骤3：保存（后台三个动作，前台不出现 AI 字眼） ----
+  function saveMapping() {
+    if (!MAP_STATE.split.length) { toast('没有可保存的拆分结果'); return; }
+    const valid = MAP_STATE.split.filter(r => r.flag === 'valid');
+    const all = MAP_STATE.split.length;
+    const pd = MAP_STATE.split.filter(r => r.flag === 'pending').length;
+    const src = MAP_SOURCES.find(x => x.code === MAP_STATE.loadedSrc);
+
+    MAP_STATE.savedCount += all;
+    document.getElementById('sb-map-count').textContent = MAP_STATE.savedCount.toLocaleString();
+
+    // 渲染"本次入库结果"面板（三个后台动作的业务化描述）
+    const steps = [
+      {
+        ic: '<rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/>',
+        title: '写入岗位映射表（映射知识库）',
+        desc: `本次 <strong>${all}</strong> 条拆分映射已写入后台「岗位映射表」，作为后续映射比对的基准知识库。`,
+        meta: `${src ? src.name : ''} · 含 ${valid.length} 条有效 / ${all - valid.length - pd} 条无效 / ${pd} 条待定`
+      },
+      {
+        ic: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h6"/>',
+        title: '有效映射写入识别提示词库',
+        desc: `<strong>${valid.length}</strong> 条标定为「有效」的映射已追加到本地识别提示词文本，用于优先匹配命中。`,
+        meta: valid.length ? valid.slice(0, 3).map(r => `${r.f1}→${r.f2}`).join('；') + (valid.length > 3 ? ' …' : '') : '本次无有效映射写入'
+      },
+      {
+        ic: '<circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8l2.8-2.8M17 7l2.8-2.8"/>',
+        title: '映射比对调用链已就绪',
+        desc: `后续映射拆分将<strong>优先查提示词库命中</strong>，未命中再走计算拆解；计算资源按「先 CPU、后 GPU」分级调度。`,
+        meta: '调用参数在「系统配置」中维护，本页不涉及配置'
+      },
+    ];
+    document.getElementById('result-steps').innerHTML = steps.map((s, i) => `
+      <div class="result-step">
+        <div class="result-step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${s.ic}</svg></div>
+        <div class="result-step-body">
+          <div class="result-step-title"><span class="result-step-no">动作 ${i + 1}</span>${s.title}</div>
+          <div class="result-step-desc">${s.desc}</div>
+          <div class="result-step-meta">${s.meta}</div>
+        </div>
+        <div class="result-step-ok">已完成</div>
+      </div>
+    `).join('');
+
+    const now = new Date(); const pad = n => String(n).padStart(2, '0');
+    document.getElementById('save-result-time').textContent =
+      `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    const panel = document.getElementById('save-result');
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    toast(`已保存 ${all} 条映射，其中 ${valid.length} 条有效`);
+  }
+
+  function resetSplit() {
+    MAP_STATE.split = [];
+    document.getElementById('split-wrap').style.display = 'none';
+    document.getElementById('save-result').style.display = 'none';
+  }
+
+  // 轻量 toast
+  function toast(msg) {
+    let t = document.getElementById('m3-toast');
+    if (!t) {
+      t = document.createElement('div'); t.id = 'm3-toast'; t.className = 'm3-toast';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // ===== 视图切换 =====
+  document.querySelectorAll('.sidebar-item[data-view]').forEach(el => {
+    el.addEventListener('click', () => {
+      const v = el.dataset.view;
+      document.querySelectorAll('.sidebar-item[data-view]').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+      document.getElementById('view-' + v).classList.add('active');
+      const labels = { data: '岗位身份数据', mapping: '岗位映射管理' };
+      document.getElementById('crumb-last').textContent = '人员岗位身份 · ' + labels[v];
+    });
+  });
+
+  renderData();
+  renderSrcChecks();
+</script>
+</body>
+</html>

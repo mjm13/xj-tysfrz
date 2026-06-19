@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高校综合身份数据平台</title>
+<style>
+  :root {
+    /* ===== 严格遵循 design-spec-light.md ===== */
+    /* 1.1 主色 / 品牌 */
+    --color-primary: #2563EB;
+    --color-primary-secondary: #478EF7;
+    /* 1.2 功能色 */
+    --color-success: #00B42A;
+    --color-warning: #FF7D00;
+    --color-error: #F53F3F;
+    --color-info: #165DFF;
+    /* 1.3 中性色 */
+    --text-primary: #1D2129;
+    --text-secondary: #4E5969;
+    --text-disabled: #86909C;
+    --bg-page: #FAFAFB;
+    --bg-card: #FFFFFF;
+    --bg-secondary: #F2F3F5;
+    --border: #E5E6EB;
+    /* 1.4 图表配色 */
+    --chart-1: #387EF5;
+    --chart-2: #0FB17B;
+    --chart-3: #F6980D;
+    --chart-4: #A251F6;
+    --chart-5: #A8B8DA;
+    /* 阴影（规范第 3 节） */
+    --shadow-1: 0 1px 2px 0 rgba(0,0,0,.03), 0 1px 6px -1px rgba(0,0,0,.02);
+    --shadow-2: 0 4px 12px 0 rgba(0,0,0,.05), 0 2px 4px 0 rgba(0,0,0,.03);
+    --shadow-3: 0 8px 24px 0 rgba(0,0,0,.08), 0 4px 8px 0 rgba(0,0,0,.05);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg-page); }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+    color: var(--text-primary);
+    font-size: 14px;  /* Body1 */
+    line-height: 22px;
+  }
+
+  /* ===== 顶部导航 64px（规范组件清单） ===== */
+  .topbar {
+    height: 64px;
+    background: var(--bg-card);
+    box-shadow: var(--shadow-1);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-right: 32px;
+  }
+  .logo-mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+  .logo-mark svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; }
+  .logo-text {
+    font-size: 16px;   /* H3 */
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 24px;
+  }
+  .topbar nav {
+    display: flex;
+    gap: 32px;
+    flex: 1;
+    height: 100%;
+    align-items: center;
+  }
+  .topbar nav a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 400;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+    transition: color 200ms;
+  }
+  .topbar nav a:hover { color: var(--color-primary); }
+  .topbar nav a.active {
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+  .topbar nav a.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-primary);  /* 规范：2px 主色下划线 */
+  }
+
+  /* ===== 顶导下拉菜单 ===== */
+  .nav-dropdown {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .nav-dropdown-trigger {
+    color: var(--text-secondary);
+    font-size: 14px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: color 200ms;
+  }
+  .nav-dropdown-trigger::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    margin-left: 4px;
+    margin-bottom: 3px;
+    transition: transform 200ms;
+    opacity: 0.6;
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger {
+    color: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger::after {
+    transform: rotate(-135deg);
+    margin-bottom: -3px;
+    opacity: 1;
+  }
+  .nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-2);
+    min-width: 220px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 200ms;
+    z-index: 200;
+  }
+  .nav-dropdown:hover .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+  .nav-dropdown-menu a {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    height: auto !important;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 150ms;
+  }
+  .nav-dropdown-menu a::after { display: none !important; }
+  .nav-dropdown-menu a:hover {
+    background: rgba(37, 99, 235, 0.06);
+    color: var(--color-primary);
+  }
+  .nav-dropdown-menu a svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+  .nav-dropdown-menu a:hover svg { opacity: 1; }
+  .nav-dropdown-menu .menu-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .nav-dropdown-menu .menu-label {
+    font-size: 14px;
+    line-height: 18px;
+  }
+  .nav-dropdown-menu .menu-desc {
+    font-size: 11px;
+    color: var(--text-disabled);
+    margin-top: 2px;
+    line-height: 14px;
+  }
+  .nav-dropdown-menu a:hover .menu-desc { color: var(--color-primary-secondary); }
+  /* 防止从 trigger 到 menu 之间的间隙导致 hover 中断 */
+  .nav-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 0;
+    right: 0;
+    height: 8px;
+  }
+  
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .time-display {
+    font-size: 12px;
+    color: var(--text-disabled);
+    font-family: "DIN Alternate", "Roboto", monospace;
+  }
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  .user-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .user-name {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  /* ===== 主体 ===== */
+  .main {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 24px;  /* 规范：主体 24px 边距 */
+  }
+
+  /* 面包屑 */
+  .breadcrumb {
+    font-size: 14px;
+    color: var(--text-disabled);
+    margin-bottom: 16px;
+  }
+  .breadcrumb .sep { margin: 0 8px; }
+  .breadcrumb .last { color: var(--text-primary); }
+
+  /* 页面标题区 */
+  .page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-title {
+    font-size: 20px;   /* H2 */
+    font-weight: 600;
+    line-height: 28px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .page-desc {
+    font-size: 14px;   /* Body1 */
+    color: var(--text-secondary);
+  }
+  .page-stats {
+    display: flex;
+    gap: 32px;
+  }
+  .stat-item {
+    text-align: right;
+  }
+  .stat-num {
+    font-size: 20px;   /* H2 */
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 28px;
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+  .stat-label {
+    font-size: 12px;   /* Body2 */
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  /* ===== 段落标题 ===== */
+  .section-title {
+    font-size: 16px;   /* H3 */
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 24px;
+    margin-bottom: 16px;
+    padding-left: 12px;
+    position: relative;
+  }
+  .section-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 4px;
+    height: 16px;
+    background: var(--color-primary);
+    border-radius: 2px;
+  }
+
+  /* ===== 功能导航卡片（按规范"数据卡片" + 可点击交互） ===== */
+  .nav-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 1400px) {
+    .nav-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (max-width: 900px) {
+    .nav-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .nav-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .nav-card {
+    background: var(--bg-card);
+    border-radius: 8px;          /* 规范：数据卡片 8px 圆角 */
+    box-shadow: var(--shadow-1); /* 规范：一级阴影 */
+    padding: 16px;
+    cursor: pointer;
+    transition: all 200ms;
+    border: 1px solid transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+  }
+  .nav-card:hover {
+    box-shadow: var(--shadow-2);  /* 悬停升级到二级阴影 */
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+  }
+  .nav-card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: rgba(37, 99, 235, 0.08); /* 主色 8% */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 200ms;
+  }
+  .nav-card:hover .nav-card-icon {
+    background: var(--color-primary);
+  }
+  .nav-card-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--color-primary);
+    fill: none;
+    stroke-width: 1.8;
+    transition: stroke 200ms;
+  }
+  .nav-card:hover .nav-card-icon svg {
+    stroke: white;
+  }
+  .nav-card-title {
+    font-size: 16px;   /* H3 */
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 24px;
+  }
+  .nav-card-desc {
+    font-size: 12px;   /* Body2 */
+    color: var(--text-secondary);
+    line-height: 16px;
+  }
+  .nav-card-arrow {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    color: var(--text-disabled);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 200ms;
+  }
+  .nav-card:hover .nav-card-arrow {
+    color: var(--color-primary);
+    transform: translateX(2px);
+  }
+
+  /* ===== 数据综合视图 ===== */
+  .data-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 1200px) {
+    .data-grid { grid-template-columns: 1fr; }
+  }
+
+  /* 数据卡片（规范组件） */
+  .data-card {
+    background: var(--bg-card);
+    border-radius: 8px;
+    box-shadow: var(--shadow-1);
+    padding: 16px;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 16px;   /* H3 */
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 24px;
+    padding-left: 12px;
+    position: relative;
+  }
+  .card-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 4px;
+    height: 16px;
+    background: var(--color-primary);
+    border-radius: 2px;
+  }
+  .card-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-left: 12px;
+    margin-top: 4px;
+  }
+  .card-badge {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+  }
+  .card-badge.live {
+    background: rgba(0, 180, 42, 0.1);
+    color: var(--color-success);
+  }
+  .card-badge.live::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-success);
+    margin-right: 6px;
+    vertical-align: middle;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* 全校总数 */
+  .total-block {
+    text-align: center;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .total-num {
+    font-size: 28px;   /* H1 */
+    font-weight: 600;
+    color: var(--color-primary);
+    line-height: 36px;
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+  .total-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+  }
+  .total-meta {
+    font-size: 12px;
+    color: var(--text-disabled);
+    margin-top: 4px;
+  }
+
+  /* 类型分布列表 */
+  .type-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .type-row {
+    display: grid;
+    grid-template-columns: 12px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 200ms;
+  }
+  .type-row:hover { background: var(--bg-secondary); }
+  .type-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+  }
+  .type-name {
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+  .type-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .type-num {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+  .type-pct {
+    font-size: 12px;
+    color: var(--text-disabled);
+  }
+
+  /* ===== 饼图 ===== */
+  .pie-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 24px;
+    align-items: center;
+    padding: 8px 0;
+  }
+  .pie-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pie-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+  }
+  .pie-center-num {
+    font-size: 28px;   /* H1 */
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 36px;
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+  .pie-center-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  .pie-slice {
+    transition: opacity 200ms;
+    cursor: pointer;
+  }
+  .pie-slice:hover { opacity: 0.8; }
+
+  .pie-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .legend-item {
+    display: grid;
+    grid-template-columns: 12px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 200ms;
+    border: 1px solid transparent;
+  }
+  .legend-item:hover { background: var(--bg-secondary); }
+  .legend-item.active {
+    background: rgba(37, 99, 235, 0.06);
+    border-color: var(--color-primary);
+  }
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+  }
+  .legend-text {
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+  .legend-item.active .legend-text { font-weight: 500; }
+  .legend-num {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+  .legend-num-pct {
+    font-size: 12px;
+    color: var(--text-disabled);
+    margin-left: 4px;
+  }
+  .pie-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+  .pie-desc strong { color: var(--text-primary); font-weight: 500; }
+  .pie-desc .num-hl { color: var(--color-primary); font-weight: 500; font-family: "DIN Alternate", "Roboto", inherit; }
+
+  /* ===== 权限分布卡片 ===== */
+  .perm-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 1200px) {
+    .perm-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .perm-grid { grid-template-columns: 1fr; }
+  }
+  .perm-card {
+    background: var(--bg-card);
+    border-radius: 8px;
+    box-shadow: var(--shadow-1);
+    padding: 16px;
+    cursor: pointer;
+    transition: all 200ms;
+    border: 1px solid transparent;
+  }
+  .perm-card:hover {
+    box-shadow: var(--shadow-2);
+  }
+  .perm-card.active {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-2);
+  }
+  .perm-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .perm-card-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 24px;
+  }
+  .perm-card-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: rgba(37, 99, 235, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .perm-card-icon svg {
+    width: 16px;
+    height: 16px;
+    stroke: var(--color-primary);
+    fill: none;
+    stroke-width: 1.8;
+  }
+  .perm-total {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .perm-total-num {
+    font-size: 28px;   /* H1 */
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 36px;
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+  .perm-total-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .perm-coverage {
+    font-size: 12px;
+    color: var(--color-success);
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .perm-coverage::before {
+    content: '↑ ';
+  }
+  .perm-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .perm-row {
+    display: grid;
+    grid-template-columns: 10px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+  }
+  .perm-row-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+  }
+  .perm-row-name {
+    color: var(--text-secondary);
+  }
+  .perm-row-num {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+    font-family: "DIN Alternate", "Roboto", inherit;
+  }
+
+  /* 底部 */
+  .footer {
+    max-width: 1440px;
+    margin: 24px auto 0;
+    padding: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-disabled);
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 顶部导航 64px ===== -->
+<header class="topbar">
+  <div class="logo-wrap">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>
+    </div>
+    <div class="logo-text">身份数据平台</div>
+  </div>
+  <nav>
+    <a href="#" class="active">主页</a>
+    <div class="nav-dropdown">
+      <a href="m1-basic-identity.html" class="nav-dropdown-trigger" style="text-decoration:none;color:inherit">身份管理</a>
+      <div class="nav-dropdown-menu">
+        <a href="m1-basic-identity.html">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员基础身份</div>
+            <div class="menu-desc">人员进档 · 一人一ID · 多源头采集</div>
+          </div>
+        </a>
+        <a href="m2-classification.html">
+          <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员分类身份</div>
+            <div class="menu-desc">树形分类 · 标准属性 · 实例挂载</div>
+          </div>
+        </a>
+        <a href="m3-position.html">
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员岗位身份</div>
+            <div class="menu-desc">广义岗位 · 一人多身份</div>
+          </div>
+        </a>
+        <a href="m7-custom-tags.html">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员自定义标签管理</div>
+            <div class="menu-desc">自定义群组 · 灵活标注 · 便捷查询</div>
+          </div>
+        </a>
+        <a href="m4-org.html">
+          <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">组织机构体系</div>
+            <div class="menu-desc">院系树 · 强绑定身份</div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <a href="m5-identity-permission.html">身份权限管理</a>
+    <a href="m6-data-query.html">数据查询</a>
+  </nav>
+  <div class="topbar-right">
+    <span class="time-display" id="time-display"></span>
+    <div class="user-info">
+      <div class="user-avatar">管</div>
+      <span class="user-name">管理员 · 数据治理岗</span>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- 面包屑 -->
+  <div class="breadcrumb">
+    身份数据平台 <span class="sep">/</span><span class="last">平台总览</span>
+  </div>
+
+  <!-- 页面标题 -->
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">高校综合身份数据平台</h1>
+      <p class="page-desc">解决高校各类人员的数据身份管理、权限管理、综合查询等核心业务</p>
+    </div>
+    <div class="page-stats">
+      <div class="stat-item">
+        <div class="stat-num" id="stat-total">94,283</div>
+        <div class="stat-label">在档人数</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">7</div>
+        <div class="stat-label">数据接入源</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">99.6%</div>
+        <div class="stat-label">数据可用率</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 功能导航 -->
+  <div class="section-title">功能导航</div>
+  <section class="nav-grid">
+
+    <div class="nav-card" data-mod="m1">
+      <span class="nav-card-arrow">→</span>
+      <div class="nav-card-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+      </div>
+      <div>
+        <div class="nav-card-title">人员基础身份</div>
+        <div class="nav-card-desc">人员进档 · 一人一ID · 多源头采集</div>
+      </div>
+    </div>
+
+    <div class="nav-card" data-mod="m2">
+      <span class="nav-card-arrow">→</span>
+      <div class="nav-card-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+      </div>
+      <div>
+        <div class="nav-card-title">人员分类身份</div>
+        <div class="nav-card-desc">树形分类 · 标准属性 · 实例挂载</div>
+      </div>
+    </div>
+
+    <div class="nav-card" data-mod="m3">
+      <span class="nav-card-arrow">→</span>
+      <div class="nav-card-icon">
+        <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/><circle cx="8" cy="7" r="1"/><circle cx="8" cy="17" r="1"/></svg>
+      </div>
+      <div>
+        <div class="nav-card-title">人员岗位身份</div>
+        <div class="nav-card-desc">广义岗位 · 一人多身份</div>
+      </div>
+    </div>
+
+    <div class="nav-card" data-mod="m7">
+      <span class="nav-card-arrow">→</span>
+      <div class="nav-card-icon">
+        <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      </div>
+      <div>
+        <div class="nav-card-title">自定义标签身份</div>
+        <div class="nav-card-desc">自定义群组 · 灵活标注 · 便捷查询</div>
+      </div>
+    </div>
+
+    <div class="nav-card" data-mod="m4">
+      <span class="nav-card-arrow">→</span>
+      <div class="nav-card-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/><path d="M9 12l2 2 4-4"/></svg>
+      </div>
+      <div>
+        <div class="nav-card-title">组织机构体系</div>
+        <div class="nav-card-desc">院系树 · 强绑定身份</div>
+      </div>
+    </div>
+
+    <div class="nav-card" data-mod="m5">
+      <span class="nav-card-arrow">→</span>
+      <div class="nav-card-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div>
+        <div class="nav-card-title">身份权限管理</div>
+        <div class="nav-card-desc">权限项 · 类型授权 · 状态联动</div>
+      </div>
+    </div>
+
+    <div class="nav-card" data-mod="m6">
+      <span class="nav-card-arrow">→</span>
+      <div class="nav-card-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </div>
+      <div>
+        <div class="nav-card-title">系统服务</div>
+        <div class="nav-card-desc">数据查询 · 字典 · API · 配置</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 数据综合视图 -->
+  <div class="section-title">综合数据视图</div>
+
+  <section class="data-grid">
+
+    <!-- 全校有效身份人员总览 -->
+    <div class="data-card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">全校有效身份人员总览</div>
+          <div class="card-sub">按人员类型划分</div>
+        </div>
+        <span class="card-badge live">实时</span>
+      </div>
+
+      <div class="total-block">
+        <div class="total-num" id="total-num">94,283</div>
+        <div class="total-label">在档有效身份人员</div>
+        <div class="total-meta">截至 <span id="ts-now">—</span></div>
+      </div>
+
+      <div class="type-list" id="type-list"></div>
+    </div>
+
+    <!-- 学校公共权限使用情况 -->
+    <div class="data-card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">学校公共权限使用情况</div>
+          <div class="card-sub">所有有效身份人员的授权比例分布</div>
+        </div>
+        <span class="card-badge">截至 <span id="ts-now-2">—</span></span>
+      </div>
+
+      <div class="pie-desc" id="pie-desc"></div>
+
+      <div class="pie-layout">
+        <div class="pie-wrap">
+          <svg width="220" height="220" viewBox="0 0 200 200" id="pie-svg"></svg>
+          <div class="pie-center">
+            <div class="pie-center-num" id="pie-center-num">—</div>
+            <div class="pie-center-label" id="pie-center-label">已授权占比</div>
+          </div>
+        </div>
+        <div class="pie-legend" id="pie-legend"></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 4 类权限分布卡片 -->
+  <section class="perm-grid" id="perm-grid"></section>
+
+</main>
+
+<footer class="footer">
+  <span>© 高校身份数据平台 · 数据治理</span>
+  <span>v1.0 · 浅色规范 v1.0</span>
+</footer>
+
+<script>
+  // ===== 时间显示 =====
+  function updateTime() {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const txt = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    document.getElementById('time-display').textContent = txt;
+    const tsStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    document.getElementById('ts-now').textContent = tsStr;
+    document.getElementById('ts-now-2').textContent = tsStr;
+  }
+  updateTime();
+  setInterval(updateTime, 1000);
+
+  // ===== 数据 - 严格使用规范图表配色 =====
+  // 4 类人员（顺序使用规范图表色 1-4）
+  const TYPE_DATA = [
+    { key: 'staff', name: '教职工', total: 8956, color: '#387EF5' },
+    { key: 'student', name: '学生', total: 67428, color: '#0FB17B' },
+    { key: 'service', name: '校内服务人员', total: 12384, color: '#F6980D' },
+    { key: 'external', name: '校外临时人员', total: 5515, color: '#A251F6' },
+  ];
+  const TOTAL = TYPE_DATA.reduce((s, x) => s + x.total, 0);
+
+  // 4 类权限项（共用图表色板）
+  const PERMS = [
+    {
+      key: 'gate', name: '进校权限', total: 92847, totalLabel: '已授权',
+      breakdown: { staff: 8956, student: 67428, service: 12384, external: 4079 },
+      iconSvg: '<svg viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21V13h6v8"/></svg>'
+    },
+    {
+      key: 'net', name: '校园网', total: 76340, totalLabel: '已开通',
+      breakdown: { staff: 8956, student: 67384, service: 0, external: 0 },
+      iconSvg: '<svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg>'
+    },
+    {
+      key: 'card', name: '校园卡', total: 88150, totalLabel: '已绑定',
+      breakdown: { staff: 8956, student: 67428, service: 9220, external: 2546 },
+      iconSvg: '<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>'
+    },
+    {
+      key: 'library', name: '图书馆', total: 80204, totalLabel: '可借阅',
+      breakdown: { staff: 8956, student: 67428, service: 1820, external: 2000 },
+      iconSvg: '<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>'
+    },
+  ];
+
+  // 当前选中
+  let selectedPermIdx = 0;
+
+  // ===== 渲染：类型分布 =====
+  function renderTypeList() {
+    document.getElementById('total-num').textContent = TOTAL.toLocaleString();
+    document.getElementById('stat-total').textContent = TOTAL.toLocaleString();
+    const wrap = document.getElementById('type-list');
+    wrap.innerHTML = TYPE_DATA.map(t => {
+      const pct = ((t.total / TOTAL) * 100).toFixed(1);
+      return `
+        <div class="type-row">
+          <span class="type-dot" style="background:${t.color}"></span>
+          <span class="type-name">${t.name}</span>
+          <span class="type-meta">
+            <span class="type-num">${t.total.toLocaleString()}</span>
+            <span class="type-pct">${pct}%</span>
+          </span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ===== 渲染：饼图 - 二分饼（已授权/未授权） =====
+  function renderPie() {
+    const p = PERMS[selectedPermIdx];
+    const granted = p.total;
+    const ungranted = TOTAL - granted;
+    const grantedPct = (granted / TOTAL) * 100;
+
+    const svg = document.getElementById('pie-svg');
+    const cx = 100, cy = 100, rOuter = 80, rInner = 52;
+    const grantedAngle = (granted / TOTAL) * Math.PI * 2;
+    const gap = 0.012;
+    const sa1 = -Math.PI / 2 + gap;
+    const ea1 = -Math.PI / 2 + grantedAngle - gap;
+    const sa2 = -Math.PI / 2 + grantedAngle + gap;
+    const ea2 = -Math.PI / 2 + Math.PI * 2 - gap;
+
+    function arc(sa, ea, color) {
+      const x1o = cx + rOuter * Math.cos(sa);
+      const y1o = cy + rOuter * Math.sin(sa);
+      const x2o = cx + rOuter * Math.cos(ea);
+      const y2o = cy + rOuter * Math.sin(ea);
+      const x1i = cx + rInner * Math.cos(ea);
+      const y1i = cy + rInner * Math.sin(ea);
+      const x2i = cx + rInner * Math.cos(sa);
+      const y2i = cy + rInner * Math.sin(sa);
+      const largeArc = (ea - sa) > Math.PI ? 1 : 0;
+      const path = `M ${x1o} ${y1o} A ${rOuter} ${rOuter} 0 ${largeArc} 1 ${x2o} ${y2o} L ${x1i} ${y1i} A ${rInner} ${rInner} 0 ${largeArc} 0 ${x2i} ${y2i} Z`;
+      return `<path d="${path}" fill="${color}" class="pie-slice"></path>`;
+    }
+
+    let pathsHtml = '';
+    if (grantedPct > 0 && grantedPct < 100) {
+      pathsHtml += arc(sa1, ea1, 'var(--color-primary)');
+      pathsHtml += arc(sa2, ea2, '#E5E6EB');
+    } else if (grantedPct >= 100) {
+      pathsHtml += `<circle cx="${cx}" cy="${cy}" r="${rOuter}" fill="#2563EB"/><circle cx="${cx}" cy="${cy}" r="${rInner}" fill="#FFF"/>`;
+    } else {
+      pathsHtml += `<circle cx="${cx}" cy="${cy}" r="${rOuter}" fill="#E5E6EB"/><circle cx="${cx}" cy="${cy}" r="${rInner}" fill="#FFF"/>`;
+    }
+    svg.innerHTML = pathsHtml;
+
+    document.getElementById('pie-center-num').textContent = grantedPct.toFixed(1) + '%';
+    document.getElementById('pie-center-label').textContent = p.name + '已授权';
+
+    document.getElementById('pie-desc').innerHTML =
+      `<strong>${p.name}</strong> · 已授权 <span class="num-hl">${granted.toLocaleString()}</span> 人 / 未授权 <span class="num-hl" style="color:var(--text-disabled)">${ungranted.toLocaleString()}</span> 人`;
+
+    const lg = document.getElementById('pie-legend');
+    lg.innerHTML = PERMS.map((pp, i) => {
+      const cov = ((pp.total / TOTAL) * 100).toFixed(1);
+      return `
+        <div class="legend-item ${i === selectedPermIdx ? 'active' : ''}" data-i="${i}">
+          <span class="legend-swatch" style="background:${i === selectedPermIdx ? 'var(--color-primary)' : 'var(--text-disabled)'}"></span>
+          <span class="legend-text">${pp.name}</span>
+          <span><span class="legend-num">${cov}%</span></span>
+        </div>
+      `;
+    }).join('');
+
+    lg.querySelectorAll('.legend-item').forEach(el => {
+      el.addEventListener('click', () => {
+        selectedPermIdx = parseInt(el.dataset.i);
+        renderPie();
+        renderPerms();
+      });
+    });
+  }
+
+  // ===== 渲染：4个权限分布卡片 =====
+  function renderPerms() {
+    const wrap = document.getElementById('perm-grid');
+    wrap.innerHTML = PERMS.map((p, i) => {
+      const cov = ((p.total / TOTAL) * 100).toFixed(1);
+      const rows = TYPE_DATA.map(t => {
+        const n = p.breakdown[t.key] || 0;
+        return `
+          <div class="perm-row">
+            <span class="perm-row-dot" style="background:${t.color}"></span>
+            <span class="perm-row-name">${t.name}</span>
+            <span class="perm-row-num">${n.toLocaleString()}</span>
+          </div>
+        `;
+      }).join('');
+      return `
+        <div class="perm-card ${i === selectedPermIdx ? 'active' : ''}" data-i="${i}">
+          <div class="perm-card-head">
+            <div class="perm-card-title">${p.name}</div>
+            <div class="perm-card-icon">${p.iconSvg}</div>
+          </div>
+          <div class="perm-total">
+            <span class="perm-total-num">${p.total.toLocaleString()}</span>
+            <span class="perm-total-label">${p.totalLabel}</span>
+          </div>
+          <div class="perm-coverage">覆盖率 ${cov}%</div>
+          <div class="perm-detail">${rows}</div>
+        </div>
+      `;
+    }).join('');
+
+    wrap.querySelectorAll('.perm-card').forEach(el => {
+      el.addEventListener('click', () => {
+        selectedPermIdx = parseInt(el.dataset.i);
+        renderPie();
+        renderPerms();
+      });
+    });
+  }
+
+  document.querySelectorAll('.nav-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const m = card.dataset.mod;
+      const name = card.querySelector('.nav-card-title').textContent;
+      // 已实现的模块跳转
+      const routes = {
+        m1: 'm1-basic-identity.html',
+        m2: 'm2-classification.html',
+        m3: 'm3-position.html',
+        m7: 'm7-custom-tags.html',
+        m4: 'm4-org.html',
+        m5: 'm5-identity-permission.html',
+        m6: 'm6-data-query.html',
+      };
+      if (routes[m]) {
+        window.location.href = routes[m];
+        return;
+      }
+      alert(`即将进入：[${m}] ${name}\n（功能页待开发）`);
+    });
+  });
+
+  renderTypeList();
+  renderPie();
+  renderPerms();
+</script>
+</body>
+</html>

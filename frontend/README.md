@@ -1,4 +1,4 @@
-# Frontend — 指标平台
+# Frontend — 高校综合身份数据平台
 
 Vue 3 + TypeScript + Element Plus 前端工程。
 

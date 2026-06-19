@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>组织机构体系 · 高校综合身份数据平台</title>
+<style>
+  :root {
+    --color-primary: #2563EB;
+    --color-primary-secondary: #478EF7;
+    --color-success: #00B42A;
+    --color-warning: #FF7D00;
+    --color-error: #F53F3F;
+    --color-info: #165DFF;
+    --text-primary: #1D2129;
+    --text-secondary: #4E5969;
+    --text-disabled: #86909C;
+    --bg-page: #FAFAFB;
+    --bg-card: #FFFFFF;
+    --bg-secondary: #F2F3F5;
+    --border: #E5E6EB;
+    --chart-1: #387EF5; --chart-2: #0FB17B; --chart-3: #F6980D; --chart-4: #A251F6;
+    --shadow-1: 0 1px 2px 0 rgba(0,0,0,.03), 0 1px 6px -1px rgba(0,0,0,.02);
+    --shadow-2: 0 4px 12px 0 rgba(0,0,0,.05), 0 2px 4px 0 rgba(0,0,0,.03);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg-page); }
+  body { font-family: "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+    color: var(--text-primary); font-size: 14px; line-height: 22px; }
+  a { text-decoration: none; color: inherit; }
+  button, input, select { font: inherit; color: inherit; outline: none; }
+
+  .topbar { height: 64px; background: var(--bg-card); box-shadow: var(--shadow-1);
+    display: flex; align-items: center; padding: 0 24px; position: sticky; top: 0; z-index: 100; }
+  .logo-wrap { display: flex; align-items: center; gap: 12px; margin-right: 32px; }
+  .logo-mark { width: 32px; height: 32px; border-radius: 6px; background: var(--color-primary);
+    display: flex; align-items: center; justify-content: center; }
+  .logo-mark svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; }
+  .logo-text { font-size: 16px; font-weight: 600; }
+  .topbar nav { display: flex; gap: 32px; flex: 1; height: 100%; align-items: center; }
+  .topbar nav a { color: var(--text-secondary); font-size: 14px; height: 100%; display: flex; align-items: center; position: relative; transition: color 200ms; }
+  .topbar nav a:hover { color: var(--color-primary); }
+  .topbar nav a.active { color: var(--color-primary); font-weight: 500; }
+  .topbar nav a.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--color-primary); }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .time-display { font-size: 12px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", monospace; }
+  .user-info { display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border); }
+  .user-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary); color: white;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; }
+  .user-name { font-size: 14px; color: var(--text-secondary); }
+
+  .layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 64px); }
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 16px 0; }
+  .sidebar-section { padding: 8px 16px; font-size: 12px; color: var(--text-disabled); letter-spacing: 1px; }
+  .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+    margin: 2px 8px; font-size: 14px; color: var(--text-secondary); cursor: pointer;
+    border-radius: 6px; transition: all 200ms; }
+  .sidebar-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; }
+  .sidebar-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .sidebar-item.active { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); font-weight: 500; }
+  .sidebar-item .badge { margin-left: auto; font-size: 11px; padding: 1px 6px;
+    border-radius: 3px; background: var(--bg-secondary); color: var(--text-disabled); }
+
+  .main { padding: 16px 24px 32px; min-width: 0; }
+  .breadcrumb { font-size: 14px; color: var(--text-disabled); margin-bottom: 12px; }
+  .breadcrumb a { color: var(--text-disabled); }
+  .breadcrumb a:hover { color: var(--color-primary); }
+  .breadcrumb .sep { margin: 0 8px; }
+  .breadcrumb .last { color: var(--text-primary); }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .page-title { font-size: 20px; font-weight: 600; color: var(--text-primary); line-height: 28px; margin-bottom: 4px; }
+  .page-desc { font-size: 14px; color: var(--text-secondary); }
+  .page-stats { display: flex; gap: 24px; font-size: 12px; color: var(--text-secondary); }
+  .page-stats strong { font-size: 16px; color: var(--text-primary); margin-left: 4px; font-family: "DIN Alternate", "Roboto", inherit; }
+
+  .editable-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; background: rgba(0, 180, 42, 0.08); border-radius: 3px;
+    font-size: 11px; color: var(--color-success); margin-left: 12px; vertical-align: middle;
+  }
+  .editable-badge::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--color-success);
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .panel { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); padding: 16px; margin-bottom: 16px; }
+  .panel-title { font-size: 16px; font-weight: 500; color: var(--text-primary);
+    padding-left: 12px; position: relative; margin-bottom: 16px; }
+  .panel-title::before { content: ''; position: absolute; left: 0; top: 4px; width: 4px; height: 16px; background: var(--color-primary); border-radius: 2px; }
+  .panel-title .sub { font-size: 12px; color: var(--text-disabled); font-weight: 400; margin-left: 8px; }
+
+  .filter-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-input { height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg-card); font-size: 14px; color: var(--text-primary); transition: all 200ms; min-width: 200px; }
+  .filter-input:focus { border-color: var(--color-info); box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1); }
+  .filter-input.search { padding-left: 36px; }
+  .search-wrap { position: relative; }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-disabled); }
+  .filter-select { height: 40px; padding: 0 32px 0 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg-card) url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2386909C' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") right 12px center no-repeat;
+    font-size: 14px; cursor: pointer; appearance: none; min-width: 140px; }
+  .filter-spacer { flex: 1; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    height: 40px; padding: 0 16px; border-radius: 6px; font-size: 14px; font-weight: 500;
+    border: none; cursor: pointer; transition: all 200ms; }
+  .btn-primary { background: var(--color-primary); color: white; }
+  .btn-primary:hover { background: #1d4fc7; }
+  .btn-secondary { background: var(--bg-card); color: var(--color-info); border: 1px solid var(--color-info); }
+  .btn-secondary:hover { background: rgba(22, 93, 255, 0.04); }
+  .btn-text { background: transparent; color: var(--color-info); padding: 0 8px; height: 32px; }
+  .btn-text:hover { color: var(--color-primary); }
+  .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+  .btn-warn { color: var(--color-warning); }
+
+  .info-box { background: rgba(22, 93, 255, 0.04); border: 1px solid rgba(22, 93, 255, 0.16);
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 12px; }
+  .info-box-icon { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; color: var(--color-info); }
+  .info-box-icon svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 2; }
+  .info-box-content { flex: 1; font-size: 13px; color: var(--text-secondary); line-height: 22px; }
+  .info-box-content strong { color: var(--text-primary); font-weight: 500; }
+
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 12px; line-height: 20px; }
+  .tag-blue { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); }
+  .tag-green { background: rgba(0, 180, 42, 0.08); color: var(--color-success); }
+  .tag-orange { background: rgba(255, 125, 0, 0.08); color: var(--color-warning); }
+  .tag-red { background: rgba(245, 63, 63, 0.08); color: var(--color-error); }
+  .tag-purple { background: rgba(162, 81, 246, 0.08); color: var(--chart-4); }
+  .tag-cyan { background: rgba(70, 180, 195, 0.10); color: #2A8B9C; }
+  .tag-gray { background: var(--bg-secondary); color: var(--text-secondary); }
+
+  /* 树+详情布局 */
+  .tree-layout { display: grid; grid-template-columns: 380px 1fr; gap: 16px; min-height: 580px; }
+  @media (max-width: 1200px) { .tree-layout { grid-template-columns: 1fr; } }
+
+  .tree-wrap { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); overflow: hidden; display: flex; flex-direction: column; }
+  .tree-head { padding: 12px 16px; border-bottom: 1px solid var(--border);
+    background: var(--bg-secondary); display: flex; align-items: center; justify-content: space-between; }
+  .tree-head-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .tree-toolbar { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; gap: 6px; }
+  .tree-search { flex: 1; height: 32px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
+  .tree-body { padding: 8px; flex: 1; overflow: auto; max-height: 640px; }
+  .tree-node { display: flex; align-items: center; gap: 6px; padding: 6px 8px;
+    border-radius: 4px; cursor: pointer; transition: background 150ms; font-size: 13px; }
+  .tree-node:hover { background: var(--bg-secondary); }
+  .tree-node:hover .node-actions { display: flex; }
+  .tree-node.selected { background: rgba(37, 99, 235, 0.08); color: var(--color-primary); font-weight: 500; }
+  .tree-caret { width: 14px; height: 14px; display: inline-flex; align-items: center;
+    justify-content: center; color: var(--text-disabled); font-size: 10px; flex-shrink: 0;
+    transition: transform 200ms; }
+  .tree-caret.empty { visibility: hidden; }
+  .tree-caret.expanded { transform: rotate(90deg); }
+  .tree-children { padding-left: 18px; }
+  .tree-children.collapsed { display: none; }
+  .tree-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tree-code { font-family: "DIN Alternate", "Roboto", inherit; font-size: 11px; color: var(--text-disabled); }
+  .tree-node.selected .tree-code { color: var(--color-primary); }
+  .tree-node.party { color: #C92E2E; }
+  .tree-node.party .tree-code { color: #C92E2E; opacity: 0.7; }
+  .node-actions { display: none; gap: 2px; margin-left: 4px; }
+  .node-action-btn { width: 22px; height: 22px; border: none; background: transparent;
+    border-radius: 4px; cursor: pointer; color: var(--text-secondary); font-size: 12px;
+    display: flex; align-items: center; justify-content: center; padding: 0; }
+  .node-action-btn:hover { background: var(--bg-card); color: var(--color-primary); }
+  .node-action-btn.del:hover { color: var(--color-error); }
+
+  /* 详情面板 */
+  .detail-panel { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); padding: 20px; }
+  .detail-head { padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .detail-path { font-size: 12px; color: var(--text-disabled); margin-bottom: 6px; }
+  .detail-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .detail-name { font-size: 18px; font-weight: 600; color: var(--text-primary); }
+  .detail-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .detail-meta-row { display: flex; gap: 16px; font-size: 12px; color: var(--text-secondary); }
+
+  .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .stat-card { background: var(--bg-page); border-radius: 6px; padding: 12px; text-align: center; }
+  .stat-num { font-family: "DIN Alternate", "Roboto", inherit; font-size: 22px; font-weight: 600; color: var(--color-primary); line-height: 30px; }
+  .stat-label { font-size: 12px; color: var(--text-secondary); }
+
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; margin-bottom: 16px; }
+  .detail-item { padding: 8px 0; border-bottom: 1px dashed var(--border); }
+  .detail-item.full { grid-column: 1 / -1; }
+  .detail-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+  .detail-value { font-size: 14px; color: var(--text-primary); word-break: break-all; }
+  .detail-value.mono { font-family: "DIN Alternate", "Roboto", inherit; }
+  .detail-value.empty { color: var(--text-disabled); font-style: italic; }
+
+  /* 映射列表 */
+  .map-list { background: var(--bg-page); border-radius: 6px; padding: 4px; }
+  .map-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+    border-radius: 4px; transition: background 150ms; }
+  .map-row:not(:last-child) { border-bottom: 1px dashed var(--border); }
+  .map-row:hover { background: var(--bg-card); }
+  .map-icon { width: 28px; height: 28px; border-radius: 6px; display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; }
+  .map-info { flex: 1; min-width: 0; }
+  .map-name { font-size: 13.5px; font-weight: 500; color: var(--text-primary); }
+  .map-code { font-size: 11px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", monospace; margin-top: 2px; }
+  .map-meta { font-size: 12px; color: var(--text-secondary); }
+
+  /* 组织内人员岗位花名册 */
+  .roster { background: var(--bg-page); border-radius: 6px; padding: 4px; }
+  .roster-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px; border-radius: 4px; }
+  .roster-row:not(:last-child) { border-bottom: 1px dashed var(--border); }
+  .roster-row:hover { background: var(--bg-card); }
+  .roster-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--color-primary);
+    color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; margin-top: 2px; }
+  .roster-main { flex: 1; min-width: 0; }
+  .roster-name { font-size: 13.5px; font-weight: 500; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+  .roster-xgh { font-size: 11px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", monospace; }
+  .roster-pos { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; font-size: 12.5px; color: var(--text-secondary); }
+  .pos-line { display: flex; align-items: center; gap: 6px; padding: 3px 0; width: 100%; }
+  .pos-title { color: var(--text-primary); font-weight: 500; }
+  .src-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 1px 7px; border-radius: 3px; font-weight: 500; }
+  .src-hr { background: rgba(37,99,235,.1); color: var(--color-primary); }
+  .src-collect { background: rgba(255,125,0,.1); color: var(--color-warning); }
+  .src-tag::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .roster-legend { display: flex; gap: 16px; font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+  .roster-note { font-size: 11.5px; color: var(--text-secondary); background: rgba(255,125,0,.05);
+    border: 1px solid rgba(255,125,0,.18); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; line-height: 18px; }
+  .roster-note strong { color: var(--color-warning); }
+
+  /* 表格 */
+  .table-wrap { background: var(--bg-card); border-radius: 8px; box-shadow: var(--shadow-1); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead { background: var(--bg-secondary); }
+  thead th { height: 48px; padding: 0 16px; text-align: left; font-weight: 500;
+    color: var(--text-secondary); white-space: nowrap; font-size: 14px; }
+  tbody td { padding: 12px 16px; color: var(--text-primary); border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tbody tr:hover { background: var(--bg-secondary); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono { font-family: "DIN Alternate", "Roboto", inherit; color: var(--text-secondary); }
+
+  /* 时间轴 */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 1px; background: var(--border); }
+  .timeline-item { position: relative; padding-bottom: 20px; }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-dot { position: absolute; left: -22px; top: 6px; width: 12px; height: 12px;
+    border-radius: 50%; background: var(--bg-card); border: 2px solid var(--color-primary); }
+  .timeline-item.create .timeline-dot { background: var(--color-success); border-color: var(--color-success); }
+  .timeline-item.update .timeline-dot { background: var(--color-primary); border-color: var(--color-primary); }
+  .timeline-item.merge .timeline-dot { background: var(--color-warning); border-color: var(--color-warning); }
+  .timeline-item.del .timeline-dot { background: var(--color-error); border-color: var(--color-error); }
+  .timeline-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .timeline-time { font-size: 12px; color: var(--text-disabled); font-family: "DIN Alternate", "Roboto", inherit; }
+  .timeline-action { font-size: 14px; color: var(--text-primary); font-weight: 500; }
+  .timeline-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+  .timeline-changes { background: var(--bg-page); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px 12px; font-size: 13px; }
+  .change-row { display: grid; grid-template-columns: 100px 1fr; gap: 12px; padding: 4px 0; }
+  .change-field { color: var(--text-secondary); font-size: 12px; }
+  .change-diff .from { color: var(--text-disabled); text-decoration: line-through; margin-right: 8px; }
+  .change-diff .arrow { color: var(--text-disabled); margin: 0 4px; }
+  .change-diff .to { color: var(--text-primary); font-weight: 500; }
+
+  /* ===== 顶导下拉菜单 ===== */
+  .nav-dropdown {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .nav-dropdown-trigger {
+    color: var(--text-secondary);
+    font-size: 14px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: color 200ms;
+  }
+  .nav-dropdown-trigger::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    margin-left: 4px;
+    margin-bottom: 3px;
+    transition: transform 200ms;
+    opacity: 0.6;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger {
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+  .nav-dropdown.active .nav-dropdown-trigger::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 16px;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger {
+    color: var(--color-primary);
+  }
+  .nav-dropdown:hover .nav-dropdown-trigger::after {
+    transform: rotate(-135deg);
+    margin-bottom: -3px;
+    opacity: 1;
+  }
+  .nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-2);
+    min-width: 220px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 200ms;
+    z-index: 200;
+  }
+  .nav-dropdown:hover .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+  .nav-dropdown-menu a {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    height: auto !important;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 150ms;
+  }
+  .nav-dropdown-menu a::after { display: none !important; }
+  .nav-dropdown-menu a:hover {
+    background: rgba(37, 99, 235, 0.06);
+    color: var(--color-primary);
+  }
+  .nav-dropdown-menu a svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+  .nav-dropdown-menu a:hover svg { opacity: 1; }
+  .nav-dropdown-menu .menu-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .nav-dropdown-menu .menu-label {
+    font-size: 14px;
+    line-height: 18px;
+  }
+  .nav-dropdown-menu .menu-desc {
+    font-size: 11px;
+    color: var(--text-disabled);
+    margin-top: 2px;
+    line-height: 14px;
+  }
+  .nav-dropdown-menu a:hover .menu-desc { color: var(--color-primary-secondary); }
+  .nav-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 0;
+    right: 0;
+    height: 8px;
+  }
+
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo-wrap">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>
+    </div>
+    <div class="logo-text">身份数据平台</div>
+  </div>
+  <nav>
+    <a href="页面主页.html">主页</a>
+    <div class="nav-dropdown active">
+      <a href="m1-basic-identity.html" class="nav-dropdown-trigger" style="text-decoration:none;color:inherit">身份管理</a>
+      <div class="nav-dropdown-menu">
+        <a href="m1-basic-identity.html">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员基础身份</div>
+            <div class="menu-desc">人员进档 · 一人一ID · 多源头采集</div>
+          </div>
+        </a>
+        <a href="m2-classification.html">
+          <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员分类身份</div>
+            <div class="menu-desc">树形分类 · 标准属性 · 实例挂载</div>
+          </div>
+        </a>
+        <a href="m3-position.html">
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员岗位身份</div>
+            <div class="menu-desc">广义岗位 · 一人多身份</div>
+          </div>
+        </a>
+        <a href="m7-custom-tags.html">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">人员自定义标签管理</div>
+            <div class="menu-desc">自定义群组 · 灵活标注 · 便捷查询</div>
+          </div>
+        </a>
+        <a href="m4-org.html">
+          <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+          <div class="menu-body">
+            <div class="menu-label">组织机构体系</div>
+            <div class="menu-desc">院系树 · 强绑定身份</div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <a href="m5-identity-permission.html">身份权限管理</a>
+    <a href="m6-data-query.html">数据查询</a>
+  </nav>
+  <div class="topbar-right">
+    <span class="time-display" id="time-display"></span>
+    <div class="user-info">
+      <div class="user-avatar">管</div>
+      <span class="user-name">管理员 · 数据治理岗</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-section">人员管理</div>
+    <a href="m1-basic-identity.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+      <span>人员基础身份</span>
+    </div></a>
+    <a href="m2-classification.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5 6h6M5 18h6M13 6h6M13 18h6"/></svg>
+      <span>人员分类身份</span>
+    </div></a>
+    <a href="m3-position.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/></svg>
+      <span>人员岗位身份</span>
+    </div></a>
+    <a href="m7-custom-tags.html"><div class="sidebar-item">
+      <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      <span>自定义标签身份</span>
+    </div></a>
+    <div class="sidebar-item active">
+      <svg viewBox="0 0 24 24"><path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+      <span>组织机构体系</span>
+    </div>
+
+    <div class="sidebar-section" style="margin-top:8px">M4 子功能</div>
+    <div class="sidebar-item active" data-view="tree">
+      <svg viewBox="0 0 24 24"><path d="M12 2v6m0 0a3 3 0 1 0 0 6m0-6a3 3 0 1 1 0 6m0 0v6m-7-7h14"/></svg>
+      <span>组织机构树</span>
+      <span class="badge">35</span>
+    </div>
+    <div class="sidebar-item" data-view="mapping">
+      <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+      <span>组织机构映射</span>
+      <span class="badge">20</span>
+    </div>
+    <div class="sidebar-item" data-view="changes">
+      <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+      <span>变更记录</span>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="页面主页.html">平台总览</a>
+      <span class="sep">/</span>
+      <span class="last" id="crumb-last">组织机构体系 · 组织机构树</span>
+    </div>
+
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">组织机构体系<span class="editable-badge">可编辑 · 含来源映射</span></h1>
+        <p class="page-desc">中山大学校级组织体系 · 党群 / 行政 / 教学 / 科研四大单位类别 · 每个组织对应人事系统或线下采集来源</p>
+      </div>
+      <div class="page-stats">
+        <span>组织节点 <strong id="st-nodes">790</strong></span>
+        <span>单位类别 <strong>4</strong></span>
+        <span>已映射组织 <strong>20</strong></span>
+        <span>本月变更 <strong>8</strong></span>
+      </div>
+    </div>
+
+    <!-- ============ 视图1：组织机构树 ============ -->
+    <section class="view active" id="view-tree">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>组织治理原则</strong>：以「中山大学」为一级，下设<strong>党群部门 / 行政部门 / 教学单位 / 科研机构</strong>四大单位类别，可在此<strong style="color:var(--color-success)">编辑调整</strong>。每个组织需映射到人事系统中的组织，或标注其他线下采集来源，详见"组织机构映射"。
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <input class="filter-input search" placeholder="搜索单位名称 / 单位号" id="tree-search">
+        </div>
+        <select class="filter-select" id="tree-level">
+          <option value="">全部层级</option>
+          <option value="1">一级（学校）</option>
+          <option value="2">二级（单位类别）</option>
+          <option value="3">三级（具体单位）</option>
+        </select>
+        <select class="filter-select">
+          <option>全部状态</option>
+          <option>启用</option>
+          <option>停用</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm">导出</button>
+        <button class="btn btn-primary btn-sm">+ 新增组织</button>
+      </div>
+
+      <div class="tree-layout">
+
+        <div class="tree-wrap">
+          <div class="tree-head">
+            <span class="tree-head-title">某某大学组织树</span>
+            <span style="font-size:12px;color:var(--text-disabled);font-family:'DIN Alternate',monospace" id="tree-stats">38 项</span>
+          </div>
+          <div class="tree-body" id="tree-body"></div>
+        </div>
+
+        <div class="detail-panel" id="detail-panel"></div>
+
+      </div>
+
+    </section>
+
+    <!-- ============ 视图2：组织机构映射 ============ -->
+    <section class="view" id="view-mapping">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>组织机构映射</strong>：本平台的每个组织机构需对应到其<strong>权威来源组织</strong>——优先映射到<strong style="color:var(--color-primary)">人事系统</strong>中的某个组织；人事系统无对应记录的（如学生团体、项目制课题组），则由<strong style="color:var(--color-warning)">其他来源线下采集</strong>（学院采集、单位采集等）。备注：<strong>行政单位、附属单位、直属单位一般在人事处维护</strong>。
+        </div>
+      </div>
+
+      <div style="font-size:16px;font-weight:500;color:var(--text-primary);padding-left:12px;position:relative;margin-bottom:16px">
+        <span style="position:absolute;left:0;top:4px;width:4px;height:16px;background:var(--color-primary);border-radius:2px"></span>
+        来源分布概览
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px, 1fr));gap:12px;margin-bottom:24px" id="systems-grid"></div>
+
+      <div style="font-size:16px;font-weight:500;color:var(--text-primary);padding-left:12px;position:relative;margin-bottom:16px">
+        <span style="position:absolute;left:0;top:4px;width:4px;height:16px;background:var(--color-primary);border-radius:2px"></span>
+        组织机构映射明细
+        <span style="font-size:12px;color:var(--text-disabled);font-weight:400;margin-left:8px">平台组织 ↔ 来源组织</span>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <input class="filter-input search" id="map-search" placeholder="搜索组织名称 / 单位号">
+        </div>
+        <select class="filter-select" id="map-cat">
+          <option value="">全部单位类别</option>
+          <option value="admin">行政单位</option>
+          <option value="party">党内单位</option>
+          <option value="youth">团内单位</option>
+          <option value="research">科研单位</option>
+          <option value="affiliated">附属单位</option>
+          <option value="direct">直属单位</option>
+        </select>
+        <select class="filter-select" id="map-source">
+          <option value="">全部来源</option>
+          <option value="人事系统">人事系统</option>
+          <option value="线下采集">线下采集</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:110px">单位号</th>
+                <th>平台组织名称</th>
+                <th style="width:100px">单位类别</th>
+                <th style="width:110px">映射来源</th>
+                <th>来源组织 / 采集主体</th>
+                <th style="width:130px">来源组织编码</th>
+                <th>备注</th>
+                <th style="width:90px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="mapping-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============ 视图3：变更记录 ============ -->
+    <section class="view" id="view-changes">
+
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="10"/></svg>
+        </div>
+        <div class="info-box-content">
+          <strong>组织变更追溯</strong>：记录组织机构的创建/修改/合并/撤销，以及组织来源映射关系的调整。所有变更含字段级 diff，可追溯到操作方与触发原因。
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <input class="filter-input search" placeholder="搜索单位名称">
+        </div>
+        <select class="filter-select">
+          <option>全部变更类型</option>
+          <option>新增组织</option>
+          <option>组织重命名</option>
+          <option>组织合并</option>
+          <option>组织撤销</option>
+          <option>映射变更</option>
+        </select>
+        <select class="filter-select">
+          <option>近 30 天</option>
+          <option>近 90 天</option>
+          <option>全部</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <button class="btn btn-secondary btn-sm">导出</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">变更时间轴 <span class="sub">最近 30 条</span></div>
+        <div class="timeline" id="changes-timeline"></div>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<script src="sysu-org.js"></script>
+<script>
+  function updateTime() {
+    const now = new Date(); const pad = n => String(n).padStart(2, '0');
+    document.getElementById('time-display').textContent = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  }
+  updateTime(); setInterval(updateTime, 1000);
+
+  // ===== 组织机构树 mock =====
+  // L1 = 某某大学（含校党委，党政合署） / L2 = 六大单位类别 / L3 = 示例单位
+  // 组织机构数据来源于学校真实清单（sysu-org.js，共 785 个单位）
+  // 补充演示用 leader/founded 字段；保留页面所需 code/name/level/parent/type/staff
+  const LEADER_BY_LEVEL = { 1:'党委书记 / 校长', 2:'分管校领导', 3:'单位负责人', 4:'科室负责人', 5:'负责人' };
+  const ORG_TREE = (typeof SYSU_ORG !== 'undefined' ? SYSU_ORG : []).map(n => ({
+    code: n.code, name: n.name, level: n.level, parent: n.parent, type: n.type,
+    staff: n.staff || 0,
+    leader: LEADER_BY_LEVEL[n.level] || '负责人',
+    founded: '1924-09-01'
+  }));
+
+  const ORG_TYPES = {
+    school:     { label: '学校 / 法人', color: 'tag-purple' },
+    party:      { label: '党群部门', color: 'tag-red' },
+    admin:      { label: '行政部门', color: 'tag-blue' },
+    teaching:   { label: '教学单位', color: 'tag-cyan' },
+    research:   { label: '科研机构', color: 'tag-green' },
+    youth:      { label: '团内', color: 'tag-cyan' },
+    affiliated: { label: '附属', color: 'tag-orange' },
+    direct:     { label: '直属', color: 'tag-gray' },
+  };
+
+  let expandedNodes = new Set(['U00', 'ADM', 'PTY', 'YL', 'RES', 'AFF', 'DIR']);
+  let selectedCode = 'ADM';
+
+  function renderTree() {
+    const q = (document.getElementById('tree-search').value || '').trim().toLowerCase();
+    const levelFilter = document.getElementById('tree-level').value;
+
+    let visible = null;
+    if (q || levelFilter) {
+      visible = new Set();
+      ORG_TREE.forEach(n => {
+        const matchQ = !q || n.name.toLowerCase().includes(q) || n.code.toLowerCase().includes(q);
+        const matchL = !levelFilter || String(n.level) === levelFilter;
+        if (matchQ && matchL) {
+          visible.add(n.code);
+          let p = n.parent;
+          while (p) { visible.add(p); const pn = ORG_TREE.find(x => x.code === p); p = pn ? pn.parent : null; }
+        }
+      });
+    }
+
+    const roots = ORG_TREE.filter(n => !n.parent);
+    document.getElementById('tree-body').innerHTML = roots.map(r => renderNode(r, visible)).join('');
+    document.getElementById('tree-stats').textContent = ORG_TREE.length + ' 项';
+    renderDetail();
+  }
+
+  function renderNode(node, visible) {
+    if (visible && !visible.has(node.code)) return '';
+    const children = ORG_TREE.filter(n => n.parent === node.code);
+    const hasChildren = children.length > 0;
+    const expanded = expandedNodes.has(node.code) || (visible && visible.size > 0);
+    const selected = node.code === selectedCode;
+    const partyCls = node.type === 'party_attached' ? 'party' : '';
+    return `
+      <div class="tree-node ${selected ? 'selected' : ''} ${partyCls}" data-code="${node.code}">
+        <span class="tree-caret ${hasChildren ? (expanded ? 'expanded' : '') : 'empty'}" onclick="event.stopPropagation();toggleNode('${node.code}')">▶</span>
+        <span class="tree-name" onclick="selectNode('${node.code}')" title="${node.name}">${node.name}</span>
+        <span class="tree-code">${node.code}</span>
+        <span class="node-actions">
+          <button class="node-action-btn" title="新增子级" onclick="event.stopPropagation();alert('新增子级：${node.code}')">+</button>
+          <button class="node-action-btn" title="编辑" onclick="event.stopPropagation();alert('编辑：${node.code}')">✎</button>
+          <button class="node-action-btn del" title="删除" onclick="event.stopPropagation();alert('删除确认：${node.code}')">×</button>
+        </span>
+      </div>
+      ${hasChildren && expanded ? `<div class="tree-children">${children.map(c => renderNode(c, visible)).join('')}</div>` : ''}
+    `;
+  }
+
+  function toggleNode(code) {
+    if (expandedNodes.has(code)) expandedNodes.delete(code); else expandedNodes.add(code);
+    renderTree();
+  }
+  function selectNode(code) {
+    selectedCode = code;
+    let p = ORG_TREE.find(n => n.code === code);
+    while (p && p.parent) { expandedNodes.add(p.parent); p = ORG_TREE.find(n => n.code === p.parent); }
+    renderTree();
+  }
+
+  function renderDetail() {
+    const node = ORG_TREE.find(n => n.code === selectedCode);
+    const wrap = document.getElementById('detail-panel');
+    if (!node) { wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-disabled)">选择一个组织节点查看详情</div>'; return; }
+
+    const path = []; let cur = node;
+    while (cur) { path.unshift(cur); cur = ORG_TREE.find(n => n.code === cur.parent); }
+    const children = ORG_TREE.filter(n => n.parent === node.code);
+    const typeInfo = ORG_TYPES[node.type] || { label: '未分类', color: 'tag-gray' };
+
+    // mock：该单位的其他体系映射
+    const mappings = getMappings(node.code);
+    const roster = getRoster(node.code);
+
+    wrap.innerHTML = `
+      <div class="detail-head">
+        <div style="flex:1;min-width:0">
+          <div class="detail-path">${path.map(p => p.name).join(' / ')}</div>
+          <div class="detail-title-row">
+            <span class="detail-name">${node.name}</span>
+            <span class="tag tag-blue">L${node.level}</span>
+            <span class="tag ${typeInfo.color}">${typeInfo.label}</span>
+          </div>
+          <div class="detail-meta-row">
+            <span>单位号 <strong style="color:var(--text-primary);font-family:'DIN Alternate',monospace;margin-left:4px">${node.code}</strong></span>
+            ${node.parent ? `<span>上级 <strong style="font-family:'DIN Alternate',monospace;margin-left:4px">${node.parent}</strong></span>` : ''}
+            <span>下属 <strong style="color:var(--text-primary);margin-left:4px">${children.length}</strong></span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn btn-secondary btn-sm">编辑</button>
+          <button class="btn btn-primary btn-sm">+ 新增子级</button>
+        </div>
+      </div>
+
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="stat-num">${roster.length || node.staff.toLocaleString()}</div>
+          <div class="stat-label">${roster.length ? '在册人员' : '在编人员'}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:var(--chart-2)">${children.length}</div>
+          <div class="stat-label">下属单位</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:var(--chart-3)">${roster.reduce((s,r)=>s+r.positions.length,0)}</div>
+          <div class="stat-label">岗位记录数</div>
+        </div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-item"><div class="detail-label">单位号</div><div class="detail-value mono">${node.code}</div></div>
+        <div class="detail-item"><div class="detail-label">单位名称</div><div class="detail-value">${node.name}</div></div>
+        <div class="detail-item"><div class="detail-label">单位类型</div><div class="detail-value">${typeInfo.label}</div></div>
+        <div class="detail-item"><div class="detail-label">单位负责人</div><div class="detail-value">${node.leader}</div></div>
+        <div class="detail-item"><div class="detail-label">成立时间</div><div class="detail-value mono">${node.founded}</div></div>
+        <div class="detail-item"><div class="detail-label">运行状态</div><div class="detail-value"><span class="tag tag-green">启用</span></div></div>
+      </div>
+
+      <div style="font-size:13px;font-weight:500;color:var(--text-primary);margin:16px 0 10px;display:flex;align-items:center;gap:8px">
+        组织机构映射
+        <span class="tag tag-gray">来源对应</span>
+        <span style="margin-left:auto"><a style="font-size:11.5px;color:var(--color-info);cursor:pointer" onclick="switchView('mapping')">前往映射管理 →</a></span>
+      </div>
+      ${mappings.length > 0 ? `
+        <div class="map-list">
+          ${mappings.map(m => `
+            <div class="map-row">
+              <div class="map-icon" style="background:${m.bg};color:${m.color}">${m.icon}</div>
+              <div class="map-info">
+                <div class="map-name">${m.name}</div>
+                <div class="map-code">${m.system} · ${m.code}</div>
+              </div>
+              <div class="map-meta">${m.meta}</div>
+            </div>
+          `).join('')}
+        </div>
+      ` : `
+        <div style="padding:12px;background:var(--bg-page);border-radius:6px;font-size:12.5px;color:var(--text-disabled);text-align:center">
+          该单位暂未配置来源映射
+        </div>
+      `}
+
+      <div style="font-size:13px;font-weight:500;color:var(--text-primary);margin:20px 0 10px;display:flex;align-items:center;gap:8px">
+        组织内人员岗位
+        <span class="tag tag-gray">${roster.length} 人</span>
+        <span style="margin-left:auto"><a style="font-size:11.5px;color:var(--color-info);cursor:pointer" href="m3-position.html">前往岗位身份 →</a></span>
+      </div>
+      ${roster.length > 0 ? `
+        <div class="roster-note">
+          说明：人事系统通常只维护到<strong>科级及以上管理岗位</strong>；科级以下的教师、专技、学生干部等实际岗位，人事系统多无记录，需由<strong>对应部门/学院线下采集</strong>补充。下方每条岗位均标注其数据来源。
+        </div>
+        <div class="roster-legend">
+          <span><span class="src-tag src-hr">人事系统</span> 管理岗（科级及以上）</span>
+          <span><span class="src-tag src-collect">线下采集</span> 科级以下 / 学院采集</span>
+        </div>
+        <div class="roster">
+          ${roster.map(r => `
+            <div class="roster-row">
+              <div class="roster-avatar">${r.name.slice(0,1)}</div>
+              <div class="roster-main">
+                <div class="roster-name">${r.name} <span class="roster-xgh">${r.xgh}</span></div>
+                ${r.positions.map(pos => `
+                  <div class="pos-line">
+                    <span class="tag ${pos.typeTag}">${pos.type}</span>
+                    <span class="pos-title">${pos.title}</span>
+                    <span class="${pos.srcKind === 'hr' ? 'src-tag src-hr' : 'src-tag src-collect'}" style="margin-left:auto" title="${pos.srcDetail}">${pos.srcKind === 'hr' ? '人事系统' : '线下采集'}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : `
+        <div style="padding:12px;background:var(--bg-page);border-radius:6px;font-size:12.5px;color:var(--text-disabled);text-align:center">
+          该单位暂无人员岗位记录（或为类别汇总节点，请展开查看下属单位）
+        </div>
+      `}
+    `;
+  }
+
+  // mock 映射数据：每个组织对应人事系统中的组织，或其他线下采集来源
+  // 规则：行政/附属/直属 → 一般在人事处（人事系统）；党内/团内/科研可能为人事系统或学院线下采集
+  const HR_ICON = '🗂', HR_BG = 'rgba(37,99,235,.1)', HR_COLOR = '#2563EB';
+  const COLLECT_ICON = '📝', COLLECT_BG = 'rgba(255,125,0,.1)', COLLECT_COLOR = '#FF7D00';
+  function hrMap(name, code, meta) { return { name, system: '人事系统', code, icon: HR_ICON, bg: HR_BG, color: HR_COLOR, meta: meta || '人事处维护' }; }
+  function collectMap(name, code, meta) { return { name, system: '线下采集', code, icon: COLLECT_ICON, bg: COLLECT_BG, color: COLLECT_COLOR, meta: meta || '学院/单位采集' }; }
+
+  function getMappings(code) {
+    const map = {
+      'U00': [ hrMap('某某大学（法人主体）', 'HR-ORG-0001', '人事处 · 顶级机构') ],
+      // 行政单位 → 人事系统（人事处）
+      'ADM-01': [ hrMap('校长办公室', 'HR-ORG-1001', '人事处维护') ],
+      'ADM-02': [ hrMap('人力资源管理处', 'HR-ORG-1002', '人事处维护') ],
+      'ADM-03': [ hrMap('财务处', 'HR-ORG-1003', '人事处维护') ],
+      'ADM-04': [ hrMap('教务处', 'HR-ORG-1004', '人事处维护') ],
+      // 党内单位 → 人事系统（部分组织部直接维护）
+      'PTY-01': [ hrMap('党委组织部', 'HR-ORG-2001', '人事处 / 组织部') ],
+      'PTY-02': [ hrMap('党委宣传部', 'HR-ORG-2002', '人事处维护') ],
+      'PTY-03': [ hrMap('纪委办公室', 'HR-ORG-2003', '人事处维护') ],
+      // 团内单位 → 校团委线下采集（学生干部多为兼职，人事系统无编制）
+      'YL-01': [ hrMap('校团委（专职）', 'HR-ORG-3001', '人事处维护专职岗') ],
+      'YL-02': [ collectMap('学生会', 'COL-YL-02', '校团委采集 · 学生兼职') ],
+      'YL-03': [ collectMap('研究生会', 'COL-YL-03', '研究生院采集 · 学生兼职') ],
+      'YL-04': [ collectMap('青年志愿者协会', 'COL-YL-04', '校团委采集') ],
+      // 科研单位 → 人事系统 + 部分课题组线下采集
+      'RES-01': [ hrMap('科学研究院', 'HR-ORG-4001', '人事处维护') ],
+      'RES-02': [ hrMap('人工智能研究院', 'HR-ORG-4002', '人事处维护'), collectMap('AI 研究院外聘课题组', 'COL-RES-02', '研究院采集 · 项目制') ],
+      'RES-03': [ hrMap('国家重点实验室', 'HR-ORG-4003', '人事处维护') ],
+      // 附属单位 → 人事系统（一般在人事处，附属医院多为独立法人）
+      'AFF-01': [ hrMap('第一附属医院', 'HR-ORG-5001', '人事处 · 独立法人') ],
+      'AFF-02': [ hrMap('第二附属医院', 'HR-ORG-5002', '人事处 · 独立法人') ],
+      'AFF-03': [ hrMap('附属中学', 'HR-ORG-5003', '人事处维护') ],
+      // 直属单位 → 人事系统（一般在人事处）
+      'DIR-01': [ hrMap('图书馆', 'HR-ORG-6001', '人事处维护') ],
+      'DIR-02': [ hrMap('信息网络中心', 'HR-ORG-6002', '人事处维护') ],
+      'DIR-05': [ hrMap('后勤服务中心', 'HR-ORG-6005', '人事处维护') ],
+    };
+    return map[code] || [];
+  }
+
+  // ===== 组织 ↔ 岗位联动：组织内人员实际岗位 =====
+  // srcKind: 'hr' = 人事系统（科级及以上管理岗）; 'collect' = 线下采集（科级以下/学院采集）
+  const TYPE_TAG = {
+    '行政职务':'tag-blue', '党内职务':'tag-red', '团内职务':'tag-cyan',
+    '教学科研岗':'tag-green', '专技岗':'tag-purple', '学生干部':'tag-cyan',
+    '辅导员':'tag-green', '其他岗位':'tag-gray',
+  };
+  function P(type, title, srcKind, srcDetail) {
+    return { type, title, typeTag: TYPE_TAG[type] || 'tag-gray', srcKind, srcDetail };
+  }
+  const ROSTER = {
+    // 行政单位 · 人事处（管理岗在人事系统；科员/办事员科级以下→线下采集）
+    'ADM-02': [
+      { name: '张三', xgh: 'A2009008', positions: [ P('行政职务','处长','hr','人事系统 · 处级') ] },
+      { name: '李副', xgh: 'A2012015', positions: [ P('行政职务','副处长','hr','人事系统 · 副处级') ] },
+      { name: '王招聘', xgh: 'A2016033', positions: [ P('行政职务','招聘科科长','hr','人事系统 · 科级') ] },
+      { name: '陈办事', xgh: 'A2021077', positions: [ P('其他岗位','科员（综合）','collect','人事处线下采集 · 科级以下') ] },
+    ],
+    'ADM-03': [
+      { name: '孙雅丽', xgh: 'A2010012', positions: [ P('行政职务','处长','hr','人事系统 · 处级') ] },
+      { name: '钱预算', xgh: 'A2015041', positions: [ P('行政职务','预算管理科科长','hr','人事系统 · 科级') ] },
+      { name: '周核算', xgh: 'A2020066', positions: [ P('其他岗位','会计（核算岗）','collect','财务处线下采集 · 科级以下') ] },
+    ],
+    // 科研单位 · 大量科级以下教学科研岗 → 线下采集
+    'RES-02': [
+      { name: '林智', xgh: 'T2017002', positions: [ P('行政职务','院长','hr','人事系统 · 处级') ] },
+      { name: '赵教授', xgh: 'T2013055', positions: [ P('教学科研岗','教授 / 博导','collect','研究院线下采集 · 非管理岗') ] },
+      { name: '孙副教授', xgh: 'T2018091', positions: [ P('教学科研岗','副教授','collect','研究院线下采集 · 非管理岗') ] },
+      { name: '吴讲师', xgh: 'T2021140', positions: [ P('教学科研岗','讲师','collect','研究院线下采集 · 非管理岗') ] },
+      { name: '郑博后', xgh: 'R2023012', positions: [ P('专技岗','师资博士后','collect','研究院线下采集 · 项目制') ] },
+    ],
+    'RES-03': [
+      { name: '郑实', xgh: 'T2011030', positions: [ P('行政职务','实验室主任','hr','人事系统 · 处级') ] },
+      { name: '冯研究员', xgh: 'T2014077', positions: [ P('教学科研岗','研究员','collect','实验室线下采集 · 非管理岗') ] },
+      { name: '卫技术', xgh: 'R2019044', positions: [ P('专技岗','高级实验师','collect','实验室线下采集 · 科级以下') ] },
+    ],
+    // 团内单位 · 校团委（专职在人事系统；学生干部→线下采集）
+    'YL-01': [
+      { name: '周敏', xgh: 'A2014020', positions: [ P('团内职务','团委书记','hr','人事系统 · 科级（专职）') ] },
+      { name: '何专职', xgh: 'A2019050', positions: [ P('团内职务','团委干事（专职）','collect','校团委线下采集 · 科级以下') ] },
+    ],
+    'YL-02': [
+      { name: '学生甲', xgh: '20231001', positions: [ P('学生干部','学生会主席','collect','校团委线下采集 · 学生兼职') ] },
+      { name: '学生乙', xgh: '20231055', positions: [ P('学生干部','学生会副主席','collect','校团委线下采集 · 学生兼职') ] },
+      { name: '学生丙', xgh: '20232088', positions: [ P('学生干部','文体部部长','collect','校团委线下采集 · 学生兼职') ] },
+    ],
+    // 附属单位
+    'AFF-01': [
+      { name: '王十三', xgh: 'H2008003', positions: [ P('行政职务','院长','hr','人事系统 · 处级（独立法人）') ] },
+      { name: '医主任', xgh: 'H2012044', positions: [ P('行政职务','心内科主任','hr','人事系统 · 科级') ] },
+      { name: '主治医', xgh: 'H2018120', positions: [ P('专技岗','主治医师','collect','附属医院线下采集 · 非管理岗') ] },
+      { name: '住院医', xgh: 'H2022210', positions: [ P('专技岗','住院医师','collect','附属医院线下采集 · 科级以下') ] },
+    ],
+    // 直属单位
+    'DIR-01': [
+      { name: '孙书', xgh: 'A2010088', positions: [ P('行政职务','馆长','hr','人事系统 · 处级') ] },
+      { name: '图采编', xgh: 'A2017102', positions: [ P('专技岗','采编馆员','collect','图书馆线下采集 · 科级以下') ] },
+    ],
+    'DIR-02': [
+      { name: '李网', xgh: 'A2013060', positions: [ P('行政职务','主任','hr','人事系统 · 处级') ] },
+      { name: '网工程', xgh: 'A2019133', positions: [ P('专技岗','网络工程师','collect','网络中心线下采集 · 科级以下') ] },
+    ],
+    // 党内单位
+    'PTY-01': [
+      { name: '陈志强', xgh: 'A2009008', positions: [ P('党内职务','组织部部长','hr','人事系统 · 处级') ] },
+      { name: '党干事', xgh: 'A2020055', positions: [ P('党内职务','组织科科员','collect','组织部线下采集 · 科级以下') ] },
+    ],
+  };
+
+  // 取该组织（及子组织汇总）的人员花名册
+  function getRoster(code) {
+    // 直接命中
+    if (ROSTER[code]) return ROSTER[code];
+    // 若为 L2 类别节点，汇总其下属单位（演示：合并子节点花名册前若干条）
+    const node = ORG_TREE.find(n => n.code === code);
+    if (node && node.level === 2) {
+      const childCodes = ORG_TREE.filter(n => n.parent === code).map(n => n.code);
+      let merged = [];
+      childCodes.forEach(c => { if (ROSTER[c]) merged = merged.concat(ROSTER[c]); });
+      return merged;
+    }
+    return [];
+  }
+
+  document.getElementById('tree-search').addEventListener('input', renderTree);
+  document.getElementById('tree-level').addEventListener('change', renderTree);
+
+  // ===== 组织机构映射 =====
+  // 来源分布概览：人事系统 vs 线下采集
+  function renderSystems() {
+    // 统计已配置映射的组织（仅 L3 + L1，L2 类别节点不单独映射）
+    const mapped = ORG_TREE.filter(n => getMappings(n.code).length > 0);
+    let hrCount = 0, collectCount = 0;
+    mapped.forEach(n => {
+      const ms = getMappings(n.code);
+      if (ms.some(m => m.system === '人事系统')) hrCount++;
+      if (ms.some(m => m.system === '线下采集')) collectCount++;
+    });
+    const unmapped = ORG_TREE.filter(n => n.level === 3 && getMappings(n.code).length === 0).length;
+    const cards = [
+      { name: '人事系统', sub: 'HR · 权威来源', icon: '🗂', color: '#2563EB', bg: 'rgba(37,99,235,.08)', num: hrCount, label: '组织已映射' },
+      { name: '线下采集', sub: '学院/单位采集', icon: '📝', color: '#FF7D00', bg: 'rgba(255,125,0,.08)', num: collectCount, label: '组织已映射' },
+      { name: '待映射', sub: '尚未配置来源', icon: '⚠', color: '#86909C', bg: 'rgba(134,144,156,.08)', num: unmapped, label: '组织待处理' },
+    ];
+    document.getElementById('systems-grid').innerHTML = cards.map(s => `
+      <div class="panel" style="margin-bottom:0;padding:14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="width:36px;height:36px;border-radius:8px;background:${s.bg};color:${s.color};display:flex;align-items:center;justify-content:center;font-size:18px">${s.icon}</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:500;color:var(--text-primary)">${s.name}</div>
+            <div style="font-size:11px;color:var(--text-disabled)">${s.sub}</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <span style="font-family:'DIN Alternate','Roboto',inherit;font-size:22px;font-weight:600;color:${s.color}">${s.num}</span>
+          <span style="font-size:11.5px;color:var(--text-secondary)">${s.label}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // 映射明细：由 ORG_TREE（L3 单位）+ getMappings 派生
+  function buildMappingRows() {
+    const rows = [];
+    ORG_TREE.filter(n => n.level === 3).forEach(n => {
+      const cat = ORG_TREE.find(x => x.code === n.parent); // L2 类别
+      const ms = getMappings(n.code);
+      if (ms.length === 0) {
+        rows.push({ code: n.code, name: n.name, catType: cat ? cat.type : n.type, catLabel: cat ? cat.name : '',
+          source: '—', srcOrg: '', srcCode: '', meta: '待配置来源' });
+      } else {
+        ms.forEach(m => rows.push({ code: n.code, name: n.name, catType: cat ? cat.type : n.type, catLabel: cat ? cat.name : '',
+          source: m.system, srcOrg: m.name, srcCode: m.code, meta: m.meta }));
+      }
+    });
+    return rows;
+  }
+
+  function renderMappings() {
+    const q = (document.getElementById('map-search').value || '').trim().toLowerCase();
+    const catF = document.getElementById('map-cat').value;
+    const srcF = document.getElementById('map-source').value;
+    const rows = buildMappingRows().filter(r => {
+      if (q && !r.name.toLowerCase().includes(q) && !r.code.toLowerCase().includes(q)) return false;
+      if (catF && r.catType !== catF) return false;
+      if (srcF && r.source !== srcF) return false;
+      return true;
+    });
+    const catTag = { admin:'tag-blue', party:'tag-red', teaching:'tag-cyan', research:'tag-green', youth:'tag-cyan', affiliated:'tag-orange', direct:'tag-gray' };
+    const tbody = document.getElementById('mapping-tbody');
+    if (rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-disabled)">暂无匹配数据</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = rows.map(r => {
+      const srcTag = r.source === '人事系统' ? '<span class="tag tag-blue">人事系统</span>'
+        : r.source === '线下采集' ? '<span class="tag tag-orange">线下采集</span>'
+        : '<span class="tag tag-gray">待映射</span>';
+      return `
+      <tr ${r.source === '—' ? 'class="unmapped"' : ''}>
+        <td class="mono"><strong style="color:var(--text-primary)">${r.code}</strong></td>
+        <td><strong>${r.name}</strong></td>
+        <td><span class="tag ${catTag[r.catType] || 'tag-gray'}">${r.catLabel.replace('单位','')}</span></td>
+        <td>${srcTag}</td>
+        <td>${r.srcOrg || '<span style="color:var(--text-disabled)">—</span>'}</td>
+        <td class="mono" style="font-size:12px;color:var(--text-secondary)">${r.srcCode || '—'}</td>
+        <td style="font-size:12.5px;color:var(--text-secondary)">${r.meta}</td>
+        <td><button class="btn btn-text btn-sm">编辑映射</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  ['map-search','map-cat','map-source'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', renderMappings);
+  });
+
+  // ===== 变更记录 =====
+  const CHANGES = [
+    {
+      type: 'create', time: '2026-05-10 14:23:08', action: '新增组织',
+      target: 'C01-04 网络空间安全系', operator: '管理员 · 张治理', reason: '响应国家网络强国战略，新增网络空间安全独立系',
+      changes: [
+        { field: '单位号', from: '(无)', to: 'C01-04' },
+        { field: '上级单位', from: '(无)', to: 'C01 计算机科学与技术学院' },
+        { field: '单位负责人', from: '(无)', to: '系主任 · 林四' },
+      ]
+    },
+    {
+      type: 'update', time: '2026-05-08 11:30:00', action: '组织重命名',
+      target: 'C01-02 软件工程系', operator: '管理员 · 张治理', reason: '原"软件学院"调整为院内独立系',
+      changes: [
+        { field: '单位名称', from: '软件学院', to: '软件工程系' },
+        { field: '单位类型', from: '学院', to: '学院/系' },
+      ]
+    },
+    {
+      type: 'merge', time: '2026-05-05 16:12:30', action: '组织合并',
+      target: 'C03 物理与天文学院', operator: '管理员 · 李规划', reason: '原"物理系"与"天文系"合并为统一学院',
+      changes: [
+        { field: '合并来源', from: 'C03A 物理系 + C03B 天文系', to: 'C03 物理与天文学院' },
+        { field: '影响人员', from: '(无)', to: '298 人完成迁移' },
+      ]
+    },
+    {
+      type: 'update', time: '2026-05-04 10:05:14', action: '映射关系变更',
+      target: 'C01 计算机学院 ↔ 学术体系', operator: '管理员 · 李规划', reason: '学科评估调整，新增学科映射',
+      changes: [
+        { field: '学术体系映射', from: 'S-CS 计算机学科', to: 'S-CS 计算机学科群（含人工智能子学科）' },
+      ]
+    },
+    {
+      type: 'del', time: '2026-05-02 14:50:00', action: '撤销组织',
+      target: '历史档案室 (X01)', operator: '管理员 · 张治理', reason: '业务调整，并入档案馆',
+      changes: [
+        { field: '运行状态', from: '启用', to: '已撤销' },
+        { field: '业务归属', from: 'X01 历史档案室', to: '并入 X-Library 档案馆' },
+        { field: '影响人员', from: '(无)', to: '8 人转岗' },
+      ]
+    },
+  ];
+  function renderChanges() {
+    document.getElementById('changes-timeline').innerHTML = CHANGES.map(v => `
+      <div class="timeline-item ${v.type}">
+        <div class="timeline-dot"></div>
+        <div class="timeline-head">
+          <span class="timeline-action">${v.action}</span>
+          <span class="timeline-time">${v.time}</span>
+          <span class="tag tag-gray" style="margin-left:auto">${v.target}</span>
+        </div>
+        <div class="timeline-meta">操作方：${v.operator}${v.reason ? ' · 原因：' + v.reason : ''}</div>
+        <div class="timeline-changes">
+          ${v.changes.map(c => `
+            <div class="change-row">
+              <div class="change-field">${c.field}</div>
+              <div class="change-diff"><span class="from">${c.from}</span><span class="arrow">→</span><span class="to">${c.to}</span></div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function switchView(v) {
+    document.querySelectorAll('.sidebar-item[data-view]').forEach(x => x.classList.remove('active'));
+    document.querySelector(`.sidebar-item[data-view="${v}"]`).classList.add('active');
+    document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+    document.getElementById('view-' + v).classList.add('active');
+    const labels = { tree: '组织机构树', mapping: '组织机构映射', changes: '变更记录' };
+    document.getElementById('crumb-last').textContent = '组织机构体系 · ' + labels[v];
+  }
+  document.querySelectorAll('.sidebar-item[data-view]').forEach(el => {
+    el.addEventListener('click', () => switchView(el.dataset.view));
+  });
+
+  renderTree();
+  renderSystems();
+  renderMappings();
+  renderChanges();
+</script>
+</body>
+</html>
