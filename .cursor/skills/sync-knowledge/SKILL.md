@@ -20,8 +20,10 @@ description: 归档后知识回灌（spec/change -> docs/domain/established + AD
 4. 更新 established 的 context map、domain model、ubiquitous language（仅保留已确认事实）
 5. 如有架构或流程决策，新增 ADR
 6. 若发现设计与实现偏差，记录待修正事项
+7. 将对应需求 `status` 置 `shipped`，并用 `git mv` 移到 `docs/requirements/shipped/`；移动后 Grep 修正引用该路径的文档，避免死链
 
 # 约束
 
 - 未归档 change 的内容不得写入 `docs/domain/established/*`
 - 回灌优先做增量修改，避免重写整份文档
+- 需求文档物理位置须与 `status` 一致（见 `00-workflow.mdc` 文档状态模型）

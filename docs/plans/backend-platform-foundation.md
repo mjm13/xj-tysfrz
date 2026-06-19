@@ -5,7 +5,7 @@
 > **Architecture:** 技术 change，无新领域上下文；后端 dev-only CORS + 元信息更新；前端薄 API client 调 `/api/ping`；文档/ADR 记录 CORS 决策。  
 > **Tech Stack:** Spring Boot 3.3 / Java 21、Vue 3 + Vite、现有 `ApiResponse` 契约  
 > **Change:** `backend-platform-foundation`  
-> **Inbox:** `docs/requirements/inbox/002-backend-scaffold-readiness.md`
+> **Inbox:** `docs/requirements/shipped/002-backend-scaffold-readiness.md`（已完成）
 
 ---
 
@@ -22,7 +22,7 @@
 | `frontend/src/api/ping.ts` | 新增 | `getPing()` |
 | `frontend/src/views/HomeView.vue` | 修改 | 轻量 API 连通 badge（不替换 dashboard Mock） |
 | `docs/decisions/0004-dev-cors-api-conventions.md` | 新增 | dev CORS + `/api/` 前缀约定 |
-| `docs/requirements/inbox/002-*.md` | 修改 | status → in-change |
+| `docs/requirements/shipped/002-*.md` | 修改 | status → shipped |
 
 **Out of scope：** 业务表、鉴权、mvnw（P2 可另开任务）、包名 `com.xj.zbpt` 重构。
 

@@ -75,6 +75,17 @@ alwaysApply: true
 - 领域条目：`developing -> established`
 - ADR：`proposed -> accepted -> superseded/deprecated`
 
+**需求文档物理位置随状态迁移**（frontmatter `status` 与目录必须一致）：
+
+| status | 目录 | 说明 |
+| --- | --- | --- |
+| `inbox` / `in-change` | `docs/requirements/inbox/` | 待办与进行中，统一留在 inbox |
+| `shipped` | `docs/requirements/shipped/` | 完成后**移入**，不与 inbox 混放 |
+| `dropped` | `docs/requirements/dropped/` | 放弃后**移入**（目录不存在则创建） |
+
+- 迁移用 `git mv` 保留历史；移动后用 Grep 检查并修正引用该路径的其他文档（plans/ADR/README 等），避免死链
+- `docs/requirements/requirements-template.md` 始终留在 `requirements/` 根，不参与迁移
+
 # 联动门禁
 
 - 每个 change 建议先建立独立 worktree 与分支 `change/<name>`
@@ -86,8 +97,8 @@ alwaysApply: true
 - 技术 change 的关键决策写入 `docs/adr/`，不写 `context-map` 新 context
 - 开发中的领域内容只能写入 `docs/domain/developing/*`；仅在 `sync -> archive -> sync-knowledge` 后可提升到 `docs/domain/established/*`
 - 收尾仅两条路径：
-  - 完成：`sync -> archive -> sync-knowledge`
-  - 放弃：`abandon-change`
+  - 完成：`sync -> archive -> sync-knowledge`；收尾时将需求 `status` 置 `shipped` 并 `git mv` 到 `docs/requirements/shipped/`
+  - 放弃：`abandon-change`；收尾时将需求 `status` 置 `dropped` 并 `git mv` 到 `docs/requirements/dropped/`
 - 未归档 change 不得写入 `docs/domain/established/*`
 
 # 真相源与冲突裁决（测试 > Spec）
