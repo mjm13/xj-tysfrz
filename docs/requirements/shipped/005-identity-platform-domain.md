@@ -1,14 +1,15 @@
 ---
 title: 身份数据平台领域建模（统一术语 / UID / 数据接入 / 权限定位）
-status: in-change
+status: shipped
 change: identity-platform-domain
 openspecChange: identity-platform-domain
 owner: team
 createdAt: 2026-06-19
+shippedAt: 2026-06-20
 tier: 🔴
 changeType: 业务
-plan: docs/domain/developing/（context-map / ubiquitous-language / domain-model）
-openspec: openspec/changes/identity-platform-domain/
+plan: docs/domain/established/（context-map / ubiquitous-language / domain-model）
+openspec: openspec/changes/archive/2026-06-20-identity-platform-domain/
 demoRef: docs/原始demo/（m1~m7、etl-monitor、source-maintenance）
 relatedPlan: temp/06-open-questions.md（14 个 🔴 阻断项）, temp/05-demo-feature-tasks.md（T0-06）
 blocks: basic-identity, classification-identity, org-structure, identity-permission, data-query-service
@@ -32,49 +33,33 @@ blocks: basic-identity, classification-identity, org-structure, identity-permiss
 2. 作为架构，我希望「数据接入」与「权限系统对接」是两个清晰概念，以便不再混用"源头"。
 3. 作为产品，我希望权限模块定位明确（对账治理 vs 授权操作），以便 m5 的功能边界不再自相矛盾。
 
-# 涉及限界上下文（候选，建模时确认）
+# 涉及限界上下文（已确认）
 
-- `identity-master`：人员基础身份（自然人主档，多源采集，不手工新增）
-- `identity-dimension`：分类 / 岗位 / 标签（在主档上挂维度）
+- `identity-master`：人员基础身份
+- `identity-dimension`：分类 / 岗位 / 标签
 - `org-structure`：组织机构体系
-- `data-ingestion`：数据接入（源头注册 + ETL 采集，统一 QG-08）
-- `permission-reconciliation`：权限对账治理（不授权，只对账 + 推送处置）
-- `identity-access`：访问控制 / RBAC（替换 mock 登录，可拆独立 change）
-
-# 关键领域概念（统一语言 · 待建模锁定）
-
-- **自然人 / 人员基础身份**：平台唯一主档，UID 全局唯一规范（解决 QG-04）
-- **采集源（DataSource）** vs **权限系统（PermissionSystem）**：拆分 QG-01 的两套"源头"
-- **分类身份 / 岗位身份 / 标签身份**：挂在主档上的不同维度，与权限的关系需界定
-- **对账基线 / 对账差异 / 处置推送**：权限治理核心术语（解决 Q-M5-01/02）
-
-# 领域规则与不变量（待确认，来自 06 台账 🔴）
-
-- 平台不手工新增/修改自然人，主档变更来自采集源（Q-M1-02）
-- 变更记录需单一真相源，可追溯到来源系统与字段（Q-M1-03）
-- 权限平台不执行授权，只做对账并推送源头处置（Q-M5-01/02）
-- 数据查询/SQL 需有权限与安全边界（Q-M6-01，规则在此定调，实现在 data-query-service）
+- `data-ingestion`：数据接入
+- `permission-reconciliation`：权限对账治理
+- `data-query`：数据查询策略
+- `identity-access`：访问控制（独立 change）
 
 # 验收标准
 
-- [x] GIVEN 建模完成 WHEN 查阅 `docs/domain/developing/` THEN 含 context-map / ubiquitous-language / domain-model 三件套
+- [x] GIVEN 建模完成 WHEN 查阅 `docs/domain/established/` THEN 含 context-map / ubiquitous-language / domain-model
 - [x] GIVEN UID 规范 WHEN 跨模块引用人员 THEN 有唯一且一致的标识方案（关闭 QG-04）
 - [x] GIVEN "源头"术语 WHEN 查阅统一语言 THEN 采集源与权限系统为两个明确概念（关闭 QG-01）
 - [x] GIVEN 数据接入上下文 WHEN 描述链路 THEN 源头注册 → 采集 → 主档入库闭环清晰（关闭 QG-08）
 - [x] GIVEN 权限模块定位 WHEN 查阅模型 THEN 明确"对账治理"边界，不含授权操作（关闭 Q-M5-01）
 - [x] GIVEN 14 个 🔴 阻断项 WHEN 建模产出 THEN 每项有处置结论（解决 / 推迟 / 降级）
 
-# 流程
+# 交付物
 
-- 🔴 核心业务 change：完整 OpenSpec 管道
-  1. `/opsx:explore` + `ddd-modeling`：补 `docs/domain/developing/*`
-  2. `/opsx:propose`：proposal / design / tasks（标注业务 change，含统一语言）
-  3. 本 change 偏**建模产物**，可不写应用代码；如需轻量验证再 apply
-  4. `sync` → `archive` → `sync-knowledge`：提升到 `docs/domain/established/*`
-- 与 `platform-module-layout`（A 线，🟡）并行
+- OpenSpec：`openspec/specs/identity-*`、`data-ingestion`、`permission-reconciliation`、`data-query`；`platform-shell` delta 已合并
+- 领域：`docs/domain/established/*` 已回灌
+- ADR：[`docs/decisions/0007-identity-platform-domain-decisions.md`](../../decisions/0007-identity-platform-domain-decisions.md)
+- 归档：`openspec/changes/archive/2026-06-20-identity-platform-domain/`
 
 # 备注
 
-- 本 change **不实现业务表/API**，只产出模型与决策；后端落地在被 blocks 的各 change
-- 需用户参与拍板的 🔴 决策点见 `temp/06-open-questions.md` 末尾「阻断项汇总」
-- 旧 OpenSpec「指标平台」描述需在建模时一并纠偏（文档漂移 P0-09）
+- 本 change **不实现业务表/API**；后端落地在被 blocks 的各 change
+- 建议下一 change：`data-ingestion` 或 `basic-identity`（见 design 实现顺序）

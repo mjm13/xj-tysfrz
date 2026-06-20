@@ -2,20 +2,85 @@
 
 ## 说明
 
-本文件仅记录已归档、已落地的领域模型。
+本文件记录已归档、已落地的领域模型。
 
 ## 模型清单
 
 ### identity-access-mock
 
-> 壳层阶段为 UI + Mock，模型极薄；仅记录会话概念，后端真实鉴权落地后再扩展。
-
-- **Session（会话，值对象）**：表示当前登录态。
-  - 字段：`username`、`isAuthenticated`、（预留）`token`
-  - 不变量：未认证态不得访问受保护路由
-  - 持久化：localStorage/sessionStorage 抽象，Mock 阶段不存真实密钥
-  - 落地：`frontend/src/stores/auth.ts`
+- **Session（会话，值对象）**：`username`、`isAuthenticated`、（预留）`token`
+- 不变量：未认证态不得访问受保护路由
+- 落地：`frontend/src/stores/auth.ts`
 
 ### platform-shell
 
-> 纯 UI 壳层，无业务聚合；模型为视觉与布局约定，详见 `ubiquitous-language` 与 `openspec/specs/platform-shell`。
+> 纯 UI 壳层，无业务聚合。见 `ubiquitous-language` 与 `openspec/specs/platform-shell`。
+
+---
+
+### identity-master
+
+**聚合 PersonRecord：** PersonUID（值对象）、SourceProjection（实体）、PersonUpserted 等领域事件。
+
+**不变量：** PersonUID 不可变；禁止 UI/API 自由 PATCH；单一 ChangeLog。
+
+**聚合 ConflictCase：** Open → Resolved | Dismissed；Resolved 写入 ChangeLog。
+
+Spec：`openspec/specs/identity-master/spec.md`
+
+### identity-dimension
+
+**classification：** ClassificationTree、MappingRuleSet（含 UnmappedRecord）、PersonClassification。
+
+**position：** PositionCatalog（只读）、PositionMappingBatch（治理写）；禁止 `/` 拆单位名。
+
+**custom-tag：** TagGroup、TagAssignment（必须 PersonUID）。
+
+Spec：`openspec/specs/identity-dimension/spec.md`
+
+### org-structure
+
+**聚合 OrgTree：** OrgNode（SYSU_ORG code）、OrgMapping；OrgRoster 读模型。
+
+Spec：`openspec/specs/org-structure/spec.md`
+
+### data-ingestion
+
+**聚合 DataSource、IngestionJob/IngestionRun；** 注册必须被 Job 消费；Run 完成发布领域事件。
+
+Spec：`openspec/specs/data-ingestion/spec.md`
+
+### permission-reconciliation
+
+**ReconciliationBaseline（只读对账输入）、ReconciliationRun、DisposalTicket**（Draft → Pushed → Acknowledged | Failed）。
+
+**不变量：** 平台不执行授权。
+
+Spec：`openspec/specs/permission-reconciliation/spec.md`
+
+### data-query
+
+**QueryPolicy** 约束 AdHocSQL（SELECT only、表白名单、审计）。
+
+Spec：`openspec/specs/data-query/spec.md`
+
+---
+
+## 跨上下文规则
+
+- 人员关联仅通过 PersonUID
+- OrgNode.code 以 org-structure 为权威
+- 在档统计 = identity-master ACTIVE，默认不含校友/纯访客
+
+## 后续实现 change 映射
+
+| 上下文 | OpenSpec change |
+| --- | --- |
+| identity-master | `basic-identity` |
+| identity-dimension | `classification-identity` 等 |
+| org-structure | `org-structure` |
+| data-ingestion | `data-ingestion` |
+| permission-reconciliation | `identity-permission` |
+| data-query | `data-query-service` |
+
+完整聚合表见归档 `identity-platform-domain/design.md` 与 `docs/decisions/0007-identity-platform-domain-decisions.md`。

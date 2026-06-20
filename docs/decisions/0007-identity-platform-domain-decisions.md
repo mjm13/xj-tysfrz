@@ -8,7 +8,7 @@
 
 ## Context
 
-Demo 精读产生 14 个 🔴 阻断项，需在首个后端业务 change 前锁定平台级领域决策。详见 `openspec/changes/identity-platform-domain/` 与 `docs/domain/developing/`。
+Demo 精读产生 14 个 🔴 阻断项，需在首个后端业务 change 前锁定平台级领域决策。详见 `openspec/changes/archive/2026-06-20-identity-platform-domain/` 与 `docs/domain/established/`。
 
 ## Decision
 

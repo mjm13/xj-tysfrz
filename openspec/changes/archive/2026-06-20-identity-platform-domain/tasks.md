@@ -20,10 +20,10 @@
 
 ## 4. 归档与知识提升（apply 完成后执行）
 
-- [ ] 4.1 `/opsx:sync` — 将 delta specs 合并到 `openspec/specs/`
-- [ ] 4.2 `/opsx:archive` — 归档 change `identity-platform-domain`
-- [ ] 4.3 `/opsx:sync-knowledge` — developing → `docs/domain/established/`；更新 established ubiquitous-language 与 platform-shell 描述
-- [ ] 4.4 需求 `status: shipped` + `git mv` → `docs/requirements/shipped/005-identity-platform-domain.md`
+- [x] 4.1 `/opsx:sync` — 将 delta specs 合并到 `openspec/specs/`
+- [x] 4.2 `/opsx:archive` — 归档 change `identity-platform-domain`
+- [x] 4.3 `/opsx:sync-knowledge` — developing → `docs/domain/established/`；更新 established ubiquitous-language 与 platform-shell 描述
+- [x] 4.4 需求 `status: shipped` + `git mv` → `docs/requirements/shipped/005-identity-platform-domain.md`
 
 ## 5. 明确不在本 change 的任务
 
