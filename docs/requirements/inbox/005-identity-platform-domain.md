@@ -1,12 +1,12 @@
 ---
 title: 身份数据平台领域建模（统一术语 / UID / 数据接入 / 权限定位）
-status: inbox
+status: in-change
 change: identity-platform-domain
 owner: team
 createdAt: 2026-06-19
 tier: 🔴
 changeType: 业务
-dependsOn: —（建模优先，阻塞后端各业务 change）
+plan: docs/domain/developing/（context-map / ubiquitous-language / domain-model）
 demoRef: docs/原始demo/（m1~m7、etl-monitor、source-maintenance）
 relatedPlan: temp/06-open-questions.md（14 个 🔴 阻断项）, temp/05-demo-feature-tasks.md（T0-06）
 blocks: basic-identity, classification-identity, org-structure, identity-permission, data-query-service
@@ -55,12 +55,12 @@ blocks: basic-identity, classification-identity, org-structure, identity-permiss
 
 # 验收标准
 
-- [ ] GIVEN 建模完成 WHEN 查阅 `docs/domain/developing/` THEN 含 context-map / ubiquitous-language / domain-model 三件套
-- [ ] GIVEN UID 规范 WHEN 跨模块引用人员 THEN 有唯一且一致的标识方案（关闭 QG-04）
-- [ ] GIVEN "源头"术语 WHEN 查阅统一语言 THEN 采集源与权限系统为两个明确概念（关闭 QG-01）
-- [ ] GIVEN 数据接入上下文 WHEN 描述链路 THEN 源头注册 → 采集 → 主档入库闭环清晰（关闭 QG-08）
-- [ ] GIVEN 权限模块定位 WHEN 查阅模型 THEN 明确"对账治理"边界，不含授权操作（关闭 Q-M5-01）
-- [ ] GIVEN 14 个 🔴 阻断项 WHEN 建模产出 THEN 每项有处置结论（解决 / 推迟 / 降级）
+- [x] GIVEN 建模完成 WHEN 查阅 `docs/domain/developing/` THEN 含 context-map / ubiquitous-language / domain-model 三件套
+- [x] GIVEN UID 规范 WHEN 跨模块引用人员 THEN 有唯一且一致的标识方案（关闭 QG-04）
+- [x] GIVEN "源头"术语 WHEN 查阅统一语言 THEN 采集源与权限系统为两个明确概念（关闭 QG-01）
+- [x] GIVEN 数据接入上下文 WHEN 描述链路 THEN 源头注册 → 采集 → 主档入库闭环清晰（关闭 QG-08）
+- [x] GIVEN 权限模块定位 WHEN 查阅模型 THEN 明确"对账治理"边界，不含授权操作（关闭 Q-M5-01）
+- [x] GIVEN 14 个 🔴 阻断项 WHEN 建模产出 THEN 每项有处置结论（解决 / 推迟 / 降级）
 
 # 流程
 
