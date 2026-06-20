@@ -2,11 +2,13 @@
 title: 身份数据平台领域建模（统一术语 / UID / 数据接入 / 权限定位）
 status: in-change
 change: identity-platform-domain
+openspecChange: identity-platform-domain
 owner: team
 createdAt: 2026-06-19
 tier: 🔴
 changeType: 业务
 plan: docs/domain/developing/（context-map / ubiquitous-language / domain-model）
+openspec: openspec/changes/identity-platform-domain/
 demoRef: docs/原始demo/（m1~m7、etl-monitor、source-maintenance）
 relatedPlan: temp/06-open-questions.md（14 个 🔴 阻断项）, temp/05-demo-feature-tasks.md（T0-06）
 blocks: basic-identity, classification-identity, org-structure, identity-permission, data-query-service
