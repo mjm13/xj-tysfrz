@@ -12,12 +12,16 @@ const nowText = ref('')
 let timer: ReturnType<typeof setInterval> | undefined
 
 const identityMenu = [
-  { label: '人员基础身份', desc: '人员进档 · 一人一ID · 多源头采集' },
-  { label: '人员分类身份', desc: '树形分类 · 标准属性 · 实例挂载' },
-  { label: '人员岗位身份', desc: '广义岗位 · 一人多身份' },
-  { label: '人员自定义标签管理', desc: '自定义群组 · 灵活标注 · 便捷查询' },
-  { label: '组织机构体系', desc: '院系树 · 强绑定身份' },
+  { label: '人员基础身份', desc: '人员进档 · 一人一ID · 多源头采集', to: '/identity/basic' },
+  { label: '人员分类身份', desc: '树形分类 · 标准属性 · 实例挂载', to: '/identity/classification' },
+  { label: '人员岗位身份', desc: '广义岗位 · 一人多身份', to: '/identity/position' },
+  { label: '人员自定义标签管理', desc: '自定义群组 · 灵活标注 · 便捷查询', to: '/identity/tags' },
+  { label: '组织机构体系', desc: '院系树 · 强绑定身份', to: '/identity/org' },
 ]
+
+const isIdentityActive = computed(() => route.path.startsWith('/identity'))
+const isPermissionActive = computed(() => route.path.startsWith('/identity/permission'))
+const isServicesActive = computed(() => route.path.startsWith('/services'))
 
 const avatarChar = computed(() => (auth.username ? auth.username.charAt(0).toUpperCase() : '管'))
 
@@ -49,15 +53,14 @@ onUnmounted(() => {
     <nav class="topbar-nav">
       <RouterLink to="/" class="nav-link" :class="{ active: route.path === '/' }">主页</RouterLink>
 
-      <div class="nav-dropdown">
-        <span class="nav-dropdown-trigger">身份管理</span>
+      <div class="nav-dropdown" :class="{ active: isIdentityActive }">
+        <span class="nav-dropdown-trigger" :class="{ active: isIdentityActive }">身份管理</span>
         <div class="nav-dropdown-menu">
-          <a
+          <RouterLink
             v-for="item in identityMenu"
             :key="item.label"
-            href="#"
+            :to="item.to"
             class="dropdown-item"
-            @click.prevent
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="12" cy="8" r="4" />
@@ -67,12 +70,20 @@ onUnmounted(() => {
               <div class="menu-label">{{ item.label }}</div>
               <div class="menu-desc">{{ item.desc }}</div>
             </div>
-          </a>
+          </RouterLink>
         </div>
       </div>
 
-      <a href="#" class="nav-link" @click.prevent>身份权限管理</a>
-      <a href="#" class="nav-link" @click.prevent>数据查询</a>
+      <RouterLink
+        to="/identity/permission"
+        class="nav-link"
+        :class="{ active: isPermissionActive }"
+      >身份权限管理</RouterLink>
+      <RouterLink
+        to="/services/query/identity"
+        class="nav-link"
+        :class="{ active: isServicesActive }"
+      >数据查询</RouterLink>
     </nav>
 
     <div class="topbar-right">
@@ -145,6 +156,21 @@ onUnmounted(() => {
   height: 100%;
   display: flex;
   align-items: center;
+}
+
+.nav-dropdown-trigger.active {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.nav-dropdown-trigger.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--color-primary);
 }
 
 .nav-dropdown-trigger {

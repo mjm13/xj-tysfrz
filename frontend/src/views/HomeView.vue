@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { ElMessage } from 'element-plus'
 import { getPing } from '@/api/ping'
 
 interface TypeItem {
@@ -57,13 +56,13 @@ const PERMS: PermItem[] = [
 ]
 
 const NAV_CARDS = [
-  { mod: 'm1', title: '人员基础身份', desc: '人员进档 · 一人一ID · 多源头采集' },
-  { mod: 'm2', title: '人员分类身份', desc: '树形分类 · 标准属性 · 实例挂载' },
-  { mod: 'm3', title: '人员岗位身份', desc: '广义岗位 · 一人多身份' },
-  { mod: 'm7', title: '自定义标签身份', desc: '自定义群组 · 灵活标注 · 便捷查询' },
-  { mod: 'm4', title: '组织机构体系', desc: '院系树 · 强绑定身份' },
-  { mod: 'm5', title: '身份权限管理', desc: '权限项 · 类型授权 · 状态联动' },
-  { mod: 'm6', title: '系统服务', desc: '数据查询 · 字典 · API · 配置' },
+  { mod: 'm1', title: '人员基础身份', desc: '人员进档 · 一人一ID · 多源头采集', to: '/identity/basic' },
+  { mod: 'm2', title: '人员分类身份', desc: '树形分类 · 标准属性 · 实例挂载', to: '/identity/classification' },
+  { mod: 'm3', title: '人员岗位身份', desc: '广义岗位 · 一人多身份', to: '/identity/position' },
+  { mod: 'm7', title: '自定义标签身份', desc: '自定义群组 · 灵活标注 · 便捷查询', to: '/identity/tags' },
+  { mod: 'm4', title: '组织机构体系', desc: '院系树 · 强绑定身份', to: '/identity/org' },
+  { mod: 'm5', title: '身份权限管理', desc: '权限项 · 类型授权 · 状态联动', to: '/identity/permission' },
+  { mod: 'm6', title: '系统服务', desc: '数据查询 · 字典 · API · 配置', to: '/services/query/identity' },
 ]
 
 const TOTAL = TYPE_DATA.reduce((sum, item) => sum + item.total, 0)
@@ -135,10 +134,6 @@ function selectPerm(idx: number) {
   selectedPermIdx.value = idx
 }
 
-function onNavCardClick(title: string) {
-  ElMessage.info(`「${title}」功能页待开发`)
-}
-
 async function checkApiConnection() {
   apiStatus.value = 'checking'
   try {
@@ -196,11 +191,11 @@ onUnmounted(() => {
 
     <div class="section-title">功能导航</div>
     <section class="nav-grid">
-      <div
+      <RouterLink
         v-for="card in NAV_CARDS"
         :key="card.mod"
+        :to="card.to"
         class="nav-card"
-        @click="onNavCardClick(card.title)"
       >
         <span class="nav-card-arrow">→</span>
         <div class="nav-card-icon">
@@ -213,7 +208,7 @@ onUnmounted(() => {
           <div class="nav-card-title">{{ card.title }}</div>
           <div class="nav-card-desc">{{ card.desc }}</div>
         </div>
-      </div>
+      </RouterLink>
     </section>
 
     <div class="section-title">综合数据视图</div>
@@ -489,6 +484,8 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 12px;
   position: relative;
+  text-decoration: none;
+  color: inherit;
 }
 
 .nav-card:hover {
