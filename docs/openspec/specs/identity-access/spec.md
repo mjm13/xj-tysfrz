@@ -256,3 +256,12 @@
 
 - **WHEN** 管理员修改某角色 Permission 且该角色用户已在线
 - **THEN** 该用户当前 session permissions MUST 保持变更前集合，直至重新登录
+
+### Requirement: 组织节点管理权限种子
+
+系统 SHALL 通过 Flyway 提供 `admin:departments:read` 与 `admin:departments:write`，并授予 ADMIN 角色。
+
+#### Scenario: 管理员具备部门管理权限
+
+- **WHEN** 数据库迁移至 V5 完成
+- **THEN** ADMIN MUST 拥有 admin:departments:read 与 admin:departments:write

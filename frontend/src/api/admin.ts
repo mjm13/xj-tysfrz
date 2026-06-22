@@ -12,6 +12,7 @@ export interface OrgNodeSummary {
   code: string
   name: string
   parentCode: string | null
+  hasChildren?: boolean
 }
 
 export interface RoleSummary {
@@ -42,6 +43,17 @@ export interface CreateRolePayload {
   description?: string
 }
 
+export interface CreateOrgNodePayload {
+  code: string
+  name: string
+  parentCode: string
+}
+
+export interface UpdateOrgNodePayload {
+  name: string
+  parentCode?: string
+}
+
 export function listUsers(): Promise<UserSummary[]> {
   return request<UserSummary[]>('/api/admin/users')
 }
@@ -56,6 +68,30 @@ export function createUser(payload: CreateUserPayload): Promise<UserSummary> {
 
 export function listOrgNodes(): Promise<OrgNodeSummary[]> {
   return request<OrgNodeSummary[]>('/api/admin/org-nodes')
+}
+
+export function listOrgNodeRoots(): Promise<OrgNodeSummary[]> {
+  return request<OrgNodeSummary[]>('/api/admin/org-nodes/roots')
+}
+
+export function listOrgNodeChildren(parentCode: string): Promise<OrgNodeSummary[]> {
+  return request<OrgNodeSummary[]>(`/api/admin/org-nodes/children?parentCode=${encodeURIComponent(parentCode)}`)
+}
+
+export function createOrgNode(payload: CreateOrgNodePayload): Promise<OrgNodeSummary> {
+  return request<OrgNodeSummary>('/api/admin/org-nodes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateOrgNode(code: string, payload: UpdateOrgNodePayload): Promise<OrgNodeSummary> {
+  return request<OrgNodeSummary>(`/api/admin/org-nodes/${encodeURIComponent(code)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
 }
 
 export function listRoles(): Promise<RoleSummary[]> {
@@ -90,4 +126,9 @@ export function canWriteUsers(permissions: ReadonlySet<string> | string[]): bool
 export function canWriteRoles(permissions: ReadonlySet<string> | string[]): boolean {
   const set = permissions instanceof Set ? permissions : new Set(permissions)
   return set.has('admin:roles:write')
+}
+
+export function canWriteDepartments(permissions: ReadonlySet<string> | string[]): boolean {
+  const set = permissions instanceof Set ? permissions : new Set(permissions)
+  return set.has('admin:departments:write')
 }

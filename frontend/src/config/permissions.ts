@@ -2,6 +2,7 @@ const PATH_MODULE_MAP: Record<string, string> = {
   '/': 'home',
   '/admin/users': 'platform-admin',
   '/admin/roles': 'platform-admin',
+  '/admin/departments': 'platform-admin',
   '/identity/basic': 'identity-basic',
   '/identity/classification': 'identity-classification',
   '/identity/position': 'identity-position',
@@ -16,9 +17,10 @@ const PATH_MODULE_MAP: Record<string, string> = {
 const PATH_PERMISSION_MAP: Record<string, string> = {
   '/admin/users': 'admin:users:read',
   '/admin/roles': 'admin:roles:read',
+  '/admin/departments': 'admin:departments:read',
 }
 
-const PLATFORM_ADMIN_READ_PERMISSIONS = ['admin:users:read', 'admin:roles:read'] as const
+const PLATFORM_ADMIN_READ_PERMISSIONS = ['admin:users:read', 'admin:roles:read', 'admin:departments:read'] as const
 
 export function moduleKeyForPath(path: string): string | null {
   if (PATH_MODULE_MAP[path]) {
@@ -72,4 +74,9 @@ export function canWriteAdminUsers(permissions: ReadonlySet<string> | string[]):
 export function canWriteAdminRoles(permissions: ReadonlySet<string> | string[]): boolean {
   const set = permissions instanceof Set ? permissions : new Set(permissions)
   return set.has('admin:roles:write')
+}
+
+export function canWriteAdminDepartments(permissions: ReadonlySet<string> | string[]): boolean {
+  const set = permissions instanceof Set ? permissions : new Set(permissions)
+  return set.has('admin:departments:write')
 }

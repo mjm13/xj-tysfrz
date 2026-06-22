@@ -39,6 +39,12 @@ const router = createRouter({
           component: () => import('@/views/admin/AdminRolesView.vue'),
           meta: { moduleKey: 'platform-admin' },
         },
+        {
+          path: 'departments',
+          name: 'platform-admin-departments',
+          component: () => import('@/views/admin/AdminDepartmentsView.vue'),
+          meta: { moduleKey: 'platform-admin' },
+        },
       ],
     },
     {
@@ -344,6 +350,9 @@ router.beforeEach(async (to) => {
     }
     const moduleKey = to.meta.moduleKey
     if (typeof moduleKey === 'string' && !auth.canAccessModule(moduleKey)) {
+      return { path: '/' }
+    }
+    if (!auth.canAccessPath(to.path)) {
       return { path: '/' }
     }
   }

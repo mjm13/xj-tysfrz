@@ -31,6 +31,7 @@ const showPlatformAdminNav = computed(() => auth.canAccessModule('platform-admin
 const platformAdminMenuAll = [
   { label: '平台用户', desc: '平台操作者账号 · 登录与数据范围', to: '/admin/users' },
   { label: '角色管理', desc: 'RBAC 角色 · Permission 分配', to: '/admin/roles' },
+  { label: '部门管理', desc: '组织节点 org_node · 懒加载树维护', to: '/admin/departments' },
 ]
 
 const platformAdminMenu = computed(() =>

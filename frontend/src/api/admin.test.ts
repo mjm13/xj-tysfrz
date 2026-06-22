@@ -1,5 +1,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { canWriteUsers, createUser, listOrgNodes, listRoles, listUsers, replaceRolePermissions } from './admin'
+import {
+  canWriteDepartments,
+  canWriteUsers,
+  createOrgNode,
+  createUser,
+  listOrgNodeChildren,
+  listOrgNodeRoots,
+  listOrgNodes,
+  listRoles,
+  listUsers,
+  replaceRolePermissions,
+} from './admin'
 
 describe('admin api', () => {
   afterEach(() => {
@@ -50,7 +61,7 @@ describe('admin api', () => {
   it('listOrgNodes calls GET /api/admin/org-nodes', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ code: 0, data: [{ code: 'SYSU', name: '中山大学', parentCode: null }] }),
+      json: async () => ({ code: 0, data: [{ code: 'SYSU', name: '中山大学', parentCode: null, hasChildren: true }] }),
     })
     vi.stubGlobal('fetch', fetchMock)
 
@@ -58,6 +69,55 @@ describe('admin api', () => {
 
     expect(fetchMock.mock.calls[0][0]).toContain('/api/admin/org-nodes')
     expect(nodes[0].code).toBe('SYSU')
+  })
+
+  it('listOrgNodeRoots calls GET /api/admin/org-nodes/roots', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ code: 0, data: [{ code: 'SYSU', name: '中山大学', parentCode: null, hasChildren: true }] }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const roots = await listOrgNodeRoots()
+
+    expect(fetchMock.mock.calls[0][0]).toContain('/api/admin/org-nodes/roots')
+    expect(roots[0].code).toBe('SYSU')
+  })
+
+  it('listOrgNodeChildren calls GET with parentCode query', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ code: 0, data: [{ code: 'CAT-party', name: '党群部门', parentCode: 'SYSU', hasChildren: true }] }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const children = await listOrgNodeChildren('SYSU')
+
+    expect(fetchMock.mock.calls[0][0]).toContain('/api/admin/org-nodes/children')
+    expect(fetchMock.mock.calls[0][0]).toContain('parentCode=SYSU')
+    expect(children[0].code).toBe('CAT-party')
+  })
+
+  it('createOrgNode posts payload to /api/admin/org-nodes', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        code: 0,
+        data: { code: 'NEW-DEPT', name: '新部门', parentCode: 'SYSU', hasChildren: false },
+      }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await createOrgNode({ code: 'NEW-DEPT', name: '新部门', parentCode: 'SYSU' })
+
+    const init = fetchMock.mock.calls[0][1] as RequestInit
+    expect(init.method).toBe('POST')
+    expect(JSON.parse(init.body as string)).toMatchObject({ code: 'NEW-DEPT', parentCode: 'SYSU' })
+  })
+
+  it('canWriteDepartments checks admin:departments:write permission', () => {
+    expect(canWriteDepartments(['admin:departments:read'])).toBe(false)
+    expect(canWriteDepartments(['admin:departments:write'])).toBe(true)
   })
 
   it('canWriteUsers checks admin:users:write permission', () => {

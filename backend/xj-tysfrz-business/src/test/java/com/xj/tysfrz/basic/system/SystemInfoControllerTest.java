@@ -27,7 +27,7 @@ class SystemInfoControllerTest {
                 .andExpect(jsonPath("$.data.platformName").value("高校综合身份数据平台"))
                 .andExpect(jsonPath("$.data.release").value("0.2.0-test"))
                 .andExpect(jsonPath("$.data.backendVersion").value("0.2.0-test"))
-                .andExpect(jsonPath("$.data.flywayVersion").value("4"))
+                .andExpect(jsonPath("$.data.flywayVersion").value("5"))
                 .andExpect(jsonPath("$.data.apiPrefix").value("/api"))
                 .andExpect(jsonPath("$.data.maintenance").value(false))
                 .andExpect(jsonPath("$.data.gitCommit").exists())

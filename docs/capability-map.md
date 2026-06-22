@@ -15,7 +15,7 @@
 | 模块 | moduleKey | 前端入口 | 后端能力 / 领域上下文 | 相关数据表 | Demo 原型 | 当前状态 |
 | --- | --- | --- | --- | --- | --- | --- |
 | 平台首页 | `home` | `/` | `platform-shell` | 暂无业务表 | `页面主页.html` / `platform-v2-home.html` | 已接入壳层 |
-| 平台管理 | `platform-admin` | `/admin/users`、`/admin/roles` | `identity-access`（平台用户 + 角色 Permission UI） | `platform_user` / `platform_role` / `platform_permission` / `org_node` | 无 | 平台用户与角色管理已接入 |
+| 平台管理 | `platform-admin` | `/admin/users`、`/admin/roles`、`/admin/departments` | `identity-access`（平台用户 + 角色 + org_node 维护） | `platform_user` / `platform_role` / `platform_permission` / `org_node` | 无 | 平台用户、角色与部门管理已接入 |
 | 人员基础身份 | `identity-basic` | `/identity/basic` | `identity-master` + `data-ingestion` | 未落表 | `m1-basic-identity.html` | 前端占位，领域已建模 |
 | 人员分类身份 | `identity-classification` | `/identity/classification` | `identity-dimension` | 未落表 | `m2-classification.html` / `m2-classification-admin.html` | 前端占位，领域已建模 |
 | 人员岗位身份 | `identity-position` | `/identity/position` | `identity-dimension` + `org-structure` | 未落表 | `m3-position.html` | 前端占位，领域已建模 |
