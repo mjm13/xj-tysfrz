@@ -12,6 +12,7 @@
 | InteractiveUser（交互式用户） | identity-access | 人类操作者平台账号 | 含凭证、角色、部门、DataScope |
 | PlatformUserId | identity-access | 平台用户唯一标识，与 PersonUID **无关** | UUID 或业务编码 |
 | Role（角色） | identity-access | 权限集合，分配给用户 | 如 `ADMIN` |
+| 系统角色（System Role） | identity-access | 平台内建、受保护的角色：权限不可修改、角色不可删除；区别于可自由编辑的自定义角色 | ADMIN（系统角色）vs GOVERNANCE（自定义） |
 | Permission（权限项） | identity-access | 对模块/操作的访问授权 | `module:action` |
 | DepartmentRef（部门归属） | identity-access | 用户所属 OrgNode 的 code | 引用 org-structure |
 | DataScope（数据范围） | identity-access | 用户可见数据的部门口径档位 | GLOBAL / OWN_DEPT / OWN_DEPT_AND_SUB |
