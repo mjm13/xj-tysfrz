@@ -30,7 +30,7 @@
 
 ## 来源需求
 
-- `docs/requirements/inbox/008-platform-admin-roles.md`
+- `docs/requirements/shipped/008-platform-admin-roles.md`
 
 ## Change 类型
 

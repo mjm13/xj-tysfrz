@@ -26,16 +26,26 @@ describe('permissions', () => {
 
   it('maps admin paths to platform-admin module', () => {
     expect(moduleKeyForPath('/admin/users')).toBe('platform-admin')
+    expect(moduleKeyForPath('/admin/roles')).toBe('platform-admin')
   })
 
-  it('allows platform admin when admin:users:read granted', () => {
-    const platformAdminPerms = new Set(['admin:users:read'])
-    expect(canAccessPath(platformAdminPerms, '/admin/users')).toBe(true)
-    expect(canAccessModule(platformAdminPerms, 'platform-admin')).toBe(true)
+  it('allows platform users when admin:users:read granted', () => {
+    const perms = new Set(['admin:users:read'])
+    expect(canAccessPath(perms, '/admin/users')).toBe(true)
+    expect(canAccessPath(perms, '/admin/roles')).toBe(false)
+    expect(canAccessModule(perms, 'platform-admin')).toBe(true)
   })
 
-  it('denies platform admin without admin:users:read', () => {
+  it('allows platform roles when admin:roles:read granted', () => {
+    const perms = new Set(['admin:roles:read'])
+    expect(canAccessPath(perms, '/admin/roles')).toBe(true)
+    expect(canAccessPath(perms, '/admin/users')).toBe(false)
+    expect(canAccessModule(perms, 'platform-admin')).toBe(true)
+  })
+
+  it('denies platform admin without any admin read permission', () => {
     expect(canAccessPath(adminPerms, '/admin/users')).toBe(false)
+    expect(canAccessPath(adminPerms, '/admin/roles')).toBe(false)
     expect(canAccessModule(adminPerms, 'platform-admin')).toBe(false)
   })
 })

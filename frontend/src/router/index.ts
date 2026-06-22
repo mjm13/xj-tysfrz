@@ -33,6 +33,12 @@ const router = createRouter({
           component: () => import('@/views/admin/AdminUsersView.vue'),
           meta: { moduleKey: 'platform-admin' },
         },
+        {
+          path: 'roles',
+          name: 'platform-admin-roles',
+          component: () => import('@/views/admin/AdminRolesView.vue'),
+          meta: { moduleKey: 'platform-admin' },
+        },
       ],
     },
     {

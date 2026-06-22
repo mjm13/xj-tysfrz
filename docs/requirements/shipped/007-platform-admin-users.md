@@ -95,5 +95,5 @@ relatedDomain: docs/domain/established/（identity-access）
 
 # 备注
 
-- 后续切片：`docs/requirements/inbox/008-platform-admin-roles.md`、`009-platform-admin-departments.md`、`010-platform-admin-menus.md`
+- 后续切片：`docs/requirements/shipped/008-platform-admin-roles.md`、`docs/requirements/inbox/009-platform-admin-departments.md`、`docs/requirements/inbox/010-platform-admin-menus.md`
 - Demo 参考：无专用 demo，UI 对齐现有 ModuleLayout + Element Plus 风格

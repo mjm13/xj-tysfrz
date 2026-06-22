@@ -14,11 +14,32 @@ export interface OrgNodeSummary {
   parentCode: string | null
 }
 
+export interface RoleSummary {
+  roleCode: string
+  name: string
+  description: string | null
+  permissionCodes: string[]
+  systemRole: boolean
+  permissionsEditable: boolean
+}
+
+export interface PermissionSummary {
+  permissionCode: string
+  moduleName: string
+  actionName: string
+}
+
 export interface CreateUserPayload {
   username: string
   password: string
   departmentCode: string
   dataScope: string
+}
+
+export interface CreateRolePayload {
+  roleCode: string
+  name: string
+  description?: string
 }
 
 export function listUsers(): Promise<UserSummary[]> {
@@ -37,7 +58,36 @@ export function listOrgNodes(): Promise<OrgNodeSummary[]> {
   return request<OrgNodeSummary[]>('/api/admin/org-nodes')
 }
 
+export function listRoles(): Promise<RoleSummary[]> {
+  return request<RoleSummary[]>('/api/admin/roles')
+}
+
+export function createRole(payload: CreateRolePayload): Promise<RoleSummary> {
+  return request<RoleSummary>('/api/admin/roles', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+}
+
+export function replaceRolePermissions(roleCode: string, permissionCodes: string[]): Promise<RoleSummary> {
+  return request<RoleSummary>(`/api/admin/roles/${encodeURIComponent(roleCode)}/permissions`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ permissionCodes }),
+  })
+}
+
+export function listPermissions(): Promise<PermissionSummary[]> {
+  return request<PermissionSummary[]>('/api/admin/permissions')
+}
+
 export function canWriteUsers(permissions: ReadonlySet<string> | string[]): boolean {
   const set = permissions instanceof Set ? permissions : new Set(permissions)
   return set.has('admin:users:write')
+}
+
+export function canWriteRoles(permissions: ReadonlySet<string> | string[]): boolean {
+  const set = permissions instanceof Set ? permissions : new Set(permissions)
+  return set.has('admin:roles:write')
 }

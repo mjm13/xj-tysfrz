@@ -35,7 +35,10 @@ export const MODULE_NAV: Record<string, ModuleNavConfig> = {
     groups: [
       {
         label: '平台管理',
-        items: [{ label: '平台用户', path: '/admin/users' }],
+        items: [
+          { label: '平台用户', path: '/admin/users' },
+          { label: '角色管理', path: '/admin/roles' },
+        ],
       },
     ],
   },

@@ -6,7 +6,7 @@ owner: team
 createdAt: 2026-06-22
 tier: 🔴
 changeType: 混合
-dependsOn: shipped/007-platform-admin-users, 008-platform-admin-roles
+dependsOn: shipped/007-platform-admin-users, shipped/008-platform-admin-roles
 relatedDomain: docs/domain/established/（identity-access）
 ---
 

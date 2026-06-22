@@ -26,10 +26,11 @@ const identityMenu = computed(() =>
 const showIdentityMenu = computed(() => identityMenu.value.length > 0)
 const showPermissionNav = computed(() => auth.canAccessPath('/identity/permission'))
 const showServicesNav = computed(() => auth.canAccessPath('/services/query/identity'))
-const showPlatformAdminNav = computed(() => auth.canAccessPath('/admin/users'))
+const showPlatformAdminNav = computed(() => auth.canAccessModule('platform-admin'))
 
 const platformAdminMenuAll = [
   { label: '平台用户', desc: '平台操作者账号 · 登录与数据范围', to: '/admin/users' },
+  { label: '角色管理', desc: 'RBAC 角色 · Permission 分配', to: '/admin/roles' },
 ]
 
 const platformAdminMenu = computed(() =>
