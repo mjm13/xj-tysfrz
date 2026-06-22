@@ -6,11 +6,11 @@
 - **Supersedes:** —
 - **Related:** ADR 0006（前端 ModuleLayout）
 
-## Context
+## 背景（Context）
 
-Demo 精读产生 14 个 🔴 阻断项，需在首个后端业务 change 前锁定平台级领域决策。详见 `openspec/changes/archive/2026-06-20-identity-platform-domain/` 与 `docs/domain/established/`。
+Demo 精读产生 14 个 🔴 阻断项，需在首个后端业务 change 前锁定平台级领域决策。详见 `docs/openspec/changes/archive/2026-06-20-identity-platform-domain/` 与 `docs/domain/established/`。
 
-## Decision
+## 决策（Decision）
 
 ### D1 — PersonUID
 
@@ -63,12 +63,12 @@ Demo 精读产生 14 个 🔴 阻断项，需在首个后端业务 change 前锁
 | Q-M6-01 | 解决 — QueryPolicy（实现推迟） |
 | Q-SRC-01 | 推迟 — UI 重写 |
 
-## Consequences
+## 影响（Consequences）
 
 - 后续 6+ 业务 change MUST 引用 OpenSpec capability specs，不得重定义术语
 - platform-shell established 文档需在 archive 后 sync-knowledge 更新
 
-## Alternatives considered
+## 备选方案（Alternatives considered）
 
 - 平台内直接授权：与 demo 文案及高校权限分散现状冲突，拒绝
 - 保留 demo 双 UID 体系：跨模块无法关联，拒绝

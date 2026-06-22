@@ -1,4 +1,4 @@
-# Data Dictionary (Established)
+# 数据字典（Data Dictionary，已归档）
 
 ## 说明
 
@@ -31,7 +31,7 @@
 | --- | --- | --- |
 | platform_user_id | 平台用户业务 ID | 对外稳定引用，避免暴露自增主键 |
 | username | 登录名 | 全局唯一 |
-| password_hash | 凭证哈希 | BCrypt，禁止明文 |
+| password_hash | 凭证哈希 | 禁止明文；具体哈希算法属于安全实现决策，见 ADR 0008 |
 | department_code | DepartmentRef | MUST 存在于 org_node |
 | data_scope | 数据范围档位 | GLOBAL / OWN_DEPT / OWN_DEPT_AND_SUB |
 | status | 账号状态 | DISABLED 禁止登录 |
@@ -104,26 +104,3 @@ erDiagram
     platform_role ||--o{ platform_role_permission : grants_permission
     platform_permission ||--o{ platform_role_permission : granted_by_role
 ```
-
-## 模板
-
-### <表名> <table_name>
-
-- 限界上下文：`<context>`
-- 业务含义：<这张表代表什么业务概念>
-
-| 字段 | 类型 | 业务含义 | 约束/理由 |
-| --- | --- | --- | --- |
-| `<col>` | `<type>` | <含义> | <为什么有这约束> |
-
-**状态流转**（如有状态字段）：
-
-```mermaid
-stateDiagram-v2
-    [*] --> draft
-    draft --> submitted
-    submitted --> closed
-```
-
-**关键规则**：
-- <如：截止时间后 status 不可回退>

@@ -1,4 +1,4 @@
-# Domain Model (Developing)
+# 领域模型（Domain Model，开发中）
 
 ## 说明
 

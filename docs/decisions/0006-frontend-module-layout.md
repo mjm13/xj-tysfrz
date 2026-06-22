@@ -4,11 +4,11 @@
 - **Date:** 2026-06-20
 - **Change:** platform-module-layout
 
-## Context
+## 背景（Context）
 
 Demo 为静态 HTML，各模块共享顶栏 + 两段式侧栏 + 主内容区。Vue 化需统一布局壳层，使后续业务 change 只写视图，不重复搭骨架。
 
-## Decision
+## 决策（Decision）
 
 1. **双布局**
    - `MainLayout`：首页（`/``），无侧栏，保留现有总览 Mock。
@@ -31,13 +31,13 @@ Demo 为静态 HTML，各模块共享顶栏 + 两段式侧栏 + 主内容区。V
    - `components/shell/`：Breadcrumb、PageHead
    - `components/ui/`：SectionTitle、FilterBar、DataCard、StatusBadge、AppDrawer
 
-## Consequences
+## 影响（Consequences）
 
 - 新模块：在 `module-nav.ts` 增配置 + `router/index.ts` 挂占位路由即可。
 - 首页与顶栏下拉通过 `RouterLink` 深链到 L3 路由。
 - 本 change 不含 RBAC、后端 API、真实业务逻辑。
 
-## Alternatives considered
+## 备选方案（Alternatives considered）
 
 - 单布局 + 条件侧栏：首页与业务页结构差异大，拆分更清晰。
 - Hash 子视图：不利于深链分享与浏览器历史，已拒绝。

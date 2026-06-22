@@ -1,4 +1,4 @@
-# Data Dictionary (Developing)
+# 数据字典（Data Dictionary，开发中）
 
 ## 说明
 

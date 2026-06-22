@@ -1,4 +1,4 @@
-# Ubiquitous Language（Demo 梳理）
+# 统一语言（Ubiquitous Language，Demo 梳理）
 
 > 术语优先对齐 `docs/domain/established/ubiquitous-language.md`；本文件仅记录 Demo 推导出的增量与页面追溯。
 

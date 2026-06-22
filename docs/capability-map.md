@@ -1,4 +1,4 @@
-# Capability Map
+# 能力追溯索引（Capability Map）
 
 本文件是「业务能力追溯索引」，用于快速定位菜单模块对应的前端入口、后端能力、数据语义与 Demo 原型。
 
@@ -7,7 +7,8 @@
 - 本文件只记录模块级指针，不复制子菜单、路由明细或表结构。
 - 前端路由真相在 `frontend/src/router/index.ts`，侧栏菜单真相在 `frontend/src/config/module-nav.ts`。
 - 数据库结构真相在 Flyway 迁移脚本，表字段业务语义在 `docs/domain/established/data-dictionary.md`。
-- OpenSpec 主规格真相在 `openspec/specs/<capability>/spec.md`。
+- OpenSpec 主规格真相在 `docs/openspec/specs/<capability>/spec.md`。
+- `platform-shell` 属于前端平台壳层 / 架构能力，放在本索引与 `docs/architecture.md` 中追溯，不写入 DDD context map。
 
 ## 模块追溯索引
 

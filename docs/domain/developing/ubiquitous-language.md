@@ -1,4 +1,4 @@
-# Ubiquitous Language (Developing)
+# 统一语言（Ubiquitous Language，开发中）
 
 ## 说明
 

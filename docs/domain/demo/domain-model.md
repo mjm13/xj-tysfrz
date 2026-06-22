@@ -1,4 +1,4 @@
-# Domain Model（Demo 梳理）
+# 领域模型（Domain Model，Demo 梳理）
 
 > 战术设计聚焦核心上下文。聚合边界依据**业务不变量**，非数据库表结构。
 

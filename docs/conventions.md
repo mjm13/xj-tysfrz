@@ -1,4 +1,6 @@
-# Conventions
+# Conventions（研发约定）
+
+> 文中工程/流程英文简写（DDD、ADR、AC、RBAC、spike 等）含义见 `docs/glossary.md` 术语表。
 
 ## 研发方法
 
@@ -48,7 +50,9 @@
 2. 非显而易见的决策及原因 → `docs/decisions`（ADR）
 3. 数据库 / 字段业务语义、状态流转、约束理由 → `docs/domain/.../data-dictionary.md`
 
-不沉淀：与代码重叠的实现细节（代码即文档，必然漂移）、一次性琐碎改动。
+不沉淀到 `docs/domain`：与代码重叠的实现细节（代码即文档，必然漂移）、一次性琐碎改动、UI 壳层 / 布局 / Design Token / 前端状态管理 / 框架 API 等技术实现词。
+
+技术或 UI 壳层 change 的知识去向：架构说明写 `docs/architecture.md`，模块追溯写 `docs/capability-map.md`，关键决策写 ADR；不得在 `context-map.md` 新建伪领域上下文，也不得在 `domain-model.md` 写“无聚合”的技术能力。
 
 数据库三层：结构真相在 Flyway；实时读取用 MySQL MCP（只读）；业务语义沉淀到数据字典。
 
@@ -67,7 +71,7 @@
   - 使用三层：`Controller -> Service -> Mapper`
 - 复杂需求（强不变量/多聚合/复杂业务规则）：
   - 使用四层：`interfaces -> application -> domain -> infrastructure`
-- 每个 change 的 `design.md` 必须说明本次选择及理由
+- 业务 / 混合 change 的 `design.md` 必须说明本次选择及理由；纯技术 / UI 壳层 change 写技术方案与裁剪理由，不虚构领域设计
 
 ## 后端约定
 
@@ -111,7 +115,7 @@
   - 完成：`sync -> archive -> sync-knowledge`
   - 放弃：`abandon-change`
 
-## Approval Gates（必须人工确认）
+## 审批闸门（Approval Gates，必须人工确认）
 
 - 破坏性数据库变更（删表/删列/改类型/回填）
 - 新外部依赖或关键三方组件引入

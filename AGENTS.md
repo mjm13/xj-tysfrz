@@ -11,6 +11,7 @@
 | 了解项目结构与流水线 | `README.md` | 目录导航 + `explore→propose→apply→...` 全链路 |
 | 研发约定与门禁 | `docs/conventions.md` | 分级表、知识沉淀三问、测试优先于 Spec |
 | 系统与分层架构 | `docs/architecture.md` | 系统总览 + 后端 DDD 可裁剪分层 |
+| 看不懂英文简写 | `docs/glossary.md` | 术语表：DDD/ADR/AC/RBAC/spike 等工程流程简写的中文解释 |
 
 ## 1. 统一研发流水线
 
@@ -55,7 +56,7 @@ explore → propose → apply → verify → sync → archive → sync-knowledge
 | 非显而易见的决策及原因 | `docs/decisions/`（ADR） |
 | 数据库字段业务语义 / 状态机 | `docs/domain/.../data-dictionary.md` |
 | 模块级能力追溯（模块 / moduleKey / 前端入口 / 后端能力 / 表 / Demo） | `docs/capability-map.md`（需求发布节点检查） |
-| 变更提案/设计/任务/规格 | `openspec/`（changes / specs） |
+| 变更提案/设计/任务/规格 | `docs/openspec/`（changes / specs） |
 
 - 数据库**结构真相**在 Flyway 迁移脚本（`backend/xj-zbpt-business/src/main/resources/db/migration/`），不抄进 docs。
 - 实时库结构通过 MySQL MCP（只读）读取。

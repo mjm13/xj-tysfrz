@@ -1,4 +1,4 @@
-# Context Map（Demo 梳理）
+# 上下文映射（Context Map，Demo 梳理）
 
 ## 1. 限界上下文清单
 
@@ -10,7 +10,7 @@
 | **data-ingestion** 数据接入 | 支撑域 | 采集源注册、字段映射、ETL 任务与运行 | ACL 转换源数据；不拥有最终身份业务事实 |
 | **permission-reconciliation** 权限对账治理 | 支撑域 | 权限项、对账基线、快照、差异、处置推送 | **不执行授权发放**；后续可申请审批为扩展 |
 | **data-query** 数据查询 | 通用/支撑域 | 预制表、主题查询、受控 SQL、导出 | 只读聚合；不能成为写入口 |
-| **identity-access** 平台访问控制 | 通用域 | 操作者账号、RBAC、DataScope、JWT | 与被治理自然人 `PersonUID` 解耦 |
+| **identity-access** 平台访问控制 | 通用域 | 操作者账号、RBAC、DataScope、Sa-Token | 与被治理自然人 `PersonUID` 解耦 |
 | **platform-shell** 平台壳层 | 通用域 | 首页、模块导航、布局、路由 | 无业务聚合 |
 
 ## 2. Context Map

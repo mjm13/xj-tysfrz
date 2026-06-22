@@ -14,9 +14,12 @@
 - `backend/`：后端目录（Spring Boot + MyBatis-Plus + MySQL）
 - `frontend/`：前端目录（Vue3 + Element Plus）
 - `docs/`：需求、领域模型、架构与 ADR
-- `openspec/`：OpenSpec changes/specs/config
+- `docs/glossary.md`：术语表（不熟悉 DDD/ADR/AC/RBAC 等简写时先查这里）
+- `docs/openspec/`：OpenSpec changes/specs/config
 - `.cursor/rules/`：项目规则
 - `.cursor/skills/`：项目联动技能
+
+> **OpenSpec CLI 说明**：OpenSpec CLI 默认在仓库根目录查找 `openspec/`。本仓库物理目录为 `docs/openspec/`；克隆后若 `openspec list` 报错，在仓库根执行 `mklink /J openspec docs\openspec`（Windows）创建目录联接即可。
 
 ## AI 自主研发流水线
 
@@ -42,7 +45,7 @@
   - business / hybrid：将 `docs/domain/developing/*` 已落地内容提升到 `docs/domain/established/*`，并补 ADR
   - technical：以 ADR/工程知识为主，避免回灌伪领域条目
 
-## Quickstart
+## 快速开始
 
 ### 后端（规划约定）
 

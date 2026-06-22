@@ -1,4 +1,4 @@
-# Domain Docs Index
+# 领域文档索引（Domain Docs Index）
 
 `docs/domain` 按“既定事实/开发中”物理隔离：
 
