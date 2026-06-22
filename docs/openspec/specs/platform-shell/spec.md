@@ -73,7 +73,7 @@
 
 ### Requirement: 后端认证集成
 
-登录页 SHALL 调用 identity-access 后端登录 API 获取 JWT；MUST NOT 使用前端 Mock 本地校验作为生产路径。
+登录页 SHALL 调用 identity-access 后端登录 API 获取 Sa-Token AccessToken；MUST NOT 使用前端 Mock 本地校验作为生产路径。
 
 #### Scenario: 登录成功导航
 
@@ -87,7 +87,7 @@
 
 ### Requirement: Token 路由守卫
 
-路由守卫 SHALL 依据有效 JWT（或 /api/auth/me 校验）保护非 public 路由；无效或缺失 Token MUST 重定向至 `/login`。
+路由守卫 SHALL 依据有效 AccessToken（Sa-Token，或经 `/api/auth/me` 校验）保护非 public 路由；无效或缺失 Token MUST 重定向至 `/login`。
 
 #### Scenario: 未登录访问受保护路由
 

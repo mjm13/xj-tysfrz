@@ -1,5 +1,6 @@
 package com.xj.zbpt.business.access.domain;
 
+import com.xj.zbpt.common.access.DataScope;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayDeque;

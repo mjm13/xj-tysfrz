@@ -4,9 +4,6 @@ import com.xj.zbpt.framework.exception.GlobalExceptionHandler;
 import com.xj.zbpt.framework.config.CorsConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
@@ -25,14 +22,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @WebMvcTest(
         controllers = PingController.class,
-        excludeAutoConfiguration = {
-                SecurityAutoConfiguration.class,
-                SecurityFilterAutoConfiguration.class,
-                UserDetailsServiceAutoConfiguration.class
-        },
         excludeFilters = @ComponentScan.Filter(
                 type = FilterType.REGEX,
-                pattern = "com\\.xj\\.zbpt\\.business\\.access\\..*"
+                pattern = "com\\.xj\\.zbpt\\.framework\\.auth\\..*|com\\.xj\\.zbpt\\.business\\.access\\..*"
         )
 )
 @Import({GlobalExceptionHandler.class, CorsConfig.class})

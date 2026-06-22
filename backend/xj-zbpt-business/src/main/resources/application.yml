@@ -12,9 +12,18 @@ app:
     platform-name: 高校综合身份数据平台
     release: @project.version@
     maintenance: false
-  jwt:
-    secret: ${JWT_SECRET:change-me-in-production-32chars-min!!}
-    expiration-hours: ${JWT_EXPIRATION_HOURS:8}
+
+sa-token:
+  token-name: Authorization
+  token-prefix: Bearer
+  timeout: ${SA_TOKEN_TIMEOUT:28800}
+  active-timeout: -1
+  is-concurrent: true
+  is-share: false
+  is-log: false
+  is-read-header: true
+  is-read-cookie: false
+  is-read-body: false
 
 management:
   endpoints:

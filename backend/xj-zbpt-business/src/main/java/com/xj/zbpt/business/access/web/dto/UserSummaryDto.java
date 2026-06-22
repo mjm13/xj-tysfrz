@@ -1,6 +1,6 @@
 package com.xj.zbpt.business.access.web.dto;
 
-import com.xj.zbpt.business.access.domain.DataScope;
+import com.xj.zbpt.common.access.DataScope;
 
 public record UserSummaryDto(
         String platformUserId,

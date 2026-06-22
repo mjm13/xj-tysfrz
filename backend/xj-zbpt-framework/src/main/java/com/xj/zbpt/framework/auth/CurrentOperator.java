@@ -1,4 +1,4 @@
-package com.xj.zbpt.business.access.web;
+package com.xj.zbpt.framework.auth;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

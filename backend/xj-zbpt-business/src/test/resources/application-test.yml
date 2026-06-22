@@ -15,6 +15,10 @@ app:
     platform-name: 高校综合身份数据平台
     release: 0.2.0-test
     maintenance: false
-  jwt:
-    secret: test-jwt-secret-key-32chars-min!!
-    expiration-hours: 8
+
+sa-token:
+  token-name: Authorization
+  token-prefix: Bearer
+  timeout: 28800
+  is-read-header: true
+  is-read-cookie: false

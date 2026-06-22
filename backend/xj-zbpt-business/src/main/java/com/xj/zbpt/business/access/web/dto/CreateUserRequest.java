@@ -1,6 +1,6 @@
 package com.xj.zbpt.business.access.web.dto;
 
-import com.xj.zbpt.business.access.domain.DataScope;
+import com.xj.zbpt.common.access.DataScope;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

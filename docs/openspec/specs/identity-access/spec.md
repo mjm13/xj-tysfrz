@@ -22,7 +22,7 @@
 #### Scenario: 有效凭证登录
 
 - **WHEN** 用户提交正确的用户名与密码
-- **THEN** 系统 MUST 签发 AccessToken（JWT）并返回用户 profile（含 roles、permissions、dataScope、departmentRef）
+- **THEN** 系统 MUST 签发 AccessToken（Sa-Token token，响应字段 `accessToken`）并返回用户 profile（含 roles、permissions、dataScope、departmentRef）
 
 #### Scenario: 无效凭证拒绝
 
@@ -34,9 +34,9 @@
 - **WHEN** 用户 status 为 DISABLED
 - **THEN** 系统 MUST 拒绝登录
 
-### Requirement: JWT 访问控制
+### Requirement: Token 访问控制（Sa-Token）
 
-系统 SHALL 通过 JWT 保护受保护 API；无有效 Token 或 Token 过期 MUST 返回 401。
+系统 SHALL 通过 Sa-Token 保护受保护 API；无有效 Token 或 Token 过期 MUST 返回 401。
 
 #### Scenario: 受保护 API 无 Token
 
@@ -45,7 +45,7 @@
 
 #### Scenario: Token 过期
 
-- **WHEN** 请求携带已过期 JWT
+- **WHEN** 请求携带已过期或无效的 Sa-Token
 - **THEN** 系统 MUST 返回 401
 
 ### Requirement: RBAC 最小权限
@@ -110,7 +110,7 @@
 
 #### Scenario: 解析当前操作者
 
-- **WHEN** 有效 JWT 请求到达受保护 API
+- **WHEN** 有效 AccessToken 请求到达受保护 API
 - **THEN** 业务层 MUST 可读取完整 OperatorContext
 
 ### Requirement: AuthProvider 可插拔

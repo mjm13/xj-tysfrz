@@ -1,9 +1,7 @@
-package com.xj.zbpt.business.access.web;
+package com.xj.zbpt.framework.auth;
 
-import com.xj.zbpt.business.access.domain.OperatorContext;
+import com.xj.zbpt.common.access.OperatorContext;
 import org.springframework.core.MethodParameter;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -26,10 +24,6 @@ public class CurrentOperatorArgumentResolver implements HandlerMethodArgumentRes
             NativeWebRequest webRequest,
             WebDataBinderFactory binderFactory
     ) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof OperatorContext operator) {
-            return operator;
-        }
-        return null;
+        return OperatorSessionSupport.getOperator();
     }
 }

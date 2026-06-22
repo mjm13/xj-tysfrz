@@ -1,12 +1,12 @@
 package com.xj.zbpt.framework.exception;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
 import com.xj.zbpt.common.exception.BizException;
 import com.xj.zbpt.common.response.ApiResponse;
 import com.xj.zbpt.common.response.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,10 +25,17 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler({AccessDeniedException.class, AuthorizationDeniedException.class})
+    @ExceptionHandler(NotLoginException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponse<Void> handleNotLogin(NotLoginException ex) {
+        log.warn("未登录: {}", ex.getMessage());
+        return ApiResponse.fail(ErrorCode.UNAUTHORIZED.code(), "未认证或 Token 无效");
+    }
+
+    @ExceptionHandler(NotPermissionException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ApiResponse<Void> handleAccessDenied(Exception ex) {
-        log.warn("访问拒绝: {}", ex.getMessage());
+    public ApiResponse<Void> handleNotPermission(NotPermissionException ex) {
+        log.warn("无权限: {}", ex.getMessage());
         return ApiResponse.fail(ErrorCode.FORBIDDEN.code(), "无访问权限");
     }
 

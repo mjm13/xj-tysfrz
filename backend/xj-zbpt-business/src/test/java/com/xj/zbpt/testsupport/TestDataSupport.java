@@ -1,6 +1,6 @@
 package com.xj.zbpt.testsupport;
 
-import com.xj.zbpt.business.access.domain.DataScope;
+import com.xj.zbpt.common.access.DataScope;
 import com.xj.zbpt.business.access.domain.UserStatus;
 import com.xj.zbpt.business.access.infrastructure.PlatformUserEntity;
 import com.xj.zbpt.business.access.infrastructure.PlatformUserMapper;

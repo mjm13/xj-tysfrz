@@ -1,15 +1,16 @@
 package com.xj.zbpt.business.access.service;
 
-import com.xj.zbpt.business.access.domain.DataScope;
+import cn.dev33.satoken.stp.StpUtil;
 import com.xj.zbpt.business.access.domain.DataScopeResolver;
-import com.xj.zbpt.business.access.domain.OperatorContext;
 import com.xj.zbpt.business.access.infrastructure.PlatformUserEntity;
 import com.xj.zbpt.business.access.infrastructure.UserRepository;
-import com.xj.zbpt.business.access.security.JwtTokenService;
 import com.xj.zbpt.business.access.web.dto.LoginRequest;
 import com.xj.zbpt.business.access.web.dto.LoginResponse;
 import com.xj.zbpt.business.access.web.dto.UserProfileDto;
+import com.xj.zbpt.common.access.DataScope;
+import com.xj.zbpt.common.access.OperatorContext;
 import com.xj.zbpt.common.exception.BizException;
+import com.xj.zbpt.framework.auth.OperatorSessionSupport;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -21,18 +22,15 @@ public class AuthAppService {
     private final UserRepository userRepository;
     private final SelfBuiltAuthProvider authProvider;
     private final DataScopeResolver dataScopeResolver;
-    private final JwtTokenService jwtTokenService;
 
     public AuthAppService(
             UserRepository userRepository,
             SelfBuiltAuthProvider authProvider,
-            DataScopeResolver dataScopeResolver,
-            JwtTokenService jwtTokenService
+            DataScopeResolver dataScopeResolver
     ) {
         this.userRepository = userRepository;
         this.authProvider = authProvider;
         this.dataScopeResolver = dataScopeResolver;
-        this.jwtTokenService = jwtTokenService;
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -43,12 +41,19 @@ public class AuthAppService {
         PlatformUserEntity user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new BizException(401, "用户名或密码错误"));
         OperatorContext operator = buildOperatorContext(user);
-        String token = jwtTokenService.createToken(operator);
-        return new LoginResponse(token, toProfile(operator));
+        StpUtil.login(operator.platformUserId());
+        OperatorSessionSupport.bindOperator(operator);
+        return new LoginResponse(StpUtil.getTokenValue(), toProfile(operator));
     }
 
     public UserProfileDto currentUser(OperatorContext operator) {
         return toProfile(operator);
+    }
+
+    public void logout() {
+        if (StpUtil.isLogin()) {
+            StpUtil.logout();
+        }
     }
 
     public OperatorContext buildOperatorContext(PlatformUserEntity user) {

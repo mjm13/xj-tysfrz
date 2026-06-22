@@ -1,6 +1,6 @@
 ## 1. 领域文档与需求对齐
 
-- [x] 1.1 交叉核对 `docs/domain/developing/*` 与 `openspec/changes/platform-user-access-control/specs/*` 术语一致
+- [x] 1.1 交叉核对 `docs/domain/developing/*` 与 `docs/openspec/changes/platform-user-access-control/specs/*` 术语一致
 - [x] 1.2 确认需求 006 验收标准与 spec scenarios 一一映射
 - [x] 1.3 新增 ADR `docs/decisions/0008-platform-user-access-control.md`（D1–D8 摘要）
 
@@ -23,13 +23,13 @@
 - [x] 4.3 MyBatis-Plus Entity/Mapper：User、Role、Permission、OrgNode
 - [x] 4.4 UserRepository：按 username 查询、DepartmentRef 校验 org_node 存在
 
-## 5. 后端 — JWT 与 Spring Security
+## 5. 后端 — 认证鉴权（2026-06-22 修订为 Sa-Token，原 JWT 实现已移除）
 
-- [x] 5.1 添加 spring-boot-starter-security + jjwt 依赖
-- [x] 5.2 实现 JwtTokenService（签发/解析 claims：sub, roles, permissions, dataScope, deptCode）
-- [x] 5.3 实现 SelfBuiltAuthProvider + AuthAppService
-- [x] 5.4 SecurityConfig：/api/auth/login public；其余 /api/** authenticated
-- [x] 5.5 JwtAuthenticationFilter + OperatorContext 注入（SecurityContext / @CurrentOperator）
+- [x] 5.1 添加 `sa-token-spring-boot3-starter` + `spring-security-crypto`（BCrypt，不引入完整 Security 链）
+- [x] 5.2 `xj-zbpt-framework/auth`：`SaTokenWebConfig`、`StpInterfaceImpl`、`OperatorSessionSupport`
+- [x] 5.3 实现 SelfBuiltAuthProvider + AuthAppService（`StpUtil.login` / Session 绑定 OperatorContext）
+- [x] 5.4 全局登录拦截 + 白名单（login/ping/swagger/actuator）
+- [x] 5.5 `@CurrentOperator` + `CurrentOperatorArgumentResolver`；`@SaCheckPermission` 方法级鉴权
 
 ## 6. 后端 — API 与测试
 
@@ -58,7 +58,7 @@
 
 ## 9. 归档与知识提升（apply 完成后执行）
 
-- [x] 9.1 `/opsx:sync` — delta specs 合并到 `openspec/specs/`
+- [x] 9.1 `/opsx:sync` — delta specs 合并到 `docs/openspec/specs/`
 - [x] 9.2 `/opsx:archive` — 归档 change `platform-user-access-control`
 - [x] 9.3 `/opsx:sync-knowledge` — developing → established；更新 context-map 中 identity-access
 - [x] 9.4 需求 `status: shipped` + `git mv` → `docs/requirements/shipped/006-platform-user-access-control.md`
@@ -71,3 +71,13 @@
 - ServiceAccount / 接入服务账号
 - org-structure 完整（OrgMapping、OrgRoster、树编辑 UI）
 - 各业务模块完整 DataScope 过滤（data-ingestion、identity-master 等）
+
+## 11. 后续技术修订 — Sa-Token 鉴权栈迁移（2026-06-22，🟢 技术 change）
+
+> 见 ADR 0008 修订、`docs/requirements/shipped/006-platform-user-access-control.md` 验收记录。
+
+- [x] 11.1 移除 JWT / Spring Security 鉴权链（JwtTokenService、SecurityConfig 等）
+- [x] 11.2 横切鉴权下沉 `xj-zbpt-framework`；`OperatorContext`/`DataScope` 移至 `xj-zbpt-common`
+- [x] 11.3 同步主 spec（identity-access、platform-shell）与 GlobalExceptionHandler（401/403）
+- [x] 11.4 `AuthFlowIntegrationTest` + `mvn test` 全绿
+- [x] 11.5 006 需求文件追加人工验收说明

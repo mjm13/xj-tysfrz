@@ -2,7 +2,7 @@
 title: 平台用户与访问控制（RBAC + 部门数据范围）
 status: shipped
 change: platform-user-access-control
-openspecChange: openspec/changes/archive/2026-06-21-platform-user-access-control/
+openspecChange: docs/openspec/changes/archive/2026-06-21-platform-user-access-control/
 owner: team
 createdAt: 2026-06-20
 shippedAt: 2026-06-21
@@ -100,3 +100,27 @@ supersedes: identity-access-mock（前端 Mock 登录将被真实鉴权替换）
 - 本 change 将使 `identity-access-mock` 退役；`platform-shell` 的登录与路由守卫需切换到真实鉴权。
 - 与 `permission-reconciliation` 的区别：后者是「对账治理外部权限系统」，与本 change 的「平台自身访问控制」是两个上下文，勿混淆。
 - 风险：数据范围过滤横切所有查询上下文，建议在 design 阶段统一过滤切面/查询规约，避免各上下文各写一套。
+- **2026-06-22 技术修订**：鉴权栈由 JWT + Spring Security 全量替换为 Sa-Token（见 ADR 0008 D1/D2/D6）；RBAC 与 DataScope 语义不变，旧 JWT 不兼容，切换后须重新登录。
+
+# 验收记录
+
+## 人工验收说明（Acceptance Note）— 2026-06-22 Sa-Token 鉴权栈迁移
+
+- 涉及菜单 / 模块：identity-access → 后端 API / 无界面（前端契约不变，`accessToken` 字段仍返回 Sa-Token token）
+- 改了什么功能：后端鉴权由 JWT + Spring Security 替换为 Sa-Token；横切能力下沉 `xj-zbpt-framework`，`OperatorContext`/`DataScope` 下沉 `xj-zbpt-common`
+- 验收场景（人可复现）：
+  1. GIVEN 无 Token WHEN 请求 `GET /api/demo/scoped-depts` THEN 返回 401
+  2. GIVEN admin/admin123 WHEN POST `/api/auth/login` THEN 返回 `accessToken` 与 GLOBAL DataScope profile
+  3. GIVEN dept_admin Token WHEN GET `/api/admin/users` THEN 返回 403（无 `admin:users:read`）
+  4. GIVEN dept_admin Token WHEN GET `/api/demo/scoped-depts` THEN 返回本部门及下级 scopedDeptCodes
+- 手动验证步骤：
+  ```bash
+  cd backend && ./mvnw -pl xj-zbpt-business -am spring-boot:run
+  curl -s -X POST http://localhost:8080/api/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{"username":"admin","password":"admin123"}'
+  # 取 accessToken 后：
+  curl -s http://localhost:8080/api/demo/scoped-depts -H "Authorization: Bearer <token>"
+  ```
+- 自动化覆盖：`AuthFlowIntegrationTest`（登录/401/403/DataScope）；`mvn -pl xj-zbpt-business -am test`
+- 本次范围外 / Deferred：Sa-Token Redis 分布式会话、Token refresh/blacklist、前端改动（契约不变无需改）

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-**已退役（superseded）**。本 capability 由 `identity-access`（change `platform-user-access-control`，2026-06-21）替代。历史 Mock 登录能力不再作为生产要求。
+**已退役（superseded）**。本 capability 由 `identity-access`（change `platform-user-access-control`，2026-06-21；鉴权栈 Sa-Token，2026-06-22）替代。历史 Mock 登录能力不再作为生产要求。
 
 ## Requirements
 

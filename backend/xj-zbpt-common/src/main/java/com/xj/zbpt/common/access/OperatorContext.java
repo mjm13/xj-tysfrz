@@ -1,4 +1,4 @@
-package com.xj.zbpt.business.access.domain;
+package com.xj.zbpt.common.access;
 
 import java.util.Collections;
 import java.util.Set;

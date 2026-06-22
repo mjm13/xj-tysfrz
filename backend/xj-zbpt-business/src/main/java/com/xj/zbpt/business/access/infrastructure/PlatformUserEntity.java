@@ -3,7 +3,7 @@ package com.xj.zbpt.business.access.infrastructure;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xj.zbpt.business.access.domain.DataScope;
+import com.xj.zbpt.common.access.DataScope;
 import com.xj.zbpt.business.access.domain.UserStatus;
 
 @TableName("platform_user")

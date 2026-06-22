@@ -1,6 +1,5 @@
-package com.xj.zbpt.business.access.config;
+package com.xj.zbpt.framework.auth;
 
-import com.xj.zbpt.business.access.web.CurrentOperatorArgumentResolver;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -8,11 +7,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
 @Configuration
-public class AccessWebConfig implements WebMvcConfigurer {
+public class SaTokenWebMvcConfig implements WebMvcConfigurer {
 
     private final CurrentOperatorArgumentResolver currentOperatorArgumentResolver;
 
-    public AccessWebConfig(CurrentOperatorArgumentResolver currentOperatorArgumentResolver) {
+    public SaTokenWebMvcConfig(CurrentOperatorArgumentResolver currentOperatorArgumentResolver) {
         this.currentOperatorArgumentResolver = currentOperatorArgumentResolver;
     }
 
