@@ -23,4 +23,19 @@ describe('permissions', () => {
     expect(canAccessPath(adminPerms, '/identity/org')).toBe(false)
     expect(canAccessModule(adminPerms, 'identity-org')).toBe(false)
   })
+
+  it('maps admin paths to platform-admin module', () => {
+    expect(moduleKeyForPath('/admin/users')).toBe('platform-admin')
+  })
+
+  it('allows platform admin when admin:users:read granted', () => {
+    const platformAdminPerms = new Set(['admin:users:read'])
+    expect(canAccessPath(platformAdminPerms, '/admin/users')).toBe(true)
+    expect(canAccessModule(platformAdminPerms, 'platform-admin')).toBe(true)
+  })
+
+  it('denies platform admin without admin:users:read', () => {
+    expect(canAccessPath(adminPerms, '/admin/users')).toBe(false)
+    expect(canAccessModule(adminPerms, 'platform-admin')).toBe(false)
+  })
 })

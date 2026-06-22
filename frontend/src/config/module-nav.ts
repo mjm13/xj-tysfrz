@@ -30,6 +30,15 @@ const PERSONNEL_GROUP: SidebarGroup = {
 }
 
 export const MODULE_NAV: Record<string, ModuleNavConfig> = {
+  'platform-admin': {
+    moduleKey: 'platform-admin',
+    groups: [
+      {
+        label: '平台管理',
+        items: [{ label: '平台用户', path: '/admin/users' }],
+      },
+    ],
+  },
   'identity-basic': {
     moduleKey: 'identity-basic',
     groups: [

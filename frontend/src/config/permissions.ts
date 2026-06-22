@@ -1,5 +1,6 @@
 const PATH_MODULE_MAP: Record<string, string> = {
   '/': 'home',
+  '/admin/users': 'platform-admin',
   '/identity/basic': 'identity-basic',
   '/identity/classification': 'identity-classification',
   '/identity/position': 'identity-position',
@@ -23,8 +24,12 @@ export function moduleKeyForPath(path: string): string | null {
   return null
 }
 
+const MODULE_PERMISSION_OVERRIDE: Record<string, string> = {
+  'platform-admin': 'admin:users:read',
+}
+
 export function permissionForModule(moduleKey: string): string {
-  return `${moduleKey}:read`
+  return MODULE_PERMISSION_OVERRIDE[moduleKey] ?? `${moduleKey}:read`
 }
 
 export function canAccessPath(permissions: ReadonlySet<string> | string[], path: string): boolean {

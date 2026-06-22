@@ -24,6 +24,18 @@ const router = createRouter({
       ],
     },
     {
+      path: '/admin',
+      component: () => import('@/layouts/ModuleLayout.vue'),
+      children: [
+        {
+          path: 'users',
+          name: 'platform-admin-users',
+          component: () => import('@/views/admin/AdminUsersView.vue'),
+          meta: { moduleKey: 'platform-admin' },
+        },
+      ],
+    },
+    {
       path: '/identity',
       component: () => import('@/layouts/ModuleLayout.vue'),
       children: [

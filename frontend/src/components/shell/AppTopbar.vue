@@ -26,6 +26,17 @@ const identityMenu = computed(() =>
 const showIdentityMenu = computed(() => identityMenu.value.length > 0)
 const showPermissionNav = computed(() => auth.canAccessPath('/identity/permission'))
 const showServicesNav = computed(() => auth.canAccessPath('/services/query/identity'))
+const showPlatformAdminNav = computed(() => auth.canAccessPath('/admin/users'))
+
+const platformAdminMenuAll = [
+  { label: '平台用户', desc: '平台操作者账号 · 登录与数据范围', to: '/admin/users' },
+]
+
+const platformAdminMenu = computed(() =>
+  platformAdminMenuAll.filter((item) => auth.canAccessPath(item.to)),
+)
+
+const isPlatformAdminActive = computed(() => route.path.startsWith('/admin'))
 
 const isIdentityActive = computed(() => route.path.startsWith('/identity'))
 const isPermissionActive = computed(() => route.path.startsWith('/identity/permission'))
@@ -94,6 +105,27 @@ onUnmounted(() => {
         class="nav-link"
         :class="{ active: isServicesActive }"
       >数据查询</RouterLink>
+
+      <div v-if="showPlatformAdminNav" class="nav-dropdown" :class="{ active: isPlatformAdminActive }">
+        <span class="nav-dropdown-trigger" :class="{ active: isPlatformAdminActive }">平台管理</span>
+        <div class="nav-dropdown-menu">
+          <RouterLink
+            v-for="item in platformAdminMenu"
+            :key="item.label"
+            :to="item.to"
+            class="dropdown-item"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="4" y="4" width="16" height="16" rx="2" />
+              <path d="M8 9h8M8 13h5" />
+            </svg>
+            <div class="menu-body">
+              <div class="menu-label">{{ item.label }}</div>
+              <div class="menu-desc">{{ item.desc }}</div>
+            </div>
+          </RouterLink>
+        </div>
+      </div>
     </nav>
 
     <div class="topbar-right">
