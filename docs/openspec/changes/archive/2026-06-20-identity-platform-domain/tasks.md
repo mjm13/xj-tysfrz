@@ -3,7 +3,7 @@
 - [x] 1.1 编写 `docs/domain/developing/context-map.md`（8 上下文 + 阻断项处置）
 - [x] 1.2 编写 `docs/domain/developing/ubiquitous-language.md`（PersonUID、DataSource/PermissionSystem 等）
 - [x] 1.3 编写 `docs/domain/developing/domain-model.md`（聚合、不变量、后续 change 映射）
-- [x] 1.4 交叉核对 developing 三件套与 `openspec/changes/identity-platform-domain/specs/*` 术语一致
+- [x] 1.4 交叉核对 developing 三件套与 `docs/openspec/changes/identity-platform-domain/specs/*` 术语一致
 - [x] 1.5 更新 `docs/requirements/inbox/005-identity-platform-domain.md` frontmatter 增加 `openspecChange: identity-platform-domain`
 
 ## 2. 关键决策沉淀
@@ -20,7 +20,7 @@
 
 ## 4. 归档与知识提升（apply 完成后执行）
 
-- [x] 4.1 `/opsx:sync` — 将 delta specs 合并到 `openspec/specs/`
+- [x] 4.1 `/opsx:sync` — 将 delta specs 合并到 `docs/openspec/specs/`
 - [x] 4.2 `/opsx:archive` — 归档 change `identity-platform-domain`
 - [x] 4.3 `/opsx:sync-knowledge` — developing → `docs/domain/established/`；更新 established ubiquitous-language 与 platform-shell 描述
 - [x] 4.4 需求 `status: shipped` + `git mv` → `docs/requirements/shipped/005-identity-platform-domain.md`

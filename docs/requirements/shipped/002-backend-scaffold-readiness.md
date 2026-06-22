@@ -10,7 +10,7 @@ changeType: 技术
 dependsOn: springboot-backend-skeleton（已归档 2026-06-18）
 blocks: P2-D0 / P3-01（前后端 API 联调）
 reference:
-  - openspec/changes/archive/2026-06-18-springboot-backend-skeleton/
+  - docs/openspec/changes/archive/2026-06-18-springboot-backend-skeleton/
   - docs/decisions/0003-backend-skeleton.md
   - temp/02-current-state.md
   - temp/04-work-backlog.md（Phase 2 / P3-01）

@@ -32,7 +32,7 @@
 | `backend/` | 新增 Spring Security、JWT、auth/user/role API、Flyway 迁移、DataScopeResolver |
 | `frontend/` | auth store 重构、LoginView 调 API、路由守卫 + 导航 ACL |
 | `docs/domain/developing/*` | identity-access 三件套（explore 已写，propose 对齐） |
-| `openspec/specs/*` | 新增 identity-access；delta platform-shell、org-structure；移除 identity-access-mock |
+| `docs/openspec/specs/*` | 新增 identity-access；delta platform-shell、org-structure；移除 identity-access-mock |
 | 后续 change | data-ingestion、data-query 等消费 OperatorContext / ScopedDeptSet |
 
 ## 来源需求

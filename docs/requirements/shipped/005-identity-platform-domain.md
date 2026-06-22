@@ -9,7 +9,7 @@ shippedAt: 2026-06-20
 tier: 🔴
 changeType: 业务
 plan: docs/domain/established/（context-map / ubiquitous-language / domain-model）
-openspec: openspec/changes/archive/2026-06-20-identity-platform-domain/
+openspec: docs/openspec/changes/archive/2026-06-20-identity-platform-domain/
 demoRef: docs/原始demo/（m1~m7、etl-monitor、source-maintenance）
 relatedPlan: temp/06-open-questions.md（14 个 🔴 阻断项）, temp/05-demo-feature-tasks.md（T0-06）
 blocks: basic-identity, classification-identity, org-structure, identity-permission, data-query-service
@@ -54,10 +54,10 @@ blocks: basic-identity, classification-identity, org-structure, identity-permiss
 
 # 交付物
 
-- OpenSpec：`openspec/specs/identity-*`、`data-ingestion`、`permission-reconciliation`、`data-query`；`platform-shell` delta 已合并
+- OpenSpec：`docs/openspec/specs/identity-*`、`data-ingestion`、`permission-reconciliation`、`data-query`；`platform-shell` delta 已合并
 - 领域：`docs/domain/established/*` 已回灌
 - ADR：[`docs/decisions/0007-identity-platform-domain-decisions.md`](../../decisions/0007-identity-platform-domain-decisions.md)
-- 归档：`openspec/changes/archive/2026-06-20-identity-platform-domain/`
+- 归档：`docs/openspec/changes/archive/2026-06-20-identity-platform-domain/`
 
 # 备注
 

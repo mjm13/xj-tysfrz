@@ -15,7 +15,7 @@ description: 归档后知识回灌（spec/change -> docs/domain/established + AD
 # 执行步骤
 
 1. 读取已归档 change 的设计与 specs 变更
-2. 将 `docs/domain/developing/*` 中本次 change 已落地内容提升到 `docs/domain/established/*`
+2. 判定 change type；仅将业务 / 混合 change 的**业务语义**从 `docs/domain/developing/*` 提升到 `docs/domain/established/*`
 3. 清理 `developing` 中被回滚或失效的临时条目
 4. 更新 established 的 context map、domain model、ubiquitous language（仅保留已确认事实）
 5. 检查数据库业务语义：新增/变更表、字段含义、状态机、约束理由时，更新 `docs/domain/established/data-dictionary.md`；如只需要关系级 ER 图，仅画表间业务关系，不复制 DDL
@@ -28,5 +28,6 @@ description: 归档后知识回灌（spec/change -> docs/domain/established + AD
 
 - 未归档 change 的内容不得写入 `docs/domain/established/*`
 - 回灌优先做增量修改，避免重写整份文档
+- 技术 / UI 壳层 change 不写入 `docs/domain/established/context-map.md`、`domain-model.md` 或 `ubiquitous-language.md`；`platform-shell`、布局、Design Token、AuthStore、框架类名、拦截器、具体鉴权库 API 等内容应写入 ADR、`docs/architecture.md`、OpenSpec 技术 spec 或 `docs/capability-map.md`
 - `docs/capability-map.md` 只记录模块级指针，不复制子菜单、路由明细或表结构；真相分别在前端路由/菜单、OpenSpec specs 与 Flyway
 - 需求文档物理位置须与 `status` 一致（见 `00-workflow.mdc` 文档状态模型）

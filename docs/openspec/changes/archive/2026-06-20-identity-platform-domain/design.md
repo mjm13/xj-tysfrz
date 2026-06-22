@@ -125,7 +125,7 @@
 ## Migration Plan
 
 1. **本 change apply**：核对 developing 三件套与 delta specs 一致；无数据库迁移。
-2. **archive + sync-knowledge**：developing → established；sync 6 个新 spec + platform-shell delta 到 `openspec/specs/`。
+2. **archive + sync-knowledge**：developing → established；sync 6 个新 spec + platform-shell delta 到 `docs/openspec/specs/`。
 3. **后续业务 change**：各自 proposal 引用本 change 的 capability spec，不得重新定义 PersonUID/源头术语。
 
 ## Open Questions

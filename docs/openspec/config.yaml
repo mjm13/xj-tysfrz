@@ -1,7 +1,7 @@
 schema: spec-driven
 
 context: |
-  Project layout: monorepo with backend/, frontend/, docs/, openspec/
+  Project layout: monorepo with backend/, frontend/, docs/ (includes docs/openspec/)
 
   Backend stack:
   - Java, Spring Boot
