@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.xj.tysfrz</groupId>
+        <artifactId>xj-tysfrz-backend</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>xj-tysfrz-common</artifactId>
+    <name>xj-tysfrz-common</name>
+    <description>工具包：统一响应、错误码、业务异常等纯共享契约（无框架依赖）</description>
+
+</project>

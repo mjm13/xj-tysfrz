@@ -52,7 +52,7 @@
 ```text
 state: { isAuthenticated: boolean, username: string }
 actions: login(username, password), logout()
-persist: localStorage key `zbpt-auth`（仅存 isAuthenticated + username）
+persist: localStorage key `tysfrz-auth`（仅存 isAuthenticated + username）
 ```
 
 **理由**：路由守卫需全局可读认证态；Pinia 是 Vue 3 官方推荐；持久化满足刷新保持登录验收项。

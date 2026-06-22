@@ -9,7 +9,7 @@
 
 006 需求落地真实 `identity-access`，替换 Mock 登录，提供 RBAC + 部门 DataScope。E1 已确认 org-structure 表未落地时由本 change 导入最小 `org_node` 种子。
 
-2026-06-22 将鉴权栈从 Spring Security + 自研 JWT 全量替换为 **Sa-Token**：横切能力下沉 `xj-zbpt-framework`，`xj-zbpt-business` 仅做业务接入；旧 JWT **不兼容**，切换后须重新登录。
+2026-06-22 将鉴权栈从 Spring Security + 自研 JWT 全量替换为 **Sa-Token**：横切能力下沉 `xj-tysfrz-framework`，`xj-tysfrz-business` 仅做业务接入；旧 JWT **不兼容**，切换后须重新登录。
 
 ## 决策（Decision）
 
@@ -42,9 +42,9 @@
 
 ### D6 — OperatorContext 注入（framework 层）
 
-- **`xj-zbpt-framework`**：`SaInterceptor` 全局登录校验 + 白名单；`OperatorSessionSupport` 读写 Session；`@CurrentOperator` + `CurrentOperatorArgumentResolver`
-- **`xj-zbpt-common`**：`OperatorContext`、`DataScope` 共享模型
-- **`xj-zbpt-business`**：`AuthAppService` 登录/登出调用 Sa-Token；Controller 使用 `@SaCheckPermission` / `@CurrentOperator`
+- **`xj-tysfrz-framework`**：`SaInterceptor` 全局登录校验 + 白名单；`OperatorSessionSupport` 读写 Session；`@CurrentOperator` + `CurrentOperatorArgumentResolver`
+- **`xj-tysfrz-common`**：`OperatorContext`、`DataScope` 共享模型
+- **`xj-tysfrz-business`**：`AuthAppService` 登录/登出调用 Sa-Token；Controller 使用 `@SaCheckPermission` / `@CurrentOperator`
 - 401/403：`NotLoginException` / `NotPermissionException` → `GlobalExceptionHandler`
 
 ### D7 — AuthProvider 可插拔

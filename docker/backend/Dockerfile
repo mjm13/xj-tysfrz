@@ -4,7 +4,7 @@ RUN apk add --no-cache curl
 
 WORKDIR /app
 
-ARG JAR_FILE=target/xj-zbpt-backend-*.jar
+ARG JAR_FILE=target/xj-tysfrz-backend-*.jar
 COPY ${JAR_FILE} app.jar
 
 ENV SPRING_PROFILES_ACTIVE=prod \

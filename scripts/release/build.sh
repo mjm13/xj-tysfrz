@@ -7,7 +7,7 @@ VERSION="${1:?用法: $0 <version>  例如 0.2.0}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 ARTIFACT="xj-tysfrz-${VERSION}"
 OUT_DIR="${ROOT}/dist/${ARTIFACT}"
-BACKEND_ARTIFACT="xj-zbpt-backend-${VERSION}.jar"
+BACKEND_ARTIFACT="xj-tysfrz-backend-${VERSION}.jar"
 
 echo "==> 构建发行版 ${VERSION}"
 

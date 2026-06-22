@@ -6,7 +6,7 @@
 
 - [x] 1.1 在 `backend/` 创建 `pom.xml`：Java 21、Spring Boot 3.3.x parent，依赖 web、validation、actuator、mybatis-plus-spring-boot3-starter、flyway-core + flyway-mysql、mysql-connector-j、springdoc-openapi-starter-webmvc-ui、test（含 H2）
   - 验证：`mvn -q -DskipTests compile` 通过
-- [x] 1.2 创建启动类 `com.xj.zbpt.ZbptApplication`
+- [x] 1.2 创建启动类 `com.xj.tysfrz.TysfrzApplication`
   - 验证：`mvn -q spring-boot:run` 能进入启动流程
 
 ## 2. 横切能力
@@ -24,9 +24,9 @@
 
 ## 3. 配置与数据库
 
-- [x] 3.1 `application.yml` / `application-dev.yml` / `application-prod.yml`：数据源用 `${DB_*}` 占位，dev 连 `xj_zbpt`
+- [x] 3.1 `application.yml` / `application-dev.yml` / `application-prod.yml`：数据源用 `${DB_*}` 占位，dev 连 `xj-tysfrz`
 - [x] 3.2 切片测试 `@WebMvcTest` 不连数据库（H2 已引入 test scope，供后续集成测试）
-- [x] 3.3 根 `.env`（git 忽略）写入本地 MySQL 连接（localhost:3306 / root / root / xj_zbpt）；`createDatabaseIfNotExist=true` 自动建库
+- [x] 3.3 根 `.env`（git 忽略）写入本地 MySQL 连接（localhost:3306 / root / root / xj-tysfrz）；`createDatabaseIfNotExist=true` 自动建库
   - 验证：本机能连上 MySQL，应用启动成功
 - [x] 3.4 Flyway baseline `db/migration/V1__baseline.sql`（空 baseline 或建表约定示例注释）
   - 验证：应用启动后生成 `flyway_schema_history` 表

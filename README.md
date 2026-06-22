@@ -1,4 +1,4 @@
-# xj-zbpt
+# xj-tysfrz
 
 面向 OpenSpec + Superpowers 的 DDD 驱动研发工作区。
 
@@ -63,4 +63,4 @@
 - 原始需求放在 `docs/requirements/inbox/`
 - change/capability 命名使用 kebab-case
 - ADR 使用连续编号（`0001-...`）
-- worktree 目录建议：`../xj-zbpt-worktrees/<change-name>`
+- worktree 目录建议：`../xj-tysfrz-worktrees/<change-name>`

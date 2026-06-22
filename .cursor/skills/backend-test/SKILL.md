@@ -17,7 +17,7 @@ description: 为后端 Spring Boot 代码生成并验证测试。在实现任何
 | 测试数据库 | H2 in-memory，`MODE=MySQL`（`application-test.yml`） |
 | Flyway（测试） | `classpath:db/migration-test`（H2 专用，与生产 `db/migration` 分离） |
 | Flyway（生产/dev） | `classpath:db/migration`（MySQL） |
-| 集成测试 profile | `@ActiveProfiles("test")`，启动类 `ZbptApplication` |
+| 集成测试 profile | `@ActiveProfiles("test")`，启动类 `TysfrzApplication` |
 | 运行前置 | `JAVA_HOME` 必须指向 **JDK 21**；本机示例路径：`C:\Users\mjm13\.jdks\ms-21.0.10` |
 | 运行命令 | `mvn -f backend/pom.xml test`（Reactor 根 POM；确保 `JAVA_HOME` 已指向 JDK 21） |
 | 测试类命名 | `<被测类>Test`，不加 `IT` 后缀 |
@@ -50,7 +50,7 @@ Q1: 测试是否触及数据库（读/写任何表）？
 | 纯领域规则（无 DB） | 纯 JUnit | 内存构造 |
 | 仅 HTTP 格式/CORS（无 DB） | `@WebMvcTest` | 无 DB |
 
-> **真实数据规则（强制）**：凡涉及持久化的测试，必须让数据经 Flyway 或真实 Mapper 写入 H2。禁止 `@MockBean` Mapper/Repository 返回假数据。缺数据时在测试类内创建符合业务不变量的记录（部门 code 存在于 org_node、ACTIVE 状态、BCrypt 密码等）。辅助类：`com.xj.zbpt.testsupport.TestDataSupport`。
+> **真实数据规则（强制）**：凡涉及持久化的测试，必须让数据经 Flyway 或真实 Mapper 写入 H2。禁止 `@MockBean` Mapper/Repository 返回假数据。缺数据时在测试类内创建符合业务不变量的记录（部门 code 存在于 org_node、ACTIVE 状态、BCrypt 密码等）。辅助类：`com.xj.tysfrz.testsupport.TestDataSupport`。
 
 ---
 
@@ -140,8 +140,8 @@ class UserAdminFlowTest {
 
 | 轨道 | 目录 | profile |
 | --- | --- | --- |
-| 生产/开发 | `xj-zbpt-business/src/main/resources/db/migration/` | dev, prod |
-| 测试 | `xj-zbpt-business/src/test/resources/db/migration-test/` | test |
+| 生产/开发 | `xj-tysfrz-business/src/main/resources/db/migration/` | dev, prod |
+| 测试 | `xj-tysfrz-business/src/test/resources/db/migration-test/` | test |
 
 - 测试迁移：H2 兼容语法 + 最小业务种子（版本号与生产对齐）
 - 新增生产表结构时，**同步**新增测试侧同版本脚本

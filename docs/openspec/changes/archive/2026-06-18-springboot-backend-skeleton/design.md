@@ -11,9 +11,9 @@
 | 语言 / 运行时 | Java 21 (LTS) | 用户确认 |
 | 框架 | Spring Boot 3.3.x | 与 Java 21 兼容的稳定线 |
 | 构建 | Maven | 单模块起步，后续可拆多模块 |
-| 基础包 | `com.xj.zbpt` | 与仓库名一致 |
+| 基础包 | `com.xj.tysfrz` | 与仓库名一致 |
 | 数据访问 | MyBatis-Plus 3.5.x | 分页插件 + BaseMapper |
-| 数据库 | MySQL 8（localhost:3306，库 `xj_zbpt`） | 用户提供连接 |
+| 数据库 | MySQL 8（localhost:3306，库 `xj-tysfrz`） | 用户提供连接 |
 | 迁移 | Flyway | 脚本 `db/migration`，真实执行 |
 | API 文档 | springdoc-openapi 2.x | Swagger UI + OpenAPI JSON |
 | 监控 | Spring Boot Actuator | 暴露 health |
@@ -24,8 +24,8 @@
 ```
 backend/
 ├── pom.xml
-├── src/main/java/com/xj/zbpt/
-│   ├── ZbptApplication.java          # 启动类
+├── src/main/java/com/xj/tysfrz/
+│   ├── TysfrzApplication.java          # 启动类
 │   ├── common/
 │   │   ├── response/ApiResponse.java # 统一响应体
 │   │   ├── response/ErrorCode.java   # 错误码枚举
@@ -42,7 +42,7 @@ backend/
 │   ├── logback-spring.xml            # 分级日志
 │   └── db/migration/
 │       └── V1__baseline.sql          # baseline（空/约定示例）
-└── src/test/java/com/xj/zbpt/
+└── src/test/java/com/xj/tysfrz/
     └── ping/PingControllerTest.java  # 切片测试（H2）
 ```
 
@@ -61,7 +61,7 @@ backend/
 ### 1.4 配置与密钥
 
 - 公共配置用 `${DB_HOST:localhost}` 等占位，真实值放本地 `.env` / 环境变量，**不入库**
-- `application-dev.yml` 连接 `xj_zbpt`；测试 profile 用 H2 内存库
+- `application-dev.yml` 连接 `xj-tysfrz`；测试 profile 用 H2 内存库
 
 ## 2. 分层裁剪决策
 

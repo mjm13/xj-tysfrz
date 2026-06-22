@@ -58,7 +58,7 @@ explore → propose → apply → verify → sync → archive → sync-knowledge
 | 模块级能力追溯（模块 / moduleKey / 前端入口 / 后端能力 / 表 / Demo） | `docs/capability-map.md`（需求发布节点检查） |
 | 变更提案/设计/任务/规格 | `docs/openspec/`（changes / specs） |
 
-- 数据库**结构真相**在 Flyway 迁移脚本（`backend/xj-zbpt-business/src/main/resources/db/migration/`），不抄进 docs。
+- 数据库**结构真相**在 Flyway 迁移脚本（`backend/xj-tysfrz-business/src/main/resources/db/migration/`），不抄进 docs。
 - 实时库结构通过 MySQL MCP（只读）读取。
 
 ## 5. 必须暂停并请人工确认（Approval Gates）

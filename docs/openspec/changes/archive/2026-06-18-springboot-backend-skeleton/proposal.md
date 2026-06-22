@@ -14,11 +14,11 @@
 
 在 `backend/` 初始化一个 Spring Boot 3.3.x（Java 21，Maven）工程，落地以下横切能力：
 
-- **工程骨架**：Maven 多 profile（dev/prod），基础包 `com.xj.zbpt`，分层目录约定
+- **工程骨架**：Maven 多 profile（dev/prod），基础包 `com.xj.tysfrz`，分层目录约定
 - **统一响应体**：`ApiResponse<T>` 统一成功/失败结构
 - **全局异常处理**：`@RestControllerAdvice` 统一兜底，业务异常 `BizException` + 错误码
 - **MyBatis-Plus**：分页插件、`BaseMapper` 基类约定、驼峰映射
-- **Flyway**：迁移脚本目录 `backend/xj-zbpt-business/src/main/resources/db/migration`，连接真实 MySQL（localhost:3306，库 `xj_zbpt`）
+- **Flyway**：迁移脚本目录 `backend/xj-tysfrz-business/src/main/resources/db/migration`，连接真实 MySQL（localhost:3306，库 `xj-tysfrz`）
 - **springdoc-openapi**：自动生成 OpenAPI 文档与 Swagger UI
 - **日志 + Actuator**：分级日志、`/actuator/health` 健康端点
 

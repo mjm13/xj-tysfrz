@@ -19,7 +19,7 @@ const values = orgs.map((n) => {
 lines.push(values.join(',\n'))
 lines.push(';')
 
-const out = path.join(root, 'backend/xj-zbpt-business/src/main/resources/db/migration/V2__org_node.sql')
+const out = path.join(root, 'backend/xj-tysfrz-business/src/main/resources/db/migration/V2__org_node.sql')
 
 const ddl = `-- org_node minimal seed for identity-access DepartmentRef / DataScopeResolver
 CREATE TABLE IF NOT EXISTS org_node (

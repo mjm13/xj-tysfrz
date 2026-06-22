@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:tysfrz_test;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  flyway:
+    enabled: true
+    # 测试专用迁移（H2 语法/最小种子），与生产 db/migration 分离
+    locations: classpath:db/migration-test
+    baseline-on-migrate: true
+
+app:
+  info:
+    platform-name: 高校综合身份数据平台
+    release: 0.2.0-test
+    maintenance: false
+
+sa-token:
+  token-name: Authorization
+  token-prefix: Bearer
+  timeout: 28800
+  is-read-header: true
+  is-read-cookie: false

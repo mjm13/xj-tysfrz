@@ -1,4 +1,6 @@
-# 运维升级指南
+
+
+# xj_zbpt运维升级指南
 
 > 适用：高校综合身份数据平台 `xj-tysfrz` 单机 / Docker Compose 部署  
 > 关联：`docs/plans/release-upgrade-design.md`、ADR 0005
@@ -7,12 +9,14 @@
 
 ## 1. 前置条件
 
-| 项 | 要求 |
-| --- | --- |
-| JDK | 21+（裸 JAR 部署时） |
-| Docker | 24+（Compose 部署时） |
-| MySQL | 8.0+ |
-| 网络 | 生产 Nginx 同源反代 `/api`，无需浏览器 CORS |
+
+| 项      | 要求                              |
+| ------ | ------------------------------- |
+| JDK    | 21+（裸 JAR 部署时）                  |
+| Docker | 24+（Compose 部署时）                |
+| MySQL  | 8.0+                            |
+| 网络     | 生产 Nginx 同源反代 `/api`，无需浏览器 CORS |
+
 
 ---
 
@@ -76,7 +80,7 @@ curl -s http://localhost:8088/actuator/health
 
 ```env
 DB_PASSWORD=your-secure-password
-DB_NAME=xj_zbpt
+DB_NAME=xj-tysfrz
 HTTP_PORT=8088
 ```
 
@@ -123,11 +127,13 @@ location = /503.html {
 
 ## 6. 版本核对
 
-| 位置 | 说明 |
-| --- | --- |
-| 页脚 | 展示前端 / 后端版本与 git commit |
-| `GET /api/system/info` | 运维脚本与监控探针 |
-| `manifest.json` | 发行包 SHA256 校验 |
+
+| 位置                     | 说明                      |
+| ---------------------- | ----------------------- |
+| 页脚                     | 展示前端 / 后端版本与 git commit |
+| `GET /api/system/info` | 运维脚本与监控探针               |
+| `manifest.json`        | 发行包 SHA256 校验           |
+
 
 前后端版本不一致时，页面顶部显示黄色横幅（不阻断浏览，提示重新部署匹配包）。
 
@@ -138,3 +144,4 @@ location = /503.html {
 - `scripts/release/upgrade.sh` / `rollback-app.sh` 自动化（R5）
 - 内网制品库 / CI 自动部署（R6–R7）
 - `POST /api/system/maintenance` 管理接口
+

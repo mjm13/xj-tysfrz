@@ -11,17 +11,17 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.xj.zbpt</groupId>
-    <artifactId>xj-zbpt-backend</artifactId>
+    <groupId>com.xj.tysfrz</groupId>
+    <artifactId>xj-tysfrz-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>xj-zbpt-backend</name>
+    <name>xj-tysfrz-backend</name>
     <description>高校综合身份数据平台后端工程（多模块 Reactor）</description>
 
     <modules>
-        <module>xj-zbpt-common</module>
-        <module>xj-zbpt-framework</module>
-        <module>xj-zbpt-business</module>
+        <module>xj-tysfrz-common</module>
+        <module>xj-tysfrz-framework</module>
+        <module>xj-tysfrz-business</module>
     </modules>
 
     <properties>
@@ -37,13 +37,13 @@
         <dependencies>
             <!-- 内部模块统一版本 -->
             <dependency>
-                <groupId>com.xj.zbpt</groupId>
-                <artifactId>xj-zbpt-common</artifactId>
+                <groupId>com.xj.tysfrz</groupId>
+                <artifactId>xj-tysfrz-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.xj.zbpt</groupId>
-                <artifactId>xj-zbpt-framework</artifactId>
+                <groupId>com.xj.tysfrz</groupId>
+                <artifactId>xj-tysfrz-framework</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

@@ -16,7 +16,7 @@
 ## 3. 认证模块（identity-access-mock）
 
 - [x] 3.1 实现 `stores/auth.ts`：`isAuthenticated`、`username`、`login`、`logout`
-- [x] 3.2 实现 localStorage 持久化（key: `zbpt-auth`，不存密码）
+- [x] 3.2 实现 localStorage 持久化（key: `tysfrz-auth`，不存密码）
 - [x] 3.3 实现 `router/index.ts` 路由表：`/login`、`/`（嵌套 MainLayout）
 - [x] 3.4 实现 `beforeEach` 路由守卫（未登录 → `/login`，已登录访问 `/login` → `/`）
 

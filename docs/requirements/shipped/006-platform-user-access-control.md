@@ -107,7 +107,7 @@ supersedes: identity-access-mock（前端 Mock 登录将被真实鉴权替换）
 ## 人工验收说明（Acceptance Note）— 2026-06-22 Sa-Token 鉴权栈迁移
 
 - 涉及菜单 / 模块：identity-access → 后端 API / 无界面（前端契约不变，`accessToken` 字段仍返回 Sa-Token token）
-- 改了什么功能：后端鉴权由 JWT + Spring Security 替换为 Sa-Token；横切能力下沉 `xj-zbpt-framework`，`OperatorContext`/`DataScope` 下沉 `xj-zbpt-common`
+- 改了什么功能：后端鉴权由 JWT + Spring Security 替换为 Sa-Token；横切能力下沉 `xj-tysfrz-framework`，`OperatorContext`/`DataScope` 下沉 `xj-tysfrz-common`
 - 验收场景（人可复现）：
   1. GIVEN 无 Token WHEN 请求 `GET /api/demo/scoped-depts` THEN 返回 401
   2. GIVEN admin/admin123 WHEN POST `/api/auth/login` THEN 返回 `accessToken` 与 GLOBAL DataScope profile
@@ -115,12 +115,12 @@ supersedes: identity-access-mock（前端 Mock 登录将被真实鉴权替换）
   4. GIVEN dept_admin Token WHEN GET `/api/demo/scoped-depts` THEN 返回本部门及下级 scopedDeptCodes
 - 手动验证步骤：
   ```bash
-  cd backend && ./mvnw -pl xj-zbpt-business -am spring-boot:run
+  cd backend && ./mvnw -pl xj-tysfrz-business -am spring-boot:run
   curl -s -X POST http://localhost:8080/api/auth/login \
     -H "Content-Type: application/json" \
     -d '{"username":"admin","password":"admin123"}'
   # 取 accessToken 后：
   curl -s http://localhost:8080/api/demo/scoped-depts -H "Authorization: Bearer <token>"
   ```
-- 自动化覆盖：`AuthFlowIntegrationTest`（登录/401/403/DataScope）；`mvn -pl xj-zbpt-business -am test`
+- 自动化覆盖：`AuthFlowIntegrationTest`（登录/401/403/DataScope）；`mvn -pl xj-tysfrz-business -am test`
 - 本次范围外 / Deferred：Sa-Token Redis 分布式会话、Token refresh/blacklist、前端改动（契约不变无需改）

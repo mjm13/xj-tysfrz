@@ -8,7 +8,7 @@
 
 - **JDK 21**（LTS）。`mvn test` / `spring-boot:run` 均需 JDK 21；版本不对会报「不支持发行版本 21」。
 - **Maven 3.6.3+**（推荐 3.9.x）。IDEA 中 **Maven Runner JDK** 也须选 21（Settings → Build → Build Tools → Maven → Runner）。
-- **MySQL 8**（dev profile 默认 `localhost:3306`，库名 `xj_zbpt` 可自动创建）
+- **MySQL 8**（dev profile 默认 `localhost:3306`，库名 `xj-tysfrz` 可自动创建）
 
 ### IntelliJ IDEA：`.git\.probe-*` AccessDeniedException
 
@@ -42,20 +42,20 @@
 ```
 backend/
 ├── pom.xml                 # Reactor 父 POM
-├── xj-zbpt-common/         # ApiResponse、ErrorCode、BizException
-├── xj-zbpt-framework/      # 横切能力 + Sa-Token 鉴权 + 平台运行接口（Ping、SystemInfo）
-└── xj-zbpt-business/       # 业务能力 + 启动模块（唯一可执行 jar）
+├── xj-tysfrz-common/         # ApiResponse、ErrorCode、BizException
+├── xj-tysfrz-framework/      # 横切能力 + Sa-Token 鉴权 + 平台运行接口（Ping、SystemInfo）
+└── xj-tysfrz-business/       # 业务能力 + 启动模块（唯一可执行 jar）
 ```
 
-包结构（`xj-zbpt-business` 启动类扫描 `com.xj.zbpt.**`）：
+包结构（`xj-tysfrz-business` 启动类扫描 `com.xj.tysfrz.**`）：
 
 ```
-com.xj.zbpt/
-├── ZbptApplication.java
-├── common/                 # xj-zbpt-common
-├── framework/              # xj-zbpt-framework 横切配置
-├── basic/                  # xj-zbpt-framework 平台 API（ping、system/info）
-└── business/               # xj-zbpt-business 业务模块（如 access）
+com.xj.tysfrz/
+├── TysfrzApplication.java
+├── common/                 # xj-tysfrz-common
+├── framework/              # xj-tysfrz-framework 横切配置
+├── basic/                  # xj-tysfrz-framework 平台 API（ping、system/info）
+└── business/               # xj-tysfrz-business 业务模块（如 access）
 ```
 
 ## 启动
@@ -63,11 +63,11 @@ com.xj.zbpt/
 ```bash
 # 复制根目录 .env.example 为 .env 并填写 DB_*（可选，默认 root/root）
 cd backend
-mvn -pl xj-zbpt-business -am spring-boot:run
+mvn -pl xj-tysfrz-business -am spring-boot:run
 ```
 
 > **Maven Wrapper**：仓库已内置 `mvnw` / `mvnw.cmd`（Maven 3.9.9），无需本机安装 Maven。
-> 可复现命令：Windows 用 `.\mvnw.cmd ...`，Linux/macOS 用 `./mvnw ...`（如 `./mvnw -pl xj-zbpt-business -am spring-boot:run`）。首次运行自动下载 Maven。
+> 可复现命令：Windows 用 `.\mvnw.cmd ...`，Linux/macOS 用 `./mvnw ...`（如 `./mvnw -pl xj-tysfrz-business -am spring-boot:run`）。首次运行自动下载 Maven。
 
 默认 profile 为 `dev`，数据源/账号可用环境变量 `DB_HOST/DB_PORT/DB_NAME/DB_USERNAME/DB_PASSWORD` 覆盖。生产用 `prod` profile，连接信息必须由环境变量提供。
 
@@ -114,12 +114,12 @@ dev profile 下 CORS 允许 `http://localhost:5173`，可通过 `CORS_ALLOWED_OR
 
 | 环境 | 路径 | profile |
 | --- | --- | --- |
-| 开发/生产 | `xj-zbpt-business/src/main/resources/db/migration/` | `dev` / `prod`（MySQL） |
-| 测试 | `xj-zbpt-business/src/test/resources/db/migration-test/` | `test`（H2） |
+| 开发/生产 | `xj-tysfrz-business/src/main/resources/db/migration/` | `dev` / `prod`（MySQL） |
+| 测试 | `xj-tysfrz-business/src/test/resources/db/migration-test/` | `test`（H2） |
 
 - 命名 `V<version>__<description>.sql`；**生产侧已执行脚本不可修改**
 - 新增生产迁移时，同步维护测试侧同版本脚本（可最小种子、H2 兼容语法）
-- 测试集成测试禁止 Mock Mapper；数据来自 Flyway 种子或测试内 `com.xj.zbpt.testsupport.TestDataSupport`
+- 测试集成测试禁止 Mock Mapper；数据来自 Flyway 种子或测试内 `com.xj.tysfrz.testsupport.TestDataSupport`
 
 ## 测试
 

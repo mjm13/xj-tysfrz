@@ -17,22 +17,22 @@
 | `backend/.../config/OpenApiConfig.java` | 修改 | 身份数据平台标题/描述 |
 | `backend/pom.xml` | 修改 | description 文案 |
 | `backend/README.md` | 修改 | 联调章节、JDK 21、验收清单 |
-| `backend/xj-zbpt-framework/src/test/.../CorsConfigTest.java` | 新增（可选） | 验证 dev CORS 头 |
+| `backend/xj-tysfrz-framework/src/test/.../CorsConfigTest.java` | 新增（可选） | 验证 dev CORS 头 |
 | `frontend/src/api/client.ts` | 新增 | baseURL + fetch 封装 |
 | `frontend/src/api/ping.ts` | 新增 | `getPing()` |
 | `frontend/src/views/HomeView.vue` | 修改 | 轻量 API 连通 badge（不替换 dashboard Mock） |
 | `docs/decisions/0004-dev-cors-api-conventions.md` | 新增 | dev CORS + `/api/` 前缀约定 |
 | `docs/requirements/shipped/002-*.md` | 修改 | status → shipped |
 
-**范围外：** 业务表、鉴权、mvnw（P2 可另开任务）、包名 `com.xj.zbpt` 重构。
+**范围外：** 业务表、鉴权、mvnw（P2 可另开任务）、包名 `com.xj.tysfrz` 重构。
 
 ---
 
 ## 任务 1：后端 CORS（dev）
 
 **涉及文件：**
-- Create: `backend/xj-zbpt-framework/src/main/java/com/xj/zbpt/framework/config/CorsConfig.java`
-- Modify: `backend/xj-zbpt-business/src/main/resources/application-dev.yml`
+- Create: `backend/xj-tysfrz-framework/src/main/java/com/xj/tysfrz/framework/config/CorsConfig.java`
+- Modify: `backend/xj-tysfrz-business/src/main/resources/application-dev.yml`
 
 - [ ] **步骤 1：** 新增 `CorsConfig`，`@Profile("dev")`，读取 `app.cors.allowed-origins`（默认 `http://localhost:5173`）
 - [ ] **步骤 2：** `application-dev.yml` 增加 `app.cors.allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}`

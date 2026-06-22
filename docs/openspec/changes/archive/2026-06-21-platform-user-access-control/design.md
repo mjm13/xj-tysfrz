@@ -89,7 +89,7 @@ DepartmentRef → OrgNode.code     →  操作者归属（非自然人身份）
 ### 后端包结构（建议）
 
 ```
-com.xj.zbpt.access/
+com.xj.tysfrz.access/
   domain/          InteractiveUser, Role, Permission, DataScope, OperatorContext
   domain/service/  DataScopeResolver, AuthProvider
   application/     AuthAppService, UserAdminAppService

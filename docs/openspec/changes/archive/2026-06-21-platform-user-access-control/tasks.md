@@ -26,7 +26,7 @@
 ## 5. 后端 — 认证鉴权（2026-06-22 修订为 Sa-Token，原 JWT 实现已移除）
 
 - [x] 5.1 添加 `sa-token-spring-boot3-starter` + `spring-security-crypto`（BCrypt，不引入完整 Security 链）
-- [x] 5.2 `xj-zbpt-framework/auth`：`SaTokenWebConfig`、`StpInterfaceImpl`、`OperatorSessionSupport`
+- [x] 5.2 `xj-tysfrz-framework/auth`：`SaTokenWebConfig`、`StpInterfaceImpl`、`OperatorSessionSupport`
 - [x] 5.3 实现 SelfBuiltAuthProvider + AuthAppService（`StpUtil.login` / Session 绑定 OperatorContext）
 - [x] 5.4 全局登录拦截 + 白名单（login/ping/swagger/actuator）
 - [x] 5.5 `@CurrentOperator` + `CurrentOperatorArgumentResolver`；`@SaCheckPermission` 方法级鉴权
@@ -77,7 +77,7 @@
 > 见 ADR 0008 修订、`docs/requirements/shipped/006-platform-user-access-control.md` 验收记录。
 
 - [x] 11.1 移除 JWT / Spring Security 鉴权链（JwtTokenService、SecurityConfig 等）
-- [x] 11.2 横切鉴权下沉 `xj-zbpt-framework`；`OperatorContext`/`DataScope` 移至 `xj-zbpt-common`
+- [x] 11.2 横切鉴权下沉 `xj-tysfrz-framework`；`OperatorContext`/`DataScope` 移至 `xj-tysfrz-common`
 - [x] 11.3 同步主 spec（identity-access、platform-shell）与 GlobalExceptionHandler（401/403）
 - [x] 11.4 `AuthFlowIntegrationTest` + `mvn test` 全绿
 - [x] 11.5 006 需求文件追加人工验收说明
