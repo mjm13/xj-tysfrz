@@ -22,7 +22,8 @@ description: 归档后知识回灌（spec/change -> docs/domain/established + AD
 6. 检查能力追溯索引：当 change 新增、下线、重命名业务模块，变更前端 `moduleKey`，或新增模块相关业务表时，更新 `docs/capability-map.md`
 7. 如有架构或流程决策，新增 ADR
 8. 若发现设计与实现偏差，记录待修正事项
-9. 将对应需求 `status` 置 `shipped`，并用 `git mv` 移到 `docs/requirements/shipped/`；移动后 Grep 修正引用该路径的文档，避免死链
+9. 将对应需求 `status` 置 `shipped`，并用 `git mv` 移到 `docs/requirements/shipped/`；移动后 Grep 修正引用该路径的文档，避免 dead 链
+10. **提醒**：`sync-knowledge` 之后还必须 **git commit**（本需求最终操作），见 `00-workflow.mdc`「需求收尾门禁」；未 commit 不得开始下一需求
 
 # 约束
 

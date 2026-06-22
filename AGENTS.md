@@ -16,10 +16,11 @@
 ## 1. 统一研发流水线
 
 ```
-explore → propose → apply → verify → sync → archive → sync-knowledge
+explore → propose → apply → verify → sync → archive → sync-knowledge → commit
 ```
 
 - 编排真相源：`xijia-ops-pipeline`（分级/判型/路由/收尾闭环的唯一规范，被 `/xijia:*` 命令依赖）
+- **需求收尾以 `git commit` 为最终操作**；commit 且文档同步完成后，才可进入下一需求（见 `00-workflow.mdc`「需求收尾门禁」）
 - 手动入口：`/xijia:start`，遵循 `xijia-ops-pipeline`
 - 自动入口：`feature-pipeline` 技能（模型可发现的**薄别名**，内容委托 `xijia-ops-pipeline`）
 - 状态/终止：`/xijia:status`、`/xijia:stop`

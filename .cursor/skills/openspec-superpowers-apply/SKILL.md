@@ -114,8 +114,9 @@ F. 进入下一任务
 3. 对照 design.md 与 delta specs 做符合性检查
 4. **沉淀检查**：对照 `00-workflow.mdc` 沉淀三问，把业务规则/决策/数据语义写入 `docs/domain` / ADR / 数据字典
 5. **写入「人工验收说明」**：追加到对应需求文件的 `# 验收记录` 段（`docs/requirements/inbox/<req>.md`，多切片追加不覆盖），并在收尾摘要中复述。必须点名改了哪个菜单/模块（moduleKey）、什么功能、什么场景、怎么手动点验，并如实列出 `Out of Scope / Deferred`（模板见 `00-workflow.mdc`）
-6. 输出 session 摘要（见下方模板）
-7. 建议下一步：`/opsx:sync` → `/opsx:archive` → `sync-knowledge`（除非用户要求暂停）
+6. **文档同步**：`/opsx:sync` → `/opsx:archive` → `sync-knowledge`（🔴）；需求 `status: shipped` 与目录一致
+7. **git commit（最终操作）**：提交本需求全部代码与已同步文档；确认 `git status` 干净后再输出完成摘要
+8. 输出 session 摘要（见下方模板）；**禁止**在未 commit 时建议「开始下一需求」
 
 ### 4. 暂停条件
 
@@ -159,8 +160,9 @@ F. 进入下一任务
 - 手动验证步骤：<点哪里、看到什么 / 接口示例与预期响应>
 - 自动化覆盖：<测试名/命令>；需人工点验：<...>
 - 本次范围外 / Deferred：<对齐 proposal 的 Open Questions>
+- **Git：** `<commit hash>` — `<commit message 摘要>`
 
-**Next:** /opsx:sync → /opsx:archive → sync-knowledge
+**Next:** 仅当 commit 成功后，才可启动下一需求；无待办 change 时流程结束
 ```
 
 ---
@@ -182,5 +184,6 @@ F. 进入下一任务
 - 不得在 AC↔Test 追溯表存在「无对应测试的 In Scope AC」时声称完成（`Deferred` AC 除外）
 - 不得在未做 code-review 的情况下声称 change 实现完成
 - 不得在未把「人工验收说明」（菜单/模块、功能、场景、手动验证步骤）写入需求文件 `# 验收记录` 段的情况下收尾
+- **不得在未 git commit 的情况下宣告需求完成或开始下一需求**（见 `00-workflow.mdc`「需求收尾门禁」）
 - 保持改动最小，单任务单提交语义（一次对话内可多个任务，但每个任务独立验证）
 - 验证失败时不得标记任务完成

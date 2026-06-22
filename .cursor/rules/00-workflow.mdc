@@ -134,6 +134,35 @@ alwaysApply: true
 - 🟢 / 🟡 收尾同样必须**输出「人工验收说明」**（见下方专节）
 - 未归档 change 不得写入 `docs/domain/established/*`
 
+# 需求收尾门禁（提交为最终操作）
+
+**一个需求以 `git commit` 为最终操作。** 在代码与文档同步全部完成、且**已成功提交**之前，不得宣告该需求完成，**不得**启动下一个需求的 propose / apply。
+
+## 收尾顺序（强制）
+
+对当前需求，按序执行，**末步必须是 commit**：
+
+1. **verify**：测试/构建通过（有命令输出证据）
+2. **文档同步**（🔴：`sync → archive → sync-knowledge`；🟢/🟡：计划/需求 AC、capability-map、数据字典等该写的写完）
+3. **需求状态**：`# 验收记录` 已写入；`status: shipped`（或 `dropped`）；物理路径与 status 一致（`shipped/` 或 `dropped/`）
+4. **git commit**：将本需求相关的**代码 + 已同步文档**一次性提交；commit message 聚焦「为什么」
+5. **（可选）push**：仅当用户明确要求
+
+## 进入下一需求的条件
+
+仅当以上 1–4 全部满足（尤其 **commit 已成功**）后，才可：
+
+- 在 inbox 中启动**下一个**需求的 `propose` / `in-change`
+- 或应用户要求「继续下一个需求」
+
+**禁止**：实现/测试通过但未 commit 就 archive、移 shipped、或开始下一需求。
+
+## AI 执行约束
+
+- 不得将「Implementation Complete / 收尾完成」作为对用户的首个完成信号；必须先完成 commit（或明确 blocked 并列出未提交文件）
+- 用户说「开始下一个需求」时：先 `git status`；若仍有上一需求的未提交改动，**先完成上一需求的 commit**，再进入下一需求
+- 每个需求 ideally **一个 commit**；同一需求多切片可多个 commit，但**下一需求开始前**当前需求链必须全部 commit
+
 # 真相源与冲突裁决（测试 > Spec）
 
 Spec/design 是自然语言意图，没有裁判机制；测试可执行、有 pass/fail。两者冲突时：
