@@ -31,7 +31,7 @@ VITE_API_BASE_URL=http://localhost:8080
 | `npm run dev` | 开发服务器 |
 | `npm run build` | 生产构建 |
 | `npm run preview` | 预览构建产物 |
-| `npm test` | 运行单元测试（auth Mock 逻辑） |
+| `npm test` | 运行单元测试（jsdom 环境，支持纯逻辑与 Vue 组件测试） |
 
 ## 契约约定
 

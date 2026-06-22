@@ -23,3 +23,9 @@ target/
 # Worktree suggestions
 xj-zbpt-worktrees/
 
+# 差距梳理草稿（非正式需求文档，本地保留、不入库；有长期价值的内容请提升到 docs/）
+temp/
+
+# OpenSpec CLI 目录联接（物理目录在 docs/openspec/；见 README）
+/openspec
+

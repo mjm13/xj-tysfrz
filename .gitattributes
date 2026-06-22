@@ -1,0 +1,26 @@
+# 统一按 LF 归一化文本文件，消除 Windows 下 LF/CRLF 抖动
+* text=auto eol=lf
+
+# Windows 专用脚本保持 CRLF
+*.cmd  text eol=crlf
+*.bat  text eol=crlf
+*.ps1  text eol=crlf
+
+# Maven Wrapper（生成后）：脚本固定换行
+mvnw      text eol=lf
+mvnw.cmd  text eol=crlf
+
+# 二进制：禁止换行/文本转换
+*.jar   binary
+*.class binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary
+*.gz    binary
+*.zip   binary

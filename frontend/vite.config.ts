@@ -21,7 +21,7 @@ export default defineConfig({
     port: 5173,
   },
   test: {
-    environment: 'node',
+    environment: 'jsdom',
     pool: 'threads',
     maxWorkers: 1,
   },

@@ -29,6 +29,7 @@
 - MySQL 8 + Flyway（数据库迁移）
 - springdoc-openapi（API 契约 / Swagger UI）
 - Spring Boot Actuator（健康检查）
+- Sa-Token 1.44.x（认证鉴权，framework 层；`Authorization: Bearer`）
 
 ## API 约定
 
@@ -42,7 +43,7 @@
 backend/
 ├── pom.xml                 # Reactor 父 POM
 ├── xj-zbpt-common/         # ApiResponse、ErrorCode、BizException
-├── xj-zbpt-framework/      # 横切能力 + 平台运行接口（Ping、SystemInfo）
+├── xj-zbpt-framework/      # 横切能力 + Sa-Token 鉴权 + 平台运行接口（Ping、SystemInfo）
 └── xj-zbpt-business/       # 业务能力 + 启动模块（唯一可执行 jar）
 ```
 
@@ -64,6 +65,9 @@ com.xj.zbpt/
 cd backend
 mvn -pl xj-zbpt-business -am spring-boot:run
 ```
+
+> **Maven Wrapper**：仓库已内置 `mvnw` / `mvnw.cmd`（Maven 3.9.9），无需本机安装 Maven。
+> 可复现命令：Windows 用 `.\mvnw.cmd ...`，Linux/macOS 用 `./mvnw ...`（如 `./mvnw -pl xj-zbpt-business -am spring-boot:run`）。首次运行自动下载 Maven。
 
 默认 profile 为 `dev`，数据源/账号可用环境变量 `DB_HOST/DB_PORT/DB_NAME/DB_USERNAME/DB_PASSWORD` 覆盖。生产用 `prod` profile，连接信息必须由环境变量提供。
 
@@ -88,6 +92,8 @@ dev profile 下 CORS 允许 `http://localhost:5173`，可通过 `CORS_ALLOWED_OR
 | --- | --- |
 | 健康检查 | `GET /actuator/health` |
 | 平台版本 | `GET /api/system/info` |
+| 登录 | `POST /api/auth/login` |
+| 当前用户 | `GET /api/auth/me`（Bearer Token） |
 | 示例接口 | `GET /api/ping` |
 | OpenAPI JSON | `GET /v3/api-docs` |
 | Swagger UI | `GET /swagger-ui.html` |
