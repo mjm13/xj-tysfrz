@@ -18,9 +18,11 @@
 
 | 字段 | 业务含义 | 约束/理由 |
 | --- | --- | --- |
-| code | 组织节点唯一编码 | 与 SYSU_ORG mock 一致，DepartmentRef 外键式引用 |
-| parent_code | 上级组织 code | 用于 OWN_DEPT_AND_SUB 子孙派生 |
-| level | 层级深度 | 辅助展示，非权限判定主依据 |
+| code | 组织节点唯一编码 | 与 SYSU_ORG mock 一致，DepartmentRef 外键式引用；全局唯一 |
+| parent_code | 上级组织 code | 用于 OWN_DEPT_AND_SUB 子孙派生；为空=根；更新不得成环 |
+| level | 层级深度 | 由 `parent.level + 1` 派生（根=1）；辅助展示，非权限判定主依据 |
+
+**平台维护规则（009）：** 经平台管理 API（`admin:departments:*`）懒加载浏览与新建/编辑；不变量见 `domain-model.md` org-structure 小节；本切片无删除。
 
 ### platform_user
 
@@ -70,7 +72,8 @@ stateDiagram-v2
 **关键规则：**
 
 - `module_name` 必须与前端能力追溯索引中的 `moduleKey` 保持一致。
-- 当前种子权限以 `read` 为主，用户管理写权限使用 `users-write` 等更细动作名。
+- 平台管理（`module_name = admin`）采用读写成对的权限点：`admin:users:*`、`admin:roles:*`、`admin:departments:*`（V3 用户、V4 角色、V5 部门），分别由 Flyway 种子授予 ADMIN 角色。
+- 业务模块当前以 `read` 为主；写动作用更细动作名（如 `users-write`、`departments-write`）。
 
 ### platform_user_role
 

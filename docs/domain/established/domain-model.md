@@ -18,6 +18,11 @@
 
 **不变量：** PlatformUserId ≠ PersonUID；未授权默认拒绝；ScopedDeptSet 后端统一计算；至少一名 GLOBAL 管理员（seed）。
 
+**RoleCatalog 维护不变量（008）：**
+- ADMIN 为系统角色：权限集合不可修改、角色不可删除（系统角色保护）。
+- 角色 Permission 变更**不影响已在线用户的 session 权限**；变更仅对该角色用户**重新登录后**生效（session 权限在登录时快照，运行期不热更新）。
+- admin 管理能力以 `admin:<资源>:read` / `admin:<资源>:write` 权限点表达（users / roles / departments）。
+
 Spec：`docs/openspec/specs/identity-access/spec.md`；ADR：`docs/decisions/0008-platform-user-access-control.md`
 
 ### identity-master
@@ -45,6 +50,13 @@ Spec：`docs/openspec/specs/identity-dimension/spec.md`
 **聚合 OrgTree：** OrgNode（SYSU_ORG code）、OrgMapping；OrgRoster 读模型。
 
 **已落地范围（006）：** Flyway `org_node` 种子表（790 节点），供 DepartmentRef 与 DataScopeResolver。
+
+**平台管理维护不变量（009）：** OrgNode 可经平台管理 API（懒加载 roots/children + 新建/编辑）维护，受 `admin:departments:*` 保护。
+- code 全局唯一；
+- parent_code 为空（根）或引用已存在 OrgNode；
+- 更新 parent 不得成环（不可设为自身或子孙）；
+- level 由 `parent.level + 1` 派生（根 level=1）；
+- 本切片**不提供删除**：有 platform_user 挂靠或有子节点的节点删除留待后续 change（Deferred）。
 
 Spec：`docs/openspec/specs/org-structure/spec.md`
 

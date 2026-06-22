@@ -16,6 +16,7 @@ description: 归档后知识回灌（spec/change -> docs/domain/established + AD
 
 1. 读取已归档 change 的设计与 specs 变更
 2. 判定 change type；仅将业务 / 混合 change 的**业务语义**从 `docs/domain/developing/*` 提升到 `docs/domain/established/*`
+2.5. **沉淀三问硬门禁（不可跳过，即使本 change 主体是 UI / 壳层）**：逐条核对本 change 的 delta spec 与实现是否引入——①新的业务规则 / 不变量（如「ADMIN 角色不可改」「角色权限变更需重新登录生效」「OrgNode 禁止成环」）；②非显而易见的决策原因；③数据库字段业务语义 / 状态机 / 约束理由。**任一为「是」即必须回灌 established（或 ADR / data-dictionary），UI/壳层判型只豁免框架与布局实现，不豁免其中的业务不变量。** 若 `developing/*` 为空但门禁命中，说明 propose 阶段漏写 developing，此时直接补写 established 并在收尾摘要中标注「补录」。门禁结论（命中/未命中 + 去向）必须在收尾摘要中显式说明，不得静默跳过。
 3. 清理 `developing` 中被回滚或失效的临时条目
 4. 更新 established 的 context map、domain model、ubiquitous language（仅保留已确认事实）
 5. 检查数据库业务语义：新增/变更表、字段含义、状态机、约束理由时，更新 `docs/domain/established/data-dictionary.md`；如只需要关系级 ER 图，仅画表间业务关系，不复制 DDL
