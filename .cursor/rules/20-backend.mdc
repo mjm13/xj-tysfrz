@@ -12,16 +12,29 @@ globs:
 - Service 承担业务规则
 - Mapper 作为数据库边界
 
-# 数据库与契约
+# 数据库与 Flyway（双轨）
 
-- 任何结构变更必须附带 Flyway 脚本
-- Flyway 路径：`src/main/resources/db/migration/`
+| 环境 | profile | 迁移目录 | 数据库 |
+| --- | --- | --- | --- |
+| 开发/生产 | `dev` / `prod` | `src/main/resources/db/migration/` | MySQL |
+| 测试 | `test` | `src/test/resources/db/migration-test/` | H2（MODE=MySQL） |
+
+- 结构变更：生产侧新增 `V<n>__*.sql`；测试侧同步新增同版本脚本（可最小种子、H2 兼容语法）
+- 已执行的生产脚本不可修改；测试脚本可随用例演进但须保持与生产 schema 语义一致
 - REST API 应维护 OpenAPI 可见性（springdoc-openapi）
+
+# 测试与真实数据
+
+- **凡涉及 DB 的集成测试**：使用 `@SpringBootTest` + `@ActiveProfiles("test")` + 真实 H2 + Flyway `migration-test`
+- **禁止**对 Mapper / Repository 使用 `@MockBean` 伪造 DB 返回值（纯无 DB 的 HTTP 切片测试除外，如 Ping/CORS）
+- 数据优先级：① Flyway 测试种子 → ② 测试类内通过真实 Mapper/Repository 插入符合业务规则的数据（见 `com.xj.zbpt.testsupport`）
+- 缺数据时在 `@BeforeEach` 或测试方法开头创建，数据须满足领域不变量（部门 code 须存在于 org_node、密码须 BCrypt 等）
+- 纯领域逻辑（无 DB）仍可用 JUnit + Mockito
 
 # 深度链路测试（Controller）
 
 - 最大扫描深度 3 层
-- Mapper 默认 `@MockBean`
+- DB 依赖走真实 H2，不走 Mock
 - 第 3 层外部依赖（Feign/RestTemplate）必须 `@MockBean`
 - 纯计算逻辑使用真实实例
 - 避免对 JDK/纯工具方法过度 Mock

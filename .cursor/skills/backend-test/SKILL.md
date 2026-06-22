@@ -15,9 +15,11 @@ description: 为后端 Spring Boot 代码生成并验证测试。在实现任何
 | --- | --- |
 | 框架 | JUnit 5 + Spring Boot Test + Mockito（均由 `spring-boot-starter-test` 引入） |
 | 测试数据库 | H2 in-memory，`MODE=MySQL`（`application-test.yml`） |
-| Flyway | 每次测试启动自动执行全部迁移脚本，**不用 `@Sql` 重置** |
+| Flyway（测试） | `classpath:db/migration-test`（H2 专用，与生产 `db/migration` 分离） |
+| Flyway（生产/dev） | `classpath:db/migration`（MySQL） |
 | 集成测试 profile | `@ActiveProfiles("test")`，启动类 `ZbptApplication` |
-| 运行命令 | `JAVA_HOME=C:\Users\mjm13\.jdks\ms-21.0.10 mvn test`（本机 JDK 21 路径） |
+| 运行前置 | `JAVA_HOME` 必须指向 **JDK 21**；本机示例路径：`C:\Users\mjm13\.jdks\ms-21.0.10` |
+| 运行命令 | `mvn -f backend/pom.xml test`（Reactor 根 POM；确保 `JAVA_HOME` 已指向 JDK 21） |
 | 测试类命名 | `<被测类>Test`，不加 `IT` 后缀 |
 
 ---
@@ -25,29 +27,30 @@ description: 为后端 Spring Boot 代码生成并验证测试。在实现任何
 # 分层选型决策树
 
 ```
-Q1: 是否需要 Spring 容器？
-├── 否 → 纯 JUnit + Mockito（最快，用于 Service 单元测试、工具类）
-└── 是 → Q2: 是否只测 Web 层（Controller 映射/响应格式/CORS）？
-           ├── 是 → @WebMvcTest(XxxController.class)
-           │         + @Import({GlobalExceptionHandler.class, CorsConfig.class})
-           │         + @ActiveProfiles("dev")          ← CORS 配置是 dev profile
-           │         + 用 @MockBean 隔离 Service 依赖
-           └── 否 → @SpringBootTest + @AutoConfigureMockMvc
-                     + @ActiveProfiles("test")          ← 走 H2 + Flyway
-                     + 直接注入真实 Bean（不 Mock Service）
+Q1: 测试是否触及数据库（读/写任何表）？
+├── 是 → @SpringBootTest + @AutoConfigureMockMvc（可选）
+│         + @ActiveProfiles("test")
+│         + 真实 H2 + Flyway migration-test
+│         + 真实 Service / Mapper / Repository（禁止 @MockBean Mapper）
+│         + 数据：Flyway 种子 → 不足则在测试内 TestDataSupport / @BeforeEach 插入
+└── 否 → Q2: 是否纯领域计算（如 DataScopeResolver）？
+           ├── 是 → 纯 JUnit，构造内存数据结构
+           └── 否 → @WebMvcTest（仅 Ping/CORS 等无 DB 横切）
+                     + @Import(GlobalExceptionHandler, CorsConfig)
+                     + @ActiveProfiles("dev")
+                     + @MockBean 仅用于隔离非被测 Controller 的 Service
 ```
 
 **何时用哪种：**
 
-| 场景 | 注解 | 速度 | 示例 |
-| --- | --- | --- | --- |
-| Controller 路由/响应/CORS | `@WebMvcTest` | 快（<2s） | `PingControllerTest` |
-| Controller 含业务 Service | `@WebMvcTest` + `@MockBean` | 快 | 见下方示例 |
-| 含 DB 的链路验收 | `@SpringBootTest` | 慢（~5s） | `SystemInfoControllerTest` |
-| Service 逻辑/不变量 | 纯 JUnit + Mockito | 极快 | 见下方示例 |
-| Mapper（MyBatis-Plus） | **不测**，`@MockBean` 替代 | — | BaseMapper 方法视为叶节点 |
+| 场景 | 注解 | 数据 |
+| --- | --- | --- |
+| 含 DB 的 Controller/Service 验收 | `@SpringBootTest` | 真实 H2 + 测试内补数据 |
+| 鉴权/权限/DataScope 链路 | `@SpringBootTest` | Flyway V3 种子 + org_node 最小集 |
+| 纯领域规则（无 DB） | 纯 JUnit | 内存构造 |
+| 仅 HTTP 格式/CORS（无 DB） | `@WebMvcTest` | 无 DB |
 
-> **Mapper 规则**：继承 `BaseMapper`、方法名含 select/insert/update/delete、或标注 `@Mapper` 的方法——一律 `@MockBean`，不写 Mapper 层测试，不要求用户提供 DB 数据。
+> **真实数据规则（强制）**：凡涉及持久化的测试，必须让数据经 Flyway 或真实 Mapper 写入 H2。禁止 `@MockBean` Mapper/Repository 返回假数据。缺数据时在测试类内创建符合业务不变量的记录（部门 code 存在于 org_node、ACTIVE 状态、BCrypt 密码等）。辅助类：`com.xj.zbpt.testsupport.TestDataSupport`。
 
 ---
 
@@ -63,7 +66,9 @@ Q1: 是否需要 Spring 容器？
 4. 写完测试，**运行一次确认 RED**：
 
 ```powershell
-$env:JAVA_HOME='C:\Users\mjm13\.jdks\ms-21.0.10'; mvn test -pl backend
+# 若 JAVA_HOME 未指向 JDK 21，先设置（本机示例路径，见上方测试基础设施表）：
+# $env:JAVA_HOME = 'C:\Users\mjm13\.jdks\ms-21.0.10'
+mvn -f backend/pom.xml test
 ```
 
 预期：编译失败（类不存在）或断言失败——**任意一种都算合格的 RED**。  
@@ -76,7 +81,7 @@ $env:JAVA_HOME='C:\Users\mjm13\.jdks\ms-21.0.10'; mvn test -pl backend
 - 实现完成后运行测试确认 GREEN：
 
 ```powershell
-$env:JAVA_HOME='C:\Users\mjm13\.jdks\ms-21.0.10'; mvn test -pl backend
+mvn -f backend/pom.xml test
 ```
 
 所有测试必须通过，**输出中不得有编译警告或 Spring 上下文错误**。
@@ -90,81 +95,29 @@ $env:JAVA_HOME='C:\Users\mjm13\.jdks\ms-21.0.10'; mvn test -pl backend
 
 # 典型模板
 
-## Controller 切片测试（有 Service 依赖）
-
-```java
-@WebMvcTest(UserController.class)
-@Import({GlobalExceptionHandler.class, CorsConfig.class})
-@ActiveProfiles("dev")
-class UserControllerTest {
-
-    @Autowired MockMvc mockMvc;
-
-    @MockBean UserService userService;    // Service 全部 Mock
-
-    @Test
-    void getUser_shouldReturnUserDto() throws Exception {
-        given(userService.getById(1L)).willReturn(new UserDto(1L, "张三"));
-
-        mockMvc.perform(get("/api/users/1"))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.code").value(0))
-               .andExpect(jsonPath("$.data.name").value("张三"));
-    }
-
-    @Test
-    void getUser_whenNotFound_shouldReturnBizError() throws Exception {
-        given(userService.getById(99L)).willThrow(new BizException("用户不存在"));
-
-        mockMvc.perform(get("/api/users/99"))
-               .andExpect(jsonPath("$.code").value(1000))
-               .andExpect(jsonPath("$.message").value("用户不存在"));
-    }
-}
-```
-
-## Service 单元测试（纯 JUnit + Mockito）
-
-```java
-class UserServiceTest {
-
-    @Mock UserMapper userMapper;
-    UserServiceImpl service;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        service = new UserServiceImpl(userMapper);
-    }
-
-    @Test
-    void create_whenEmailDuplicate_shouldThrowBizException() {
-        given(userMapper.selectOne(any())).willReturn(new User());   // 模拟已存在
-
-        assertThatThrownBy(() -> service.create(new CreateUserCmd("test@example.com")))
-            .isInstanceOf(BizException.class)
-            .hasMessageContaining("邮箱已存在");
-    }
-}
-```
-
-## 集成测试（DB + Flyway）
+## 集成测试（真实 DB + 测试内补数据）
 
 ```java
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class OrderFlowTest {
+class UserAdminFlowTest {
 
     @Autowired MockMvc mockMvc;
+    @Autowired PlatformUserMapper userMapper;
+    @Autowired PasswordEncoder passwordEncoder;
+
+    @BeforeEach
+    void seedCaseUser() {
+        // Flyway 种子不足时，在测试内插入符合规则的业务数据
+        TestDataSupport.insertActiveUser(
+                userMapper, passwordEncoder,
+                "case_user", "Passw0rd!", "CAT-party", DataScope.OWN_DEPT);
+    }
 
     @Test
-    void createOrder_shouldPersistAndReturn() throws Exception {
-        mockMvc.perform(post("/api/orders")
-                   .contentType(MediaType.APPLICATION_JSON)
-                   .content("""{"productId":1,"qty":2}"""))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.data.id").isNumber());
+    void createUser_whenDuplicateUsername_shouldFail() throws Exception {
+        // ... 使用真实 DB 状态断言
     }
 }
 ```
@@ -178,16 +131,27 @@ class OrderFlowTest {
 - [ ] 有对应测试方法（命名可追溯到 AC）
 - [ ] 看到该测试 RED（失败日志截图或输出）
 - [ ] `mvn test` 全绿，无 `ERROR`、无 Spring 上下文失败
-- [ ] 测试不依赖外部 MySQL（只用 H2 + Flyway）
-- [ ] Mapper 相关依赖已 `@MockBean`，不询问用户提供 DB 数据
+- [ ] 测试不依赖外部 MySQL（只用 H2 + Flyway migration-test）
+- [ ] DB 相关测试使用真实持久化；缺数据已在测试内插入，未 Mock Mapper
 
 ---
+
+# Flyway 双轨（与生产分离）
+
+| 轨道 | 目录 | profile |
+| --- | --- | --- |
+| 生产/开发 | `xj-zbpt-business/src/main/resources/db/migration/` | dev, prod |
+| 测试 | `xj-zbpt-business/src/test/resources/db/migration-test/` | test |
+
+- 测试迁移：H2 兼容语法 + 最小业务种子（版本号与生产对齐）
+- 新增生产表结构时，**同步**新增测试侧同版本脚本
+- 详见各目录下 `README.md`
 
 # 禁止行为
 
 - **先写实现再补测试**（哪怕"就这一次"）
 - 为通过测试修改 H2/Flyway 配置文件（测试应适配基础设施，不是反过来）
-- 在 `@WebMvcTest` 中直接注入真实 Service（会导致 Spring 上下文缺依赖）
+- 在 `@SpringBootTest` 集成测试中对 Mapper/Repository 使用 `@MockBean` 伪造 DB 数据
 - 使用 `@Disabled` 跳过失败测试而不修复
 - 在 `application-test.yml` 里设置 `spring.flyway.enabled=false`（破坏 DB 迁移验证）
 
@@ -200,5 +164,5 @@ class OrderFlowTest {
 | `NoSuchBeanDefinitionException: XxxService` | `@WebMvcTest` 没有 `@MockBean` Service | 加 `@MockBean XxxService` |
 | `Flyway: Found non-empty schema without schema history table` | H2 模式问题 | 确认 `application-test.yml` 有 `baseline-on-migrate: true` |
 | `H2 does not support ... function` | 迁移脚本用了 MySQL 专有函数 | 改写为 H2 兼容 SQL 或用条件迁移 |
-| `java.lang.UnsupportedClassVersionError` | JDK 不是 21 | 确认 `JAVA_HOME=C:\Users\mjm13\.jdks\ms-21.0.10` |
+| `java.lang.UnsupportedClassVersionError` | JDK 不是 21 | 确认 `JAVA_HOME` 指向 JDK 21（本机示例 `C:\Users\mjm13\.jdks\ms-21.0.10`） |
 | 测试直接 GREEN（未见 RED） | 测试写错，可能在测 Mock 而非真实逻辑 | 删除实现代码，重新看 RED |

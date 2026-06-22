@@ -6,6 +6,7 @@
 
 - `requirements/inbox/`：原始需求入口（状态 `inbox`）
 - `requirements/requirements-template.md`：需求模板（DDD 风格）
+- `capability-map.md`：业务能力追溯索引（模块 → 前端入口 → 后端能力 → 数据语义 → Demo）
 - `domain/README.md`：领域文档导航与使用约定
 - `domain/established/`：已归档既定事实（context map / language / model）
 - `domain/developing/`：开发中内容（可能回滚）

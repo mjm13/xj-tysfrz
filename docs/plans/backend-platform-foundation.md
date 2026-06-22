@@ -17,7 +17,7 @@
 | `backend/.../config/OpenApiConfig.java` | 修改 | 身份数据平台标题/描述 |
 | `backend/pom.xml` | 修改 | description 文案 |
 | `backend/README.md` | 修改 | 联调章节、JDK 21、验收清单 |
-| `backend/src/test/.../CorsConfigTest.java` | 新增（可选） | 验证 dev CORS 头 |
+| `backend/xj-zbpt-framework/src/test/.../CorsConfigTest.java` | 新增（可选） | 验证 dev CORS 头 |
 | `frontend/src/api/client.ts` | 新增 | baseURL + fetch 封装 |
 | `frontend/src/api/ping.ts` | 新增 | `getPing()` |
 | `frontend/src/views/HomeView.vue` | 修改 | 轻量 API 连通 badge（不替换 dashboard Mock） |
@@ -31,8 +31,8 @@
 ## Task 1: 后端 CORS（dev）
 
 **Files:**
-- Create: `backend/src/main/java/com/xj/zbpt/config/CorsConfig.java`
-- Modify: `backend/src/main/resources/application-dev.yml`
+- Create: `backend/xj-zbpt-framework/src/main/java/com/xj/zbpt/framework/config/CorsConfig.java`
+- Modify: `backend/xj-zbpt-business/src/main/resources/application-dev.yml`
 
 - [ ] **Step 1:** 新增 `CorsConfig`，`@Profile("dev")`，读取 `app.cors.allowed-origins`（默认 `http://localhost:5173`）
 - [ ] **Step 2:** `application-dev.yml` 增加 `app.cors.allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}`

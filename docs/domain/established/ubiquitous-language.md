@@ -4,7 +4,7 @@
 
 本文件记录已归档、已稳定复用的统一语言术语。
 
-## 壳层（platform-shell / identity-access-mock）
+## 壳层（platform-shell）
 
 | term | context | definition | codeHint |
 | --- | --- | --- | --- |
@@ -12,9 +12,26 @@
 | 主布局（Main Layout） | platform-shell | 首页布局：顶栏 + 无侧栏主内容区 | `layouts/MainLayout.vue` |
 | 模块布局（Module Layout） | platform-shell | 业务页布局：顶栏 + 模块侧栏 + 主内容区 | `layouts/ModuleLayout.vue` |
 | 设计令牌（Design Token） | platform-shell | 颜色、字体、圆角、阴影等全局 CSS 变量 | `assets/styles/tokens.css` |
-| Mock 登录 | identity-access-mock | 不调后端、前端本地校验凭证并建立会话 | `stores/auth.ts` |
-| 路由守卫（AuthGuard） | identity-access-mock | 依据会话状态控制路由访问 | `router/index.ts` |
-| 会话存储（SessionStore） | identity-access-mock | Pinia 管理的认证态 | `stores/auth.ts` |
+| Token 路由守卫 | platform-shell | 依据 JWT / `/api/auth/me` 控制路由访问 | `router/index.ts` |
+| 认证存储（AuthStore） | platform-shell | Pinia 管理 AccessToken 与用户 profile | `stores/auth.ts` |
+
+## 访问控制（identity-access）
+
+| term | context | definition | codeHint |
+| --- | --- | --- | --- |
+| Principal（主体） | identity-access | 可被认证与授权的实体抽象 | InteractiveUser / ServiceAccount（预留） |
+| InteractiveUser（交互式用户） | identity-access | 人类操作者平台账号 | 含凭证、角色、部门、DataScope |
+| ServiceAccount（接入服务账号） | identity-access | **预留**——采集源 M2M 身份 | 本期不实现 |
+| PlatformUserId | identity-access | 平台用户唯一标识，与 PersonUID **无关** | UUID 或业务编码 |
+| Role（角色） | identity-access | 权限集合，分配给用户 | 如 `ADMIN` |
+| Permission（权限项） | identity-access | 对模块/操作的访问授权 | `module:action` |
+| DepartmentRef（部门归属） | identity-access | 用户所属 OrgNode 的 code | 引用 org-structure |
+| DataScope（数据范围） | identity-access | 用户可见数据的部门口径档位 | GLOBAL / OWN_DEPT / OWN_DEPT_AND_SUB |
+| ScopedDeptSet（可见部门集） | identity-access | DataScope + 组织树派生的 OrgNode code 集合 | 运行时计算 |
+| OperatorContext（操作者上下文） | identity-access | 请求级：userId、roles、permissions、scopedDeptCodes | `@CurrentOperator` |
+| AuthSource（认证来源） | identity-access | 凭证校验来源 | SELF_BUILT（本期）/ SSO（预留） |
+| AccessToken（访问令牌） | identity-access | 登录成功后签发的 JWT | Authorization: Bearer |
+| AuthProvider（认证提供者） | identity-access | 可插拔认证实现 | SelfBuiltAuthProvider |
 
 ## 平台级标识
 
@@ -83,7 +100,12 @@
 
 | 禁用 | 统一用语 |
 | --- | --- |
+| 禁用 | 统一用语 |
+| --- | --- |
 | 无限定词「源头」 | 采集源 / 权限系统 |
 | 授权矩阵 | 对账基线矩阵 |
+| 用户部门自建树 | DepartmentRef 引用 OrgNode |
+| 在前端 alone 做数据范围过滤 | OperatorContext + 后端 ScopedDeptSet |
+| 平台用户 = PersonUID | 平台用户（InteractiveUser）≠ 自然人（PersonUID） |
 
 详细术语与阻断项映射见 ADR [`0007-identity-platform-domain-decisions.md`](../../decisions/0007-identity-platform-domain-decisions.md)。

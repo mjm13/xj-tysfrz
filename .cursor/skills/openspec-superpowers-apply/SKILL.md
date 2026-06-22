@@ -30,7 +30,7 @@ Spec/design 无裁判机制，测试有 pass/fail。冲突时：
 ## 何时使用
 
 - 用户说「开始实现」「继续实现」或显式调用 `openspec-superpowers-apply`
-- `feature-pipeline` 进入第 4 步（实现阶段）
+- 编排流水线（`xijia-ops-pipeline` / `feature-pipeline`）进入实现阶段
 - change 的 artifacts 已齐全，tasks 有待办项
 
 **不要单独使用** `openspec-apply-change`；本技能是其包装层。
@@ -154,9 +154,9 @@ F. 进入下一任务
 
 ---
 
-## 与 feature-pipeline 的关系
+## 与编排流水线的关系
 
-`feature-pipeline` 第 4 步应写：
+编排真相源是 `xijia-ops-pipeline`（`feature-pipeline` 为其模型可发现的薄别名）。其 Red 档「实现」步骤应写：
 
 > 调用 **openspec-superpowers-apply**（本项目实现阶段唯一入口）
 

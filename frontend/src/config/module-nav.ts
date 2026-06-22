@@ -1,3 +1,5 @@
+import { canAccessPath } from '@/config/permissions'
+
 export interface SidebarItem {
   label: string
   path?: string
@@ -169,4 +171,19 @@ export const MODULE_NAV: Record<string, ModuleNavConfig> = {
 
 export function navForModule(moduleKey: string): ModuleNavConfig | undefined {
   return MODULE_NAV[moduleKey]
+}
+
+export function filterModuleNav(
+  config: ModuleNavConfig,
+  permissions: ReadonlySet<string> | string[],
+): ModuleNavConfig {
+  return {
+    ...config,
+    groups: config.groups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => !item.path || canAccessPath(permissions, item.path)),
+      }))
+      .filter((group) => group.items.length > 0),
+  }
 }

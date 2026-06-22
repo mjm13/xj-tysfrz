@@ -306,15 +306,28 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const auth = useAuthStore()
+  auth.bindTokenGetter()
 
   if (to.meta.public && auth.isAuthenticated && to.path === '/login') {
     return { path: '/' }
   }
 
-  if (!to.meta.public && !auth.isAuthenticated) {
-    return { path: '/login' }
+  if (!to.meta.public) {
+    if (!auth.isAuthenticated) {
+      return { path: '/login' }
+    }
+    if (!auth.profile) {
+      const ok = await auth.restoreSession()
+      if (!ok) {
+        return { path: '/login' }
+      }
+    }
+    const moduleKey = to.meta.moduleKey
+    if (typeof moduleKey === 'string' && !auth.canAccessModule(moduleKey)) {
+      return { path: '/' }
+    }
   }
 
   return true

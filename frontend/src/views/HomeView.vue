@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { getPing } from '@/api/ping'
+import { useAuthStore } from '@/stores/auth'
 
 interface TypeItem {
   key: string
@@ -55,7 +56,9 @@ const PERMS: PermItem[] = [
   },
 ]
 
-const NAV_CARDS = [
+const auth = useAuthStore()
+
+const NAV_CARDS_ALL = [
   { mod: 'm1', title: '人员基础身份', desc: '人员进档 · 一人一ID · 多源头采集', to: '/identity/basic' },
   { mod: 'm2', title: '人员分类身份', desc: '树形分类 · 标准属性 · 实例挂载', to: '/identity/classification' },
   { mod: 'm3', title: '人员岗位身份', desc: '广义岗位 · 一人多身份', to: '/identity/position' },
@@ -64,6 +67,10 @@ const NAV_CARDS = [
   { mod: 'm5', title: '身份权限管理', desc: '权限项 · 类型授权 · 状态联动', to: '/identity/permission' },
   { mod: 'm6', title: '系统服务', desc: '数据查询 · 字典 · API · 配置', to: '/services/query/identity' },
 ]
+
+const NAV_CARDS = computed(() =>
+  NAV_CARDS_ALL.filter((card) => auth.canAccessPath(card.to)),
+)
 
 const TOTAL = TYPE_DATA.reduce((sum, item) => sum + item.total, 0)
 const selectedPermIdx = ref(0)

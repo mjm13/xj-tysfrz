@@ -58,9 +58,19 @@
 ## 测试约定（Controller 深度链路）
 
 - Controller 深度链路扫描最大 3 层
-- Mapper 默认 `@MockBean`，不深入 DB 逻辑
+- **DB 集成测试**：真实 H2 + Flyway `migration-test`，禁止 Mock Mapper 返回值
+- 测试数据：Flyway 测试种子优先；不足时在测试类内通过真实 Mapper 插入（见 `TestDataSupport`）
 - 第 3 层外部依赖（Feign/RestTemplate）必须 `@MockBean`
-- 纯计算逻辑使用真实实例，不额外 Mock
+- 纯计算逻辑（无 DB）使用真实实例或纯 JUnit
+
+## Flyway 双轨
+
+| 环境 | 目录 | 数据库 |
+| --- | --- | --- |
+| dev / prod | `src/main/resources/db/migration/` | MySQL |
+| test | `src/test/resources/db/migration-test/` | H2 |
+
+结构变更时生产、测试侧同版本号同步维护；生产脚本已执行后不可改。
 
 ## 前端约定
 

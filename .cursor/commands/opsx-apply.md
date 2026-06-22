@@ -7,6 +7,9 @@ description: Implement tasks from an OpenSpec change (Experimental)
 
 Implement tasks from an OpenSpec change.
 
+> **本项目优先用 `openspec-superpowers-apply`（实现阶段唯一推荐入口）。**
+> `/opsx:apply` 是底层裸跑入口，不强制 TDD/验证/评审门禁。除非你明确只想跟踪 OpenSpec 任务进度而不加载 Superpowers，否则请改说「开始实现」以触发 `openspec-superpowers-apply`。详见 `.cursor/rules/00-workflow.mdc`。
+
 **Input**: Optionally specify a change name (e.g., `/opsx:apply add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
 **Steps**

@@ -2,6 +2,7 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { ApiError } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 import BrandLogo from '@/components/shell/BrandLogo.vue'
 
@@ -15,14 +16,17 @@ const form = reactive({
 })
 
 async function handleLogin() {
+  if (!form.username.trim() || !form.password.trim()) {
+    ElMessage.warning('请输入用户名和密码')
+    return
+  }
   loading.value = true
   try {
-    const ok = auth.login(form.username, form.password)
-    if (!ok) {
-      ElMessage.warning('请输入用户名和密码')
-      return
-    }
+    await auth.login(form.username.trim(), form.password)
     await router.push('/')
+  } catch (err) {
+    const message = err instanceof ApiError ? err.message : '登录失败'
+    ElMessage.error(message)
   } finally {
     loading.value = false
   }
@@ -42,7 +46,7 @@ async function handleLogin() {
 
       <div class="login-card">
         <h2 class="login-title">账号登录</h2>
-        <p class="login-hint">Mock 模式：任意非空用户名和密码即可登录</p>
+        <p class="login-hint">默认管理员：admin / admin123</p>
 
         <el-form class="login-form" label-position="top" @submit.prevent="handleLogin">
           <el-form-item label="用户名">

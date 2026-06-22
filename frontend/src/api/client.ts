@@ -17,14 +17,26 @@ export class ApiError extends Error {
 const baseURL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '')
   ?? 'http://localhost:8080'
 
+let tokenGetter: () => string | null = () => null
+
+export function setTokenGetter(getter: () => string | null): void {
+  tokenGetter = getter
+}
+
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    ...(init?.headers as Record<string, string> | undefined),
+  }
+  const token = tokenGetter()
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+
   const response = await fetch(`${baseURL}${normalizedPath}`, {
-    headers: {
-      Accept: 'application/json',
-      ...init?.headers,
-    },
     ...init,
+    headers,
   })
 
   const body = (await response.json()) as ApiResponse<T>

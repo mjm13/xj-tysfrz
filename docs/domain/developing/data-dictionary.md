@@ -4,7 +4,7 @@
 
 本文件记录开发中（可能回滚）的数据库**业务语义**，归档后提升到 established。
 
-- 结构真相在 Flyway 迁移脚本（`backend/src/main/resources/db/migration/`），不在此复制
+- 结构真相在 Flyway 迁移脚本（`backend/xj-zbpt-business/src/main/resources/db/migration/`），不在此复制
 - 实时结构由 MySQL MCP（只读）读取
 - 本文件只记录 DDL 里看不出的「代码外知识」：字段业务含义、状态流转、约束理由
 

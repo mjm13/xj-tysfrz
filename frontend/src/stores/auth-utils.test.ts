@@ -4,7 +4,6 @@ import {
   clearAuthStorage,
   loadAuthFromStorage,
   saveAuthToStorage,
-  validateMockCredentials,
 } from './auth-utils'
 
 function createStorage(): Storage {
@@ -36,27 +35,21 @@ describe('auth-utils', () => {
     vi.stubGlobal('localStorage', createStorage())
   })
 
-  it('rejects empty credentials', () => {
-    expect(validateMockCredentials('', 'password')).toBe(false)
-    expect(validateMockCredentials('user', '')).toBe(false)
-    expect(validateMockCredentials('  ', 'password')).toBe(false)
-  })
-
-  it('accepts non-empty credentials', () => {
-    expect(validateMockCredentials('admin', 'admin')).toBe(true)
-  })
-
-  it('persists auth state without password', () => {
-    saveAuthToStorage({ isAuthenticated: true, username: 'admin' })
+  it('persists token without password', () => {
+    saveAuthToStorage({ accessToken: 'jwt-token', username: 'admin' })
     const raw = localStorage.getItem(AUTH_STORAGE_KEY)
     expect(raw).toBeTruthy()
     expect(raw).not.toContain('password')
-    expect(loadAuthFromStorage()).toEqual({ isAuthenticated: true, username: 'admin' })
+    expect(loadAuthFromStorage()).toEqual({ accessToken: 'jwt-token', username: 'admin' })
+  })
+
+  it('returns null when token missing', () => {
+    expect(loadAuthFromStorage()).toBeNull()
   })
 
   it('clears auth storage on logout', () => {
-    saveAuthToStorage({ isAuthenticated: true, username: 'admin' })
+    saveAuthToStorage({ accessToken: 'jwt-token', username: 'admin' })
     clearAuthStorage()
-    expect(loadAuthFromStorage()).toEqual({ isAuthenticated: false, username: '' })
+    expect(loadAuthFromStorage()).toBeNull()
   })
 })

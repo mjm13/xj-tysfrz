@@ -9,17 +9,23 @@
 ### platform-shell（平台壳层）
 
 - status: active
-- 来源：change `frontend-app-shell`（2026-06-18）、`platform-module-layout`（2026-06-20 布局纠偏）
-- 业务含义：登录页、全局路由、MainLayout（首页）/ ModuleLayout（业务模块）、Design Token；不含具体业务
+- 来源：change `frontend-app-shell`（2026-06-18）、`platform-module-layout`（2026-06-20 布局纠偏）、`platform-user-access-control`（2026-06-21 后端认证集成）
+- 业务含义：登录页、全局路由、MainLayout（首页）/ ModuleLayout（业务模块）、Design Token；登录对接 identity-access JWT
 - 对应 spec：`openspec/specs/platform-shell/spec.md`
+
+### identity-access（平台访问控制）
+
+- status: active
+- 来源：change `platform-user-access-control`（2026-06-21）
+- 业务含义：InteractiveUser 账号、RBAC、DataScope、JWT 认证、OperatorContext；与 PersonUID 无关
+- 对应 spec：`openspec/specs/identity-access/spec.md`
+- 替代：`identity-access-mock`（已退役）
 
 ### identity-access-mock（Mock 身份与访问）
 
-- status: active
-- 来源：change `frontend-app-shell`（2026-06-18）
-- 业务含义：前端 Mock 登录、路由守卫、会话持久化；为真实 `identity-access` 预留
-- 对应 spec：`openspec/specs/identity-access-mock/spec.md`
-- 后续：将被真实 `identity-access` 替代
+- status: superseded
+- 来源：change `frontend-app-shell`（2026-06-18）；由 `platform-user-access-control`（2026-06-21）退役
+- 对应 spec：`openspec/specs/identity-access-mock/spec.md`（无活跃 Requirement）
 
 ### identity-master（人员基础身份）
 
@@ -38,7 +44,7 @@
 ### org-structure（组织机构）
 
 - status: active
-- 来源：change `identity-platform-domain`（2026-06-20）
+- 来源：change `identity-platform-domain`（2026-06-20）；最小 `org_node` 种子由 `platform-user-access-control`（2026-06-21）落地
 - 对应 spec：`openspec/specs/org-structure/spec.md`
 
 ### data-ingestion（数据接入）
@@ -68,7 +74,7 @@
 flowchart TB
     subgraph shell ["壳层"]
         PS[platform-shell]
-        IAM[identity-access-mock]
+        IA[identity-access]
     end
 
     subgraph ingestion ["data-ingestion"]
@@ -91,7 +97,8 @@ flowchart TB
         QV[QueryView]
     end
 
-    IAM --> PS
+    IA --> PS
+    IA -->|DepartmentRef / DataScope| ORG
     PS --> core
     PS --> ingestion
     PS --> perm
@@ -121,6 +128,6 @@ flowchart TB
 | data-ingestion | identity-master | ACL + 领域事件 |
 | identity-master | identity-dimension | OHS（PersonUID） |
 | permission-reconciliation | PermissionSystem | 防腐层 + 处置推送 |
-| identity-access | 各 API | 横切 RBAC |
+| identity-access | 各 API | 横切 RBAC + DataScope |
 
 完整关系与阻断项处置见归档 change `identity-platform-domain` 与 ADR 0007。

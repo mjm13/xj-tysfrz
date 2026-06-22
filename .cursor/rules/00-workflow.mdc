@@ -52,6 +52,14 @@ alwaysApply: true
 - 实时读取 = MySQL MCP（只读）
 - 业务语义 = 数据字典（字段业务含义、状态机、约束理由——DDL 里看不出的代码外知识）
 
+**能力追溯索引（按需求发布节点维护，三档通用）：**
+- `docs/capability-map.md` 是模块级薄索引，只记录「模块 / moduleKey / 前端入口 / 后端能力 / 相关表 / Demo」指针，不复制子菜单、路由明细或 DDL
+- 触发条件（任一命中即需更新）：新增/下线/重命名业务模块、变更前端 `moduleKey`、新增模块相关业务表、新增模块根路由
+- 维护节点按档位（发布即收尾）：
+  - 🔴：在 `sync-knowledge` 收尾时检查更新
+  - 🟢 / 🟡：在该需求完成、人确认收尾时直接检查更新（这两档不走 `sync-knowledge`，不得因此漏掉）
+- 数据表字段语义仍写 `data-dictionary.md`；表结构仍以 Flyway 为唯一真相
+
 **developing vs established 的写入规则：**
 - 🔴（OpenSpec change 在飞行中）：先写 `developing/`，归档后由 `sync-knowledge` 提升到 `established/`
 - 🟢 / 🟡（无 OpenSpec change，完成即既成事实）：人确认后**直接写 `established/`**
@@ -67,7 +75,7 @@ alwaysApply: true
 4. `verify`：执行测试、验证与代码评审
 5. `sync`：用 `/opsx:sync` 同步 delta specs 到主 specs
 6. `archive`：用 `/opsx:archive` 归档 change
-7. `sync-knowledge`：将有效知识回灌 docs 与 ADR（技术 change 以 ADR 为主，不回灌伪领域条目）
+7. `sync-knowledge`：以需求发布为节点，将有效知识回灌 docs 与 ADR，并检查 `capability-map.md` / `data-dictionary.md`（技术 change 以 ADR 为主，不回灌伪领域条目）
 
 # 文档状态模型
 
@@ -94,10 +102,10 @@ alwaysApply: true
 - apply 前 design 必须包含：
   - **业务 / 混合 change**：领域设计小节 + 分层裁剪决策
   - **技术 change**：技术方案小节（栈选型、目录结构、横切能力清单）+ 分层裁剪决策；**不要求**虚构领域模型
-- 技术 change 的关键决策写入 `docs/adr/`，不写 `context-map` 新 context
+- 技术 change 的关键决策写入 `docs/decisions/`（ADR），不写 `context-map` 新 context
 - 开发中的领域内容只能写入 `docs/domain/developing/*`；仅在 `sync -> archive -> sync-knowledge` 后可提升到 `docs/domain/established/*`
 - 收尾仅两条路径：
-  - 完成：`sync -> archive -> sync-knowledge`；收尾时将需求 `status` 置 `shipped` 并 `git mv` 到 `docs/requirements/shipped/`
+  - 完成：`sync -> archive -> sync-knowledge`；收尾时检查能力追溯索引、数据字典与必要 ADR，将需求 `status` 置 `shipped` 并 `git mv` 到 `docs/requirements/shipped/`
   - 放弃：`abandon-change`；收尾时将需求 `status` 置 `dropped` 并 `git mv` 到 `docs/requirements/dropped/`
 - 未归档 change 不得写入 `docs/domain/established/*`
 

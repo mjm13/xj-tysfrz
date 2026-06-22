@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: xj-tysfrz-backend
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+server:
+  port: ${SERVER_PORT:8080}
+
+app:
+  info:
+    platform-name: 高校综合身份数据平台
+    release: @project.version@
+    maintenance: false
+  jwt:
+    secret: ${JWT_SECRET:change-me-in-production-32chars-min!!}
+    expiration-hours: ${JWT_EXPIRATION_HOURS:8}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    build:
+      enabled: true
+    git:
+      mode: full
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true

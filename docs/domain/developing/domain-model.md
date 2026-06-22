@@ -2,8 +2,6 @@
 
 ## 说明
 
-本文件记录开发中（可能回滚）的领域模型，归档后再按流程提升到 established。
+本文件记录**进行中 OpenSpec change** 的领域模型增量。归档后提升到 `docs/domain/established/domain-model.md`。
 
-## 模型清单
-
-当前暂无开发中条目。
+当前无进行中的 change 条目。

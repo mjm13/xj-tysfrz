@@ -18,7 +18,7 @@
 - **统一响应体**：`ApiResponse<T>` 统一成功/失败结构
 - **全局异常处理**：`@RestControllerAdvice` 统一兜底，业务异常 `BizException` + 错误码
 - **MyBatis-Plus**：分页插件、`BaseMapper` 基类约定、驼峰映射
-- **Flyway**：迁移脚本目录 `backend/src/main/resources/db/migration`，连接真实 MySQL（localhost:3306，库 `xj_zbpt`）
+- **Flyway**：迁移脚本目录 `backend/xj-zbpt-business/src/main/resources/db/migration`，连接真实 MySQL（localhost:3306，库 `xj_zbpt`）
 - **springdoc-openapi**：自动生成 OpenAPI 文档与 Swagger UI
 - **日志 + Actuator**：分级日志、`/actuator/health` 健康端点
 

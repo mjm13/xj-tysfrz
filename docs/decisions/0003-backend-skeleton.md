@@ -13,7 +13,7 @@
 
 - **运行时 / 框架**：Java 21 (LTS) + Spring Boot 3.3.x + Maven，基础包 `com.xj.zbpt`
 - **数据访问**：MyBatis-Plus（分页插件 + BaseMapper 约定）
-- **数据库 / 迁移**：MySQL 8 + Flyway（脚本 `backend/src/main/resources/db/migration`，真实执行）
+- **数据库 / 迁移**：MySQL 8 + Flyway（脚本 `backend/xj-zbpt-business/src/main/resources/db/migration`，真实执行）
 - **API 文档**：springdoc-openapi（作为前后端契约来源）
 - **监控 / 日志**：Spring Boot Actuator（health）+ logback 分级日志
 - **测试**：JUnit 5 + Spring Boot Test，切片测试用 H2，不依赖真库

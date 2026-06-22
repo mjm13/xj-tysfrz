@@ -21,6 +21,7 @@
 - `developing/ubiquitous-language.md`
 - `developing/domain-model.md`
 - `developing/data-dictionary.md`
+- `demo/`：基于原始 Demo 的 DDD 分析稿（未归档，见 [demo/README.md](../demo/README.md)）
 
 ## 沉淀边界（重要）
 

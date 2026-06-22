@@ -4,10 +4,12 @@ import { useRoute } from 'vue-router'
 import AppTopbar from '@/components/shell/AppTopbar.vue'
 import AppFooter from '@/components/shell/AppFooter.vue'
 import ModuleSidebar from '@/components/shell/ModuleSidebar.vue'
-import { navForModule } from '@/config/module-nav'
+import { filterModuleNav, navForModule } from '@/config/module-nav'
 import { useVersionInfo } from '@/composables/useVersionCheck'
+import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
+const auth = useAuthStore()
 
 const moduleKey = computed(() => {
   const matched = [...route.matched].reverse()
@@ -18,7 +20,13 @@ const moduleKey = computed(() => {
   return ''
 })
 
-const navConfig = computed(() => navForModule(moduleKey.value))
+const navConfig = computed(() => {
+  const base = navForModule(moduleKey.value)
+  if (!base || !auth.profile) {
+    return base
+  }
+  return filterModuleNav(base, auth.profile.permissions)
+})
 
 const {
   appVersion,
