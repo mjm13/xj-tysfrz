@@ -51,8 +51,12 @@ disable-model-invocation: true
   -> `writing-plans` + 可选 `brainstorming`，必要时再升 red
 - **red**：核心业务、复杂规则、跨上下文  
   -> 进入完整 OpenSpec + Superpowers 流程（B 段）
+- **🧪 spike（探针，正交于复杂度）**：链路严重不清/可行性未知时先探路  
+  -> 走 green 的轻量节奏，发现落 `docs/plans/<spike-name>.md`；spike 代码不得当成果交付，产出喂正式 change 重做
 
 如果拿不准：先低档，复杂度上升再升级。
+
+**迭代切片（默认姿态）**：需求无法一次描述完时，一个 change = 一条端到端薄切片（非整模块），命名切片化；proposal 必含 `In Scope / Out of Scope / Open Questions & Deferred` 三段，想不清的链路显式 park。
 
 ### B. Red 档完整链路
 
@@ -118,10 +122,14 @@ disable-model-invocation: true
 仅当满足以下全部条件才可宣告完成：
 
 1. 任务实现与验证通过（有命令证据）
-2. specs 已同步（或明确确认跳过并说明原因）
-3. change 已归档
-4. `sync-knowledge` 已执行
-5. developing/established 状态一致，无悬挂条目
+2. 本切片 In Scope 的 AC 均有通过测试（`Deferred` AC 除外）
+3. specs 已同步（或明确确认跳过并说明原因）
+4. change 已归档
+5. `sync-knowledge` 已执行
+6. developing/established 状态一致，无悬挂条目
+7. **已写入「人工验收说明」**：追加到需求文件 `# 验收记录` 段（🟢/🟡 只有计划文档时追加到 `docs/plans/`），内容含菜单/模块（moduleKey）、功能、验收场景、手动验证步骤、范围外/Deferred（模板见 `00-workflow.mdc`），并在摘要复述
+
+> 🟢/🟡 不走 OpenSpec，但第 7 条「人工验收说明」同样必须在收尾时写入并复述。
 
 ## 建议调用方式
 

@@ -109,3 +109,6 @@ After completing all artifacts, summarize:
 - If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
 - If a change with that name already exists, ask if user wants to continue it or create a new one
 - Verify each artifact file exists after writing before proceeding to next
+- **切片化命名**：change 名称对应「一条端到端薄切片」，不是整个模块（如 `identity-basic-ingest-from-hr` 而非 `identity-basic`）
+- **proposal 必含范围三段**：`In Scope` / `Out of Scope` / `Open Questions & Deferred`。想不清的链路写进第三段显式 park，禁止塞进 design 假装确定（见 `.cursor/rules/00-workflow.mdc`「迭代切片」）
+- proposal 必须标注 change 类型（business / technical / hybrid）

@@ -34,6 +34,27 @@ alwaysApply: true
 - 改配置走 🟢，别写 40 分钟 Spec
 - 只有 🔴 才值得 OpenSpec 的持久化与同步成本；本项目无硬性审计需求，OpenSpec 仅服务核心业务的知识沉淀
 
+**🧪 探针档（spike，正交于复杂度档）**：
+- 适用：链路严重不清、技术可行性未知、需求无法描述完整时，**先探路**
+- 性质：**一次性、可丢弃**的实验，目的只有两个——摸通端到端链路、把「未知」变成「可回答的问题」
+- 流程：走 🟢 的轻量节奏，方案与发现落 `docs/plans/<spike-name>.md`
+- 铁律：**spike 代码不得直接当成果交付**；探针结束后产出喂给正式 change（🟡/🔴）重做或重构
+- 退出条件：未知已澄清、链路已验证 → 升档为正式 change；或证实不可行 → 记录结论后丢弃
+
+# 迭代切片（需求无法一次描述完时的默认姿态）
+
+**现实：绝大部分需求无法一次描述完所有链路，也很难一次做完。** 因此默认按「纵向切片」推进，而非「一次做完整功能」。
+
+**三条心法：**
+1. **切片优先**：工作单元是「打通一条端到端链路的薄切片」，不是「完整模块/功能」。一个 OpenSpec change = 一个切片，**不是**一个模块。change 命名切片化（如 `identity-basic-ingest-from-hr`，而非 `identity-basic`）。
+2. **活文档增量**：`spec.md`、`data-dictionary.md`、`docs/domain/*` 都是活文档，随每个 change 逐次生长；第一版不全是正常的，靠 `archive → sync-knowledge` 循环长期累积。
+3. **显式未知**：想不清的链路**显式 park**，不塞进 design 假装确定。每个 proposal 必含三段（见「联动门禁」）：
+   - **In Scope**：本切片要打通的链路与 AC
+   - **Out of Scope**：明确不在本次范围内
+   - **Open Questions / Deferred**：尚未想清、需后续切片或 spike 解决的链路
+
+**与 AC 门禁的关系**：门禁只约束 **本切片的 In Scope AC**；标记为 `Deferred` 的 AC 不阻塞当前切片勾选完成（详见「真相源与冲突裁决」）。
+
 # 知识沉淀（与流程档位正交）
 
 **沉淀什么，与走多重的流程无关。** 即使是 🟢 改配置，只要命中下面三问，也必须沉淀（成本通常一行）。
@@ -99,14 +120,16 @@ alwaysApply: true
 - 每个 change 建议先建立独立 worktree 与分支 `change/<name>`
 - propose 前必须在 proposal 中标注 change 类型（业务 / 技术 / 混合）
 - propose 前统一语言：**业务 / 混合 change** 必须具备 `ubiquitous-language` 条目；**技术 change** 可跳过，除非引入跨团队共识的新术语
+- **proposal 必含范围三段**：`In Scope` / `Out of Scope` / `Open Questions & Deferred`。想不清的链路写进第三段显式 park，禁止塞进 design 假装确定
 - apply 前 design 必须包含：
   - **业务 / 混合 change**：领域设计小节 + 分层裁剪决策
   - **技术 change**：技术方案小节（栈选型、目录结构、横切能力清单）+ 分层裁剪决策；**不要求**虚构领域模型
 - 技术 change 的关键决策写入 `docs/decisions/`（ADR），不写 `context-map` 新 context
 - 开发中的领域内容只能写入 `docs/domain/developing/*`；仅在 `sync -> archive -> sync-knowledge` 后可提升到 `docs/domain/established/*`
 - 收尾仅两条路径：
-  - 完成：`sync -> archive -> sync-knowledge`；收尾时检查能力追溯索引、数据字典与必要 ADR，将需求 `status` 置 `shipped` 并 `git mv` 到 `docs/requirements/shipped/`
+  - 完成：`sync -> archive -> sync-knowledge`；收尾时检查能力追溯索引、数据字典与必要 ADR，**输出「人工验收说明」**，将需求 `status` 置 `shipped` 并 `git mv` 到 `docs/requirements/shipped/`
   - 放弃：`abandon-change`；收尾时将需求 `status` 置 `dropped` 并 `git mv` 到 `docs/requirements/dropped/`
+- 🟢 / 🟡 收尾同样必须**输出「人工验收说明」**（见下方专节）
 - 未归档 change 不得写入 `docs/domain/established/*`
 
 # 真相源与冲突裁决（测试 > Spec）
@@ -117,6 +140,37 @@ Spec/design 是自然语言意图，没有裁判机制；测试可执行、有 p
 - **测试暴露 Spec 错误时不得静默跳过**：暂停 → 先改 `design.md`/spec → 再继续实现
 - **Spec 只锁 What，不锁 How**：边界、不变量、验收标准（AC）该写死；技术选型、实现路径、代码结构交给模型，给信息而非指令
 - 每条验收标准（AC）应能对应到测试；🔴 档 AC 无对应测试不得勾选任务
+- **AC 门禁只约束「本切片 In Scope 的 AC」**：标记为 `Deferred` / `Out of Scope` 的 AC 不阻塞当前切片完成；「本切片没做完」是合法状态，留给后续切片，而非违规
+
+# 人工验收说明（每次收尾必产出，三档通用）
+
+**问题：交给 AI 编码后，人往往不知道改了哪些东西、从哪验起。** 因此**任何档位**的需求收尾时，AI 必须输出一段「人工验收说明」，让人能脱离代码、按场景点验。**禁止只说「已完成、测试通过」就收尾。**
+
+**落地位置（必须持久化，不能只在聊天里说）：**
+- 追加到对应需求文件的 `# 验收记录` 段：`docs/requirements/inbox/<req>.md`（完成后随状态迁移到 `shipped/`）
+- 若该需求未走 OpenSpec（🟢/🟡）只有 `docs/plans/` 计划文档，则追加到该计划文档
+- 多切片场景**追加不覆盖**：每个切片一条记录，保留历史
+- 同时在收尾摘要里复述一份，方便当场验收
+
+**验收说明模板（写入需求文件的 `# 验收记录`，并在收尾摘要中复述）：**
+
+```markdown
+## 人工验收说明（Acceptance Note）
+
+- 涉及菜单 / 模块：<moduleKey + 菜单路径，如 identity-permission → /identity/permission；无界面则写「后端 API / 无界面」>
+- 改了什么功能：<一句话能力描述>
+- 验收场景（人可复现）：
+  1. GIVEN <前置> WHEN <操作> THEN <可观察结果>
+  2. ...
+- 手动验证步骤：<点哪个菜单、输入什么、预期看到什么；后端给 curl/接口示例与预期响应>
+- 自动化覆盖：<对应测试名 / 验证命令>；未覆盖的标注「需人工点验」
+- 本次范围外 / Deferred：<明确列出本切片未做的链路，对齐 proposal 的 Open Questions>
+```
+
+**要点：**
+- 必须点名 **改了哪个菜单/模块（moduleKey）、什么功能、什么场景**——这是人工验收的最小信息集
+- 验收场景与 `Out of Scope / Deferred` 必须如实，未做的不许写成已做
+- 🔴 在 `openspec-superpowers-apply` 完成模板中输出；🟢/🟡 在 Plan Mode 执行收尾时输出
 
 # Approval Gates（必须暂停并请求用户确认）
 

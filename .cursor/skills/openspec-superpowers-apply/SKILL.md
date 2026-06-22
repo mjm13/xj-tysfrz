@@ -81,7 +81,8 @@ openspec instructions apply --change "<name>" --json
 | AC-1 余额不足返回 40003 | `OrderTest#insufficientBalance` | 待写 |
 
 规则：
-- **每条 AC 必须有对应测试**（前端视觉类用 e2e/snapshot 或明确手动验证步骤）
+- **门禁只约束「本切片 In Scope 的 AC」**；proposal 中标注 `Out of Scope` / `Deferred` 的 AC 不阻塞本切片完成
+- 本切片每条 AC 必须有对应测试（前端视觉类用 e2e/snapshot 或明确手动验证步骤）
 - AC 无对应测试 → **不得勾选**相关任务
 - AC 与实现冲突 → 测试为准；若 AC 本身错 → 暂停改 spec
 
@@ -112,8 +113,9 @@ F. 进入下一任务
 2. 加载 `requesting-code-review`（或 code-reviewer 子代理）
 3. 对照 design.md 与 delta specs 做符合性检查
 4. **沉淀检查**：对照 `00-workflow.mdc` 沉淀三问，把业务规则/决策/数据语义写入 `docs/domain` / ADR / 数据字典
-5. 输出 session 摘要（见下方模板）
-6. 建议下一步：`/opsx:sync` → `/opsx:archive` → `sync-knowledge`（除非用户要求暂停）
+5. **写入「人工验收说明」**：追加到对应需求文件的 `# 验收记录` 段（`docs/requirements/inbox/<req>.md`，多切片追加不覆盖），并在收尾摘要中复述。必须点名改了哪个菜单/模块（moduleKey）、什么功能、什么场景、怎么手动点验，并如实列出 `Out of Scope / Deferred`（模板见 `00-workflow.mdc`）
+6. 输出 session 摘要（见下方模板）
+7. 建议下一步：`/opsx:sync` → `/opsx:archive` → `sync-knowledge`（除非用户要求暂停）
 
 ### 4. 暂停条件
 
@@ -149,6 +151,15 @@ F. 进入下一任务
 **Progress:** Y/Y tasks complete
 **Verified:** <commands run>
 **Review:** <brief review summary>
+
+### 人工验收说明（Acceptance Note）
+- 涉及菜单 / 模块：<moduleKey + 路径，或「后端 API / 无界面」>
+- 改了什么功能：<一句话>
+- 验收场景：1. GIVEN ... WHEN ... THEN ...
+- 手动验证步骤：<点哪里、看到什么 / 接口示例与预期响应>
+- 自动化覆盖：<测试名/命令>；需人工点验：<...>
+- 本次范围外 / Deferred：<对齐 proposal 的 Open Questions>
+
 **Next:** /opsx:sync → /opsx:archive → sync-knowledge
 ```
 
@@ -168,7 +179,8 @@ F. 进入下一任务
 
 - 不得跳过 `test-driven-development` 直接堆代码（纯配置/脚手架任务可用可运行验证替代测试）
 - 不得在未运行验证命令的情况下勾选 tasks
-- 不得在 AC↔Test 追溯表存在「无对应测试的 AC」时声称完成
+- 不得在 AC↔Test 追溯表存在「无对应测试的 In Scope AC」时声称完成（`Deferred` AC 除外）
 - 不得在未做 code-review 的情况下声称 change 实现完成
+- 不得在未把「人工验收说明」（菜单/模块、功能、场景、手动验证步骤）写入需求文件 `# 验收记录` 段的情况下收尾
 - 保持改动最小，单任务单提交语义（一次对话内可多个任务，但每个任务独立验证）
 - 验证失败时不得标记任务完成

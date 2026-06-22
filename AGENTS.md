@@ -30,8 +30,11 @@ explore → propose → apply → verify → sync → archive → sync-knowledge
 | 🟢 轻量 | 配置/文案/样式、简单 CRUD、独立前端页 | Plan Mode，计划落 `docs/plans/`，不进 OpenSpec |
 | 🟡 中等 | 单上下文常规功能 | Plan Mode + 可选 Superpowers |
 | 🔴 核心 | 资金/权限/复杂规则/跨上下文/多聚合 | 完整 OpenSpec + Superpowers |
+| 🧪 探针(spike) | 链路严重不清、需先验证可行性（正交于复杂度） | 一次性可丢弃实验，落 `docs/plans/`，产出喂正式 change；不得当成果交付 |
 
 详见 `docs/conventions.md` 与 `00-workflow.mdc`。
+
+> **两条默认姿态**（需求无法一次描述完时）：① 迭代切片——一个 change = 一条端到端薄切片，不是整个模块；proposal 必含 `In Scope / Out of Scope / Open Questions & Deferred`。② 人工验收说明——任何档位收尾都必须输出「改了哪个菜单/模块、什么功能、什么场景、怎么手动点验」，禁止只说「已完成」。模板见 `00-workflow.mdc`。
 
 ## 3. 关键技能（`.cursor/skills/`）
 
