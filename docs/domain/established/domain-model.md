@@ -21,7 +21,14 @@
 **RoleCatalog 维护不变量（008）：**
 - ADMIN 为系统角色：权限集合不可修改、角色不可删除（系统角色保护）。
 - 角色 Permission 变更**不影响已在线用户的 session 权限**；变更仅对该角色用户**重新登录后**生效（session 权限在登录时快照，运行期不热更新）。
-- admin 管理能力以 `admin:<资源>:read` / `admin:<资源>:write` 权限点表达（users / roles / departments）。
+- admin 管理能力以 `admin:<资源>:read` / `admin:<资源>:write` 权限点表达（users / roles / departments / menus）。
+
+**NavigationMenuCatalog 维护不变量（010）：**
+- 聚合 **NavigationMenu**（`platform_menu`）+ **MenuPermission**（`platform_menu_permission` 子表）。
+- LINK：path 必填；子表 ≥1 permission；运行时可见 ⟺ visible=true 且用户 permissions 与子表 permission **有任一交集（OR）**。
+- GROUP：不绑子表 permission；可见性由可见子孙 LINK 推导。
+- 菜单树禁止成环；visible=false 则运行时全体不可见。
+- 角色仍通过 RolePermission 绑定 Permission；菜单子表定义「哪些 permission 归属该入口」，角色/菜单 UI 均按「菜单 → 多个 permission」配置。
 
 Spec：`docs/openspec/specs/identity-access/spec.md`；ADR：`docs/decisions/0008-platform-user-access-control.md`
 

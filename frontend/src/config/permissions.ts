@@ -3,6 +3,7 @@ const PATH_MODULE_MAP: Record<string, string> = {
   '/admin/users': 'platform-admin',
   '/admin/roles': 'platform-admin',
   '/admin/departments': 'platform-admin',
+  '/admin/menus': 'platform-admin',
   '/identity/basic': 'identity-basic',
   '/identity/classification': 'identity-classification',
   '/identity/position': 'identity-position',
@@ -18,9 +19,15 @@ const PATH_PERMISSION_MAP: Record<string, string> = {
   '/admin/users': 'admin:users:read',
   '/admin/roles': 'admin:roles:read',
   '/admin/departments': 'admin:departments:read',
+  '/admin/menus': 'admin:menus:read',
 }
 
-const PLATFORM_ADMIN_READ_PERMISSIONS = ['admin:users:read', 'admin:roles:read', 'admin:departments:read'] as const
+const PLATFORM_ADMIN_READ_PERMISSIONS = [
+  'admin:users:read',
+  'admin:roles:read',
+  'admin:departments:read',
+  'admin:menus:read',
+] as const
 
 export function moduleKeyForPath(path: string): string | null {
   if (PATH_MODULE_MAP[path]) {

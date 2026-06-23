@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { login as loginApi, fetchMe, logoutApi, type UserProfile } from '@/api/auth'
 import { setTokenGetter } from '@/api/client'
 import { canAccessModule, canAccessPath } from '@/config/permissions'
+import { useNavigationStore } from '@/stores/navigation'
 import {
   clearAuthStorage,
   loadAuthFromStorage,
@@ -38,6 +39,7 @@ export const useAuthStore = defineStore('auth', {
       this.profile = result.profile
       saveAuthToStorage({ accessToken: this.accessToken, username: this.username })
       this.bindTokenGetter()
+      await useNavigationStore().loadNavigation()
     },
     async restoreSession(): Promise<boolean> {
       if (!this.accessToken) {
@@ -47,6 +49,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         this.profile = await fetchMe()
         this.username = this.profile.username
+        await useNavigationStore().loadNavigation()
         return true
       } catch {
         this.clearSession()
@@ -71,6 +74,7 @@ export const useAuthStore = defineStore('auth', {
       this.profile = null
       clearAuthStorage()
       this.bindTokenGetter()
+      useNavigationStore().clear()
     },
     canAccessModule(moduleKey: string): boolean {
       if (!this.profile) {

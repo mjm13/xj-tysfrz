@@ -45,6 +45,12 @@ const router = createRouter({
           component: () => import('@/views/admin/AdminDepartmentsView.vue'),
           meta: { moduleKey: 'platform-admin' },
         },
+        {
+          path: 'menus',
+          name: 'platform-admin-menus',
+          component: () => import('@/views/admin/AdminMenusView.vue'),
+          meta: { moduleKey: 'platform-admin' },
+        },
       ],
     },
     {

@@ -1,50 +1,39 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import type { MenuNode } from '@/api/admin'
 import { useAuthStore } from '@/stores/auth'
+import { useNavigationStore } from '@/stores/navigation'
 import BrandLogo from './BrandLogo.vue'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const navigation = useNavigationStore()
 
 const nowText = ref('')
 let timer: ReturnType<typeof setInterval> | undefined
 
-const identityMenuAll = [
-  { label: '人员基础身份', desc: '人员进档 · 一人一ID · 多源头采集', to: '/identity/basic' },
-  { label: '人员分类身份', desc: '树形分类 · 标准属性 · 实例挂载', to: '/identity/classification' },
-  { label: '人员岗位身份', desc: '广义岗位 · 一人多身份', to: '/identity/position' },
-  { label: '人员自定义标签管理', desc: '自定义群组 · 灵活标注 · 便捷查询', to: '/identity/tags' },
-  { label: '组织机构体系', desc: '院系树 · 强绑定身份', to: '/identity/org' },
-]
-
-const identityMenu = computed(() =>
-  identityMenuAll.filter((item) => auth.canAccessPath(item.to)),
-)
-
-const showIdentityMenu = computed(() => identityMenu.value.length > 0)
-const showPermissionNav = computed(() => auth.canAccessPath('/identity/permission'))
-const showServicesNav = computed(() => auth.canAccessPath('/services/query/identity'))
-const showPlatformAdminNav = computed(() => auth.canAccessModule('platform-admin'))
-
-const platformAdminMenuAll = [
-  { label: '平台用户', desc: '平台操作者账号 · 登录与数据范围', to: '/admin/users' },
-  { label: '角色管理', desc: 'RBAC 角色 · Permission 分配', to: '/admin/roles' },
-  { label: '部门管理', desc: '组织节点 org_node · 懒加载树维护', to: '/admin/departments' },
-]
-
-const platformAdminMenu = computed(() =>
-  platformAdminMenuAll.filter((item) => auth.canAccessPath(item.to)),
-)
-
-const isPlatformAdminActive = computed(() => route.path.startsWith('/admin'))
-
-const isIdentityActive = computed(() => route.path.startsWith('/identity'))
-const isPermissionActive = computed(() => route.path.startsWith('/identity/permission'))
-const isServicesActive = computed(() => route.path.startsWith('/services'))
+const topBar = computed(() => navigation.topBar)
 
 const avatarChar = computed(() => (auth.username ? auth.username.charAt(0).toUpperCase() : '管'))
+
+function isLinkActive(path: string | null): boolean {
+  if (!path) {
+    return false
+  }
+  if (path === '/') {
+    return route.path === '/'
+  }
+  return route.path === path || route.path.startsWith(`${path}/`)
+}
+
+function isGroupActive(node: MenuNode): boolean {
+  if (node.menuType === 'LINK') {
+    return isLinkActive(node.path)
+  }
+  return node.children.some((child) => isGroupActive(child))
+}
 
 function updateTime() {
   const now = new Date()
@@ -57,9 +46,16 @@ async function handleLogout() {
   router.push('/login')
 }
 
-onMounted(() => {
+onMounted(async () => {
   updateTime()
   timer = setInterval(updateTime, 1000)
+  if (auth.isAuthenticated && !navigation.loaded) {
+    try {
+      await navigation.loadNavigation()
+    } catch {
+      // 导航加载失败不阻塞顶栏
+    }
+  }
 })
 
 onUnmounted(() => {
@@ -72,62 +68,39 @@ onUnmounted(() => {
     <BrandLogo />
 
     <nav class="topbar-nav">
-      <RouterLink to="/" class="nav-link" :class="{ active: route.path === '/' }">主页</RouterLink>
+      <template v-for="node in topBar" :key="node.menuCode">
+        <RouterLink
+          v-if="node.menuType === 'LINK' && node.path"
+          :to="node.path"
+          class="nav-link"
+          :class="{ active: isLinkActive(node.path) }"
+        >{{ node.label }}</RouterLink>
 
-      <div v-if="showIdentityMenu" class="nav-dropdown" :class="{ active: isIdentityActive }">
-        <span class="nav-dropdown-trigger" :class="{ active: isIdentityActive }">身份管理</span>
-        <div class="nav-dropdown-menu">
-          <RouterLink
-            v-for="item in identityMenu"
-            :key="item.label"
-            :to="item.to"
-            class="dropdown-item"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="8" r="4" />
-              <path d="M4 21c0-4 4-7 8-7s8 3 8 7" />
-            </svg>
-            <div class="menu-body">
-              <div class="menu-label">{{ item.label }}</div>
-              <div class="menu-desc">{{ item.desc }}</div>
-            </div>
-          </RouterLink>
+        <div
+          v-else-if="node.menuType === 'GROUP' && node.children.length"
+          class="nav-dropdown"
+          :class="{ active: isGroupActive(node) }"
+        >
+          <span class="nav-dropdown-trigger" :class="{ active: isGroupActive(node) }">{{ node.label }}</span>
+          <div class="nav-dropdown-menu">
+            <RouterLink
+              v-for="item in node.children"
+              :key="item.menuCode"
+              :to="item.path ?? '/'"
+              class="dropdown-item"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21c0-4 4-7 8-7s8 3 8 7" />
+              </svg>
+              <div class="menu-body">
+                <div class="menu-label">{{ item.label }}</div>
+                <div v-if="item.description" class="menu-desc">{{ item.description }}</div>
+              </div>
+            </RouterLink>
+          </div>
         </div>
-      </div>
-
-      <RouterLink
-        v-if="showPermissionNav"
-        to="/identity/permission"
-        class="nav-link"
-        :class="{ active: isPermissionActive }"
-      >身份权限管理</RouterLink>
-      <RouterLink
-        v-if="showServicesNav"
-        to="/services/query/identity"
-        class="nav-link"
-        :class="{ active: isServicesActive }"
-      >数据查询</RouterLink>
-
-      <div v-if="showPlatformAdminNav" class="nav-dropdown" :class="{ active: isPlatformAdminActive }">
-        <span class="nav-dropdown-trigger" :class="{ active: isPlatformAdminActive }">平台管理</span>
-        <div class="nav-dropdown-menu">
-          <RouterLink
-            v-for="item in platformAdminMenu"
-            :key="item.label"
-            :to="item.to"
-            class="dropdown-item"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="4" y="4" width="16" height="16" rx="2" />
-              <path d="M8 9h8M8 13h5" />
-            </svg>
-            <div class="menu-body">
-              <div class="menu-label">{{ item.label }}</div>
-              <div class="menu-desc">{{ item.desc }}</div>
-            </div>
-          </RouterLink>
-        </div>
-      </div>
+      </template>
     </nav>
 
     <div class="topbar-right">

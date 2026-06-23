@@ -1,5 +1,42 @@
 import { request } from './client'
 
+export interface MenuNode {
+  menuCode: string
+  label: string
+  path: string | null
+  parentCode: string | null
+  sortOrder: number
+  menuType: 'LINK' | 'GROUP' | string
+  moduleKey: string | null
+  visible: boolean
+  description: string | null
+  permissionCodes: string[]
+  children: MenuNode[]
+}
+
+export interface CreateMenuPayload {
+  menuCode: string
+  label: string
+  path?: string | null
+  parentCode?: string | null
+  sortOrder: number
+  menuType: 'LINK' | 'GROUP'
+  moduleKey?: string | null
+  description?: string | null
+  permissionCodes: string[]
+}
+
+export interface UpdateMenuPayload {
+  label: string
+  path?: string | null
+  parentCode?: string | null
+  sortOrder: number
+  menuType: 'LINK' | 'GROUP'
+  moduleKey?: string | null
+  description?: string | null
+  permissionCodes?: string[]
+}
+
 export interface UserSummary {
   platformUserId: string
   username: string
@@ -116,6 +153,43 @@ export function replaceRolePermissions(roleCode: string, permissionCodes: string
 
 export function listPermissions(): Promise<PermissionSummary[]> {
   return request<PermissionSummary[]>('/api/admin/permissions')
+}
+
+export function listMenus(): Promise<MenuNode[]> {
+  return request<MenuNode[]>('/api/admin/menus')
+}
+
+export function listMenuPermissionTree(): Promise<MenuNode[]> {
+  return request<MenuNode[]>('/api/admin/menus/permission-tree')
+}
+
+export function createMenu(payload: CreateMenuPayload): Promise<MenuNode> {
+  return request<MenuNode>('/api/admin/menus', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateMenu(menuCode: string, payload: UpdateMenuPayload): Promise<MenuNode> {
+  return request<MenuNode>(`/api/admin/menus/${encodeURIComponent(menuCode)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateMenuVisible(menuCode: string, visible: boolean): Promise<MenuNode> {
+  return request<MenuNode>(`/api/admin/menus/${encodeURIComponent(menuCode)}/visible`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ visible }),
+  })
+}
+
+export function canWriteMenus(permissions: ReadonlySet<string> | string[]): boolean {
+  const set = permissions instanceof Set ? permissions : new Set(permissions)
+  return set.has('admin:menus:write')
 }
 
 export function canWriteUsers(permissions: ReadonlySet<string> | string[]): boolean {

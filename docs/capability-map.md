@@ -5,7 +5,7 @@
 ## 使用边界
 
 - 本文件只记录模块级指针，不复制子菜单、路由明细或表结构。
-- 前端路由真相在 `frontend/src/router/index.ts`，侧栏菜单真相在 `frontend/src/config/module-nav.ts`。
+- 前端路由真相在 `frontend/src/router/index.ts`；**生产导航真相**在 `platform_menu` + `GET /api/navigation`（`module-nav.ts` 仅作 API 不可用时的 fallback）。
 - 数据库结构真相在 Flyway 迁移脚本，表字段业务语义在 `docs/domain/established/data-dictionary.md`。
 - OpenSpec 主规格真相在 `docs/openspec/specs/<capability>/spec.md`。
 - `platform-shell` 属于前端平台壳层 / 架构能力，放在本索引与 `docs/architecture.md` 中追溯，不写入 DDD context map。
@@ -15,7 +15,7 @@
 | 模块 | moduleKey | 前端入口 | 后端能力 / 领域上下文 | 相关数据表 | Demo 原型 | 当前状态 |
 | --- | --- | --- | --- | --- | --- | --- |
 | 平台首页 | `home` | `/` | `platform-shell` | 暂无业务表 | `页面主页.html` / `platform-v2-home.html` | 已接入壳层 |
-| 平台管理 | `platform-admin` | `/admin/users`、`/admin/roles`、`/admin/departments` | `identity-access`（平台用户 + 角色 + org_node 维护） | `platform_user` / `platform_role` / `platform_permission` / `org_node` | 无 | 平台用户、角色与部门管理已接入 |
+| 平台管理 | `platform-admin` | `/admin/users`、`/admin/roles`、`/admin/departments`、`/admin/menus` | `identity-access`（平台用户 + 角色 + org_node + **导航菜单** 维护） | `platform_user` / `platform_role` / `platform_permission` / `platform_menu` / `platform_menu_permission` / `org_node` | 无 | 平台用户、角色、部门与菜单管理已接入；顶栏/侧栏由 `/api/navigation` 驱动 |
 | 人员基础身份 | `identity-basic` | `/identity/basic` | `identity-master` + `data-ingestion` | 未落表 | `m1-basic-identity.html` | 前端占位，领域已建模 |
 | 人员分类身份 | `identity-classification` | `/identity/classification` | `identity-dimension` | 未落表 | `m2-classification.html` / `m2-classification-admin.html` | 前端占位，领域已建模 |
 | 人员岗位身份 | `identity-position` | `/identity/position` | `identity-dimension` + `org-structure` | 未落表 | `m3-position.html` | 前端占位，领域已建模 |

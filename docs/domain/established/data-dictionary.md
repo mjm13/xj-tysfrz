@@ -72,7 +72,7 @@ stateDiagram-v2
 **关键规则：**
 
 - `module_name` 必须与前端能力追溯索引中的 `moduleKey` 保持一致。
-- 平台管理（`module_name = admin`）采用读写成对的权限点：`admin:users:*`、`admin:roles:*`、`admin:departments:*`（V3 用户、V4 角色、V5 部门），分别由 Flyway 种子授予 ADMIN 角色。
+- 平台管理（`module_name = admin`）采用读写成对的权限点：`admin:users:*`、`admin:roles:*`、`admin:departments:*`（V3 用户、V4 角色、V5 部门）、`admin:menus:*`（V6 菜单），分别由 Flyway 种子授予 ADMIN 角色。
 - 业务模块当前以 `read` 为主；写动作用更细动作名（如 `users-write`、`departments-write`）。
 
 ### platform_user_role
@@ -95,6 +95,40 @@ stateDiagram-v2
 | role_id | 平台角色主键引用 | 与 `platform_role.id` 组成联合主键，防止重复授权 |
 | permission_id | 平台权限主键引用 | 与 `platform_permission.id` 组成联合主键，表达角色-权限多对多 |
 
+### platform_menu
+
+- 限界上下文：`identity-access`（导航主数据，platform-shell 消费）
+- 业务含义：平台 UI 导航树节点；**不在本表存 permission**，通过子表关联
+
+| 字段 | 业务含义 | 约束/理由 |
+| --- | --- | --- |
+| menu_code | 菜单唯一编码 | PK |
+| label | 展示名称 | 顶栏/侧栏 |
+| path | 前端路由 | LINK 必填 |
+| parent_code | 父菜单 | 禁止成环 |
+| sort_order | 同级排序 | 小者优先 |
+| menu_type | GROUP / LINK | GROUP 无 path |
+| module_key | 模块上下文 | ModuleLayout 侧栏分组 |
+| visible | 是否启用 | false 则运行时全体不可见 |
+| description | 副标题 | 可选 |
+
+### platform_menu_permission
+
+- 限界上下文：`identity-access`
+- 业务含义：**菜单权限子表**；一个菜单可关联多个 Permission（一对多）
+
+| 字段 | 业务含义 | 约束/理由 |
+| --- | --- | --- |
+| menu_code | 菜单引用 | 联合 PK；FK → platform_menu |
+| permission_id | 权限引用 | 联合 PK；FK → platform_permission |
+
+**关键规则（010）：**
+
+- LINK MUST 在子表有 ≥1 条记录
+- 运行时 LINK 可见 ⟺ visible=true 且用户 permissions 与子表 permission **有交集（OR）**
+- GROUP 可见 ⟺ 有可见子孙 LINK
+- 角色/菜单管理 UI 均按「菜单 → 其下多个 permission」配置
+
 ### identity-access 关系图
 
 > 只表达表间业务关系；字段清单与类型以 Flyway 迁移脚本为准。
@@ -106,4 +140,6 @@ erDiagram
     platform_role ||--o{ platform_user_role : assigned_to_user
     platform_role ||--o{ platform_role_permission : grants_permission
     platform_permission ||--o{ platform_role_permission : granted_by_role
+    platform_menu ||--o{ platform_menu_permission : has_permissions
+    platform_permission ||--o{ platform_menu_permission : linked_by_menu
 ```

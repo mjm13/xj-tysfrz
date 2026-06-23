@@ -7,9 +7,11 @@ import ModuleSidebar from '@/components/shell/ModuleSidebar.vue'
 import { filterModuleNav, navForModule } from '@/config/module-nav'
 import { useVersionInfo } from '@/composables/useVersionCheck'
 import { useAuthStore } from '@/stores/auth'
+import { useNavigationStore } from '@/stores/navigation'
 
 const route = useRoute()
 const auth = useAuthStore()
+const navigation = useNavigationStore()
 
 const moduleKey = computed(() => {
   const matched = [...route.matched].reverse()
@@ -21,6 +23,10 @@ const moduleKey = computed(() => {
 })
 
 const navConfig = computed(() => {
+  const fromApi = navigation.configForModule(moduleKey.value)
+  if (fromApi) {
+    return fromApi
+  }
   const base = navForModule(moduleKey.value)
   if (!base || !auth.profile) {
     return base

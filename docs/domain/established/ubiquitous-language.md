@@ -18,6 +18,9 @@
 | DataScope（数据范围） | identity-access | 用户可见数据的部门口径档位 | GLOBAL / OWN_DEPT / OWN_DEPT_AND_SUB |
 | ScopedDeptSet（可见部门集） | identity-access | DataScope + 组织树派生的 OrgNode code 集合 | 运行时计算 |
 | OperatorContext（操作者上下文） | identity-access | 请求级：userId、roles、permissions、scopedDeptCodes | 请求级上下文 |
+| NavigationMenu（导航菜单） | identity-access | 平台 UI 入口树节点 | `platform_menu` |
+| MenuPermission（菜单权限关联） | identity-access | 菜单与 Permission 的一对多子表记录 | `platform_menu_permission` |
+| NavigationTree（运行时导航树） | platform-shell | 按用户 permissions 过滤后的菜单投影 | GET `/api/navigation` |
 | AuthSource（认证来源） | identity-access | 凭证校验来源 | SELF_BUILT |
 | AccessToken（访问令牌） | identity-access | 登录成功后返回的访问凭证 | |
 | AuthProvider（认证提供者） | identity-access | 可插拔认证实现 | SelfBuiltAuthProvider |
@@ -94,5 +97,6 @@
 | 用户部门自建树 | DepartmentRef 引用 OrgNode |
 | 在前端 alone 做数据范围过滤 | OperatorContext + 后端 ScopedDeptSet |
 | 平台用户 = PersonUID | 平台用户（InteractiveUser）≠ 自然人（PersonUID） |
+| 在 menu 表单字段存 permission | 必须用 `platform_menu_permission` 子表 |
 
 详细术语与阻断项映射见 ADR [`0007-identity-platform-domain-decisions.md`](../../decisions/0007-identity-platform-domain-decisions.md)。

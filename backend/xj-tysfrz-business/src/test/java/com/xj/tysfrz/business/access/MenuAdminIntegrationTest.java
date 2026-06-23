@@ -1,6 +1,5 @@
 package com.xj.tysfrz.business.access;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,18 +10,17 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class UserAdminIntegrationTest {
+class MenuAdminIntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -31,97 +29,90 @@ class UserAdminIntegrationTest {
     ObjectMapper objectMapper;
 
     @Test
-    void optionsPreflight_onProtectedApi_shouldNotRequireLogin() throws Exception {
-        mockMvc.perform(options("/api/admin/users")
-                        .header("Origin", "http://localhost:5173")
-                        .header("Access-Control-Request-Method", "GET")
-                        .header("Access-Control-Request-Headers", "authorization"))
-                .andExpect(status().is(not(401)));
-    }
-
-    @Test
-    void listUsers_asAdmin_shouldReturnUsers() throws Exception {
+    void listMenus_asAdmin_shouldReturnTree() throws Exception {
         String token = loginAndGetToken("admin", "admin123");
-        mockMvc.perform(get("/api/admin/users")
+        mockMvc.perform(get("/api/admin/menus")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
-                .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data[?(@.username == 'admin')]").exists());
+                .andExpect(jsonPath("$.data[?(@.menuCode == 'nav.top.home')]").exists());
     }
 
     @Test
-    void listUsers_asDeptAdmin_shouldReturn403() throws Exception {
+    void listMenus_asDeptAdmin_shouldReturn403() throws Exception {
         String token = loginAndGetToken("dept_admin", "admin123");
-        mockMvc.perform(get("/api/admin/users")
+        mockMvc.perform(get("/api/admin/menus")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value(403));
     }
 
     @Test
-    void createUser_asAdmin_withValidRequest_shouldSucceed() throws Exception {
+    void createLinkMenu_withMultiplePermissions_shouldSucceed() throws Exception {
         String token = loginAndGetToken("admin", "admin123");
-        mockMvc.perform(post("/api/admin/users")
+        mockMvc.perform(post("/api/admin/menus")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "username": "new_platform_user",
-                                  "password": "Passw0rd!",
-                                  "departmentCode": "CAT-party",
-                                  "dataScope": "OWN_DEPT"
+                                  "menuCode": "nav.test.multi",
+                                  "label": "测试多权限",
+                                  "path": "/test/multi",
+                                  "parentCode": "nav.top.platform",
+                                  "sortOrder": 99,
+                                  "menuType": "LINK",
+                                  "moduleKey": null,
+                                  "permissionCodes": ["admin:users:read", "admin:users:write"]
                                 }
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
-                .andExpect(jsonPath("$.data.username").value("new_platform_user"))
-                .andExpect(jsonPath("$.data.departmentCode").value("CAT-party"))
-                .andExpect(jsonPath("$.data.dataScope").value("OWN_DEPT"));
+                .andExpect(jsonPath("$.data.permissionCodes.length()").value(2));
     }
 
     @Test
-    void createUser_withInvalidDepartment_shouldFail() throws Exception {
+    void createLinkMenu_withoutPermissions_shouldFail() throws Exception {
         String token = loginAndGetToken("admin", "admin123");
-        mockMvc.perform(post("/api/admin/users")
+        mockMvc.perform(post("/api/admin/menus")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "username": "bad_dept_user",
-                                  "password": "Passw0rd!",
-                                  "departmentCode": "NO-SUCH-DEPT",
-                                  "dataScope": "OWN_DEPT"
+                                  "menuCode": "nav.test.bad",
+                                  "label": "无效",
+                                  "path": "/test/bad",
+                                  "sortOrder": 1,
+                                  "menuType": "LINK",
+                                  "permissionCodes": []
                                 }
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(1000))
-                .andExpect(jsonPath("$.message").value("部门 code 不存在: NO-SUCH-DEPT"));
+                .andExpect(jsonPath("$.code").value(1000));
     }
 
     @Test
-    void listOrgNodes_asAdmin_shouldReturnNodes() throws Exception {
+    void hideMenu_thenNavigation_shouldExclude() throws Exception {
         String token = loginAndGetToken("admin", "admin123");
-        MvcResult result = mockMvc.perform(get("/api/admin/org-nodes")
+        mockMvc.perform(patch("/api/admin/menus/nav.top.identity.org/visible")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"visible\":false}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
+
+        mockMvc.perform(get("/api/navigation")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(0))
-                .andExpect(jsonPath("$.data").isArray())
-                .andReturn();
-
-        JsonNode data = objectMapper.readTree(result.getResponse().getContentAsString()).path("data");
-        assertThat(data.size()).isGreaterThanOrEqualTo(1);
-        assertThat(data).anyMatch(n -> "CAT-party".equals(n.path("code").asText()));
-        assertThat(data).anyMatch(n -> "SYSU".equals(n.path("parentCode").asText()) || n.path("parentCode").isNull());
+                .andExpect(jsonPath("$.data.topBar[?(@.menuCode == 'nav.top.identity')].children[?(@.menuCode == 'nav.top.identity.org')]").doesNotExist());
     }
 
     @Test
-    void listOrgNodes_asDeptAdmin_shouldReturn403() throws Exception {
-        String token = loginAndGetToken("dept_admin", "admin123");
-        mockMvc.perform(get("/api/admin/org-nodes")
+    void permissionTree_asAdmin_shouldIncludeMenuPermissions() throws Exception {
+        String token = loginAndGetToken("admin", "admin123");
+        mockMvc.perform(get("/api/admin/menus/permission-tree")
                         .header("Authorization", "Bearer " + token))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value(403));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data..[?(@.menuCode == 'nav.top.platform.users')].permissionCodes").isArray());
     }
 
     private String loginAndGetToken(String username, String password) throws Exception {

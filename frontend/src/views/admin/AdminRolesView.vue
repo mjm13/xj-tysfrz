@@ -4,12 +4,13 @@ import { ElMessage } from 'element-plus'
 import {
   canWriteRoles,
   createRole,
-  listPermissions,
+  listMenuPermissionTree,
   listRoles,
   replaceRolePermissions,
-  type PermissionSummary,
+  type MenuNode,
   type RoleSummary,
 } from '@/api/admin'
+import MenuPermissionTree from '@/components/admin/MenuPermissionTree.vue'
 import { ApiError } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 
@@ -17,7 +18,7 @@ const auth = useAuthStore()
 
 const loading = ref(false)
 const roles = ref<RoleSummary[]>([])
-const allPermissions = ref<PermissionSummary[]>([])
+const menuPermissionTree = ref<MenuNode[]>([])
 const createDialogVisible = ref(false)
 const editDrawerVisible = ref(false)
 const submitting = ref(false)
@@ -46,12 +47,12 @@ async function loadRoles() {
   }
 }
 
-async function loadPermissionCatalog() {
+async function loadMenuPermissionTree() {
   if (!auth.canAccessPath('/admin/roles')) {
     return
   }
   try {
-    allPermissions.value = await listPermissions()
+    menuPermissionTree.value = await listMenuPermissionTree()
   } catch {
     // 无读权限时不阻塞列表
   }
@@ -110,7 +111,7 @@ async function submitPermissions() {
 }
 
 onMounted(async () => {
-  await Promise.all([loadRoles(), loadPermissionCatalog()])
+  await Promise.all([loadRoles(), loadMenuPermissionTree()])
 })
 </script>
 
@@ -167,15 +168,11 @@ onMounted(async () => {
     <el-drawer
       v-model="editDrawerVisible"
       :title="editingRole ? `${editingRole.roleCode} · 权限` : '权限'"
-      size="420px"
+      size="480px"
     >
+      <p class="drawer-hint">按菜单勾选 Permission；同一菜单可绑定多个 Permission（OR 可见）。</p>
       <el-checkbox-group v-model="selectedPermissions" :disabled="!canEditPermissions">
-        <div v-for="perm in allPermissions" :key="perm.permissionCode" class="perm-row">
-          <el-checkbox :value="perm.permissionCode">
-            {{ perm.permissionCode }}
-            <span class="perm-meta">{{ perm.moduleName }} / {{ perm.actionName }}</span>
-          </el-checkbox>
-        </div>
+        <MenuPermissionTree :nodes="menuPermissionTree" :disabled="!canEditPermissions" />
       </el-checkbox-group>
       <template v-if="canEditPermissions" #footer>
         <el-button @click="editDrawerVisible = false">取消</el-button>
@@ -229,6 +226,12 @@ onMounted(async () => {
 
 .readonly-hint {
   margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.drawer-hint {
+  margin: 0 0 12px;
   font-size: 13px;
   color: var(--text-secondary);
 }

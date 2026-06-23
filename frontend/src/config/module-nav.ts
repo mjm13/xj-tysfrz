@@ -39,6 +39,7 @@ export const MODULE_NAV: Record<string, ModuleNavConfig> = {
           { label: '平台用户', path: '/admin/users' },
           { label: '角色管理', path: '/admin/roles' },
           { label: '部门管理', path: '/admin/departments' },
+          { label: '菜单管理', path: '/admin/menus' },
         ],
       },
     ],
